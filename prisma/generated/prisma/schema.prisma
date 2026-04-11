@@ -1,0 +1,146 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "./generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  STUDENT
+  PYME
+}
+
+enum PurchasePlan {
+  BASIC
+  ASSISTED
+  PREMIUM
+}
+
+enum ApplicationStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  COMPLETED
+}
+
+model UserProfile {
+  id        String   @id @default(cuid())
+  userId    String   @unique // ID de Clerk
+  role      Role
+  createdAt DateTime @default(now())
+
+  student       Student?
+  pyme          Pyme?
+  notifications Notification[]
+}
+
+model Student {
+  id          String      @id @default(cuid())
+  userId      String      @unique
+  userProfile UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  fullName  String
+  email     String
+  education String?
+  skills    String?
+  language  String?
+  linkedIn  String?
+  avatarUrl String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  applications Application[]
+}
+
+model Pyme {
+  id          String      @id @default(cuid())
+  userId      String      @unique
+  userProfile UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name        String
+  contact     String
+  description String
+  website     String?
+  location    String?
+  logoUrl     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  projects  Project[]
+  purchases Purchase[]
+}
+
+model Project {
+  id     String @id @default(cuid())
+  pymeId String // Ahora es obligatorio para saber de quién es el proyecto
+  pyme   Pyme   @relation(fields: [pymeId], references: [id], onDelete: Cascade)
+
+  title       String
+  description String?
+  skills      String // Tip: Podrías usar String[] si tu DB lo soporta
+  imageUrl    String?
+  isPublished Boolean   @default(false)
+  level       String?
+  category    String?
+  startDate   DateTime?
+  endDate     DateTime?
+  status      String    @default("active")
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  applications Application[]
+}
+
+model Application {
+  id        String            @id @default(cuid())
+  studentId String
+  projectId String
+  status    ApplicationStatus @default(PENDING)
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+
+  student     Student      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  project     Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  certificate Certificate?
+}
+
+model Certificate {
+  id            String   @id @default(cuid())
+  applicationId String   @unique
+  url           String
+  createdAt     DateTime @default(now())
+
+  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+}
+
+model Purchase {
+  id     String @id @default(cuid())
+  pymeId String
+  pyme   Pyme   @relation(fields: [pymeId], references: [id])
+
+  plan      PurchasePlan
+  stripeId  String       @unique
+  projectId String?
+  createdAt DateTime     @default(now())
+}
+
+model Notification {
+  id            String      @id @default(cuid())
+  userProfileId String
+  userProfile   UserProfile @relation(fields: [userProfileId], references: [id], onDelete: Cascade)
+
+  message   String
+  read      Boolean  @default(false)
+  type      String
+  createdAt DateTime @default(now())
+}
+
+model AiSession {
+  id        String   @id @default(cuid())
+  userId    String // ID de Clerk para trazabilidad rápida
+  type      String
+  messages  Json
+  createdAt DateTime @default(now())
+}
