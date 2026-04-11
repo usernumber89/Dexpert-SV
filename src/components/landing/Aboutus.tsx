@@ -51,14 +51,14 @@ const STATS = [
     value: "3", 
     label: "Business Plans", 
     icon: Building2,
-    color: "#F59E0B",
+    color: "#38A3F1",
     trend: "Free & Premium"
   },
   { 
     value: "🇸🇻", 
     label: "El Salvador", 
     icon: MapPin,
-    color: "#8B5CF6",
+    color: "#1D9E75",
     trend: "Expanding soon"
   },
 ];
