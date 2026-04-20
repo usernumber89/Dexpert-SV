@@ -1,44 +1,41 @@
-import { currentUser } from "@clerk/nextjs/server";
+import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
-import { prisma } from "@/lib/prisma";
 import { StudentDashboard } from "@/features/student/components/StudentDashboard";
 
-export const dynamic = "force-dynamic";
-
 export default async function StudentDashboardPage() {
-  try {
-    const user = await currentUser();
-    if (!user) redirect("/auth/sign-in");
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect("/sign-in");
 
-    const [student, applications, projects] = await Promise.all([
-      prisma.student.findUnique({ where: { userId: user.id } }),
-      prisma.application.findMany({
-        where: { student: { userId: user.id } },
-        include: { project: { include: { pyme: true } }, certificate: true },
-        orderBy: { createdAt: "desc" },
-        take: 5,
-      }),
-      prisma.project.findMany({
-        where: { isPublished: true, status: "active" },
-        include: { pyme: true },
-        orderBy: { createdAt: "desc" },
-        take: 6,
-      }),
-    ]);
+  const { data: student } = await supabase
+    .from("students")
+    .select("*")
+    .eq("user_id", user.id)
+    .single();
 
-    return (
-      <StudentDashboard
-        user={{ 
-          name: user.firstName ?? "Student", 
-          imageUrl: user.imageUrl 
-        }}
-        student={student}
-        applications={applications}
-        projects={projects}
-      />
-    );
-  } catch (error) {
-    console.error("Error en StudentDashboardPage:", error);
-    return <div>Error al cargar el dashboard</div>;
-  }
+  if (!student) redirect("/onboarding/student");
+
+  const { data: applications } = await supabase
+    .from("applications")
+    .select(`*, project:projects(*, pyme:pymes(*))`)
+    .eq("student_id", student.id)
+    .order("created_at", { ascending: false })
+    .limit(5);
+
+  const { data: projects } = await supabase
+    .from("projects")
+    .select(`*, pyme:pymes(*)`)
+    .eq("is_published", true)
+    .eq("status", "active")
+    .order("created_at", { ascending: false })
+    .limit(6);
+
+  return (
+    <StudentDashboard
+      user={{ name: student.full_name ?? user.email ?? "Student", imageUrl: "" }}
+      student={student}
+      applications={applications ?? []}
+      projects={projects ?? []}
+    />
+  );
 }

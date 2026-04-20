@@ -8,7 +8,7 @@ import {
 import Link from 'next/link';
 import { useUserRole } from '@/hooks/useUserRole';
 import { usePathname } from 'next/navigation';
-import { useUser } from '@clerk/nextjs';
+import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
 import {
   LayoutDashboard, User, FolderOpen, Award, Bot, HelpCircle, Briefcase, Users,
 } from 'lucide-react';
@@ -31,10 +31,13 @@ const pymeRoutes = [
 
 export function AppSidebar() {
   const { state } = useSidebar();
-  const { role, isLoading } = useUserRole();
-  const { user } = useUser();
+  const { role, isLoading: roleLoading } = useUserRole();
+  const { user, profile, isLoading: authLoading } = useSupabaseAuth();
   const pathname = usePathname();
   const isCollapsed = state === 'collapsed';
+
+  // Estado de carga combinado
+  const isLoading = roleLoading || authLoading;
 
   if (isLoading) {
     return (
@@ -47,12 +50,21 @@ export function AppSidebar() {
   }
 
   const routes = role === 'STUDENT' ? studentRoutes : pymeRoutes;
-  const initials = user?.fullName
-    ?.split(' ').map(n => n[0]).slice(0, 2).join('') ?? role?.[0] ?? 'U';
+  
+  // Obtener nombre e iniciales del perfil de Supabase
+  const fullName = profile?.full_name || user?.user_metadata?.full_name || 'Dexpert User';
+  const initials = fullName
+    ?.split(' ')
+    .map((n: string) => n[0])
+    .slice(0, 2)
+    .join('')
+    .toUpperCase() ?? role?.[0] ?? 'U';
+
+  // Obtener avatar del usuario
+  const avatarUrl = profile?.avatar_url || user?.user_metadata?.avatar_url;
 
   return (
     <Sidebar collapsible="icon" className="border-r border-gray-100 bg-white">
-
       <SidebarHeader className="px-4 py-5 border-b border-gray-100">
         <Link href="/" className="flex items-center gap-2.5">
           <div className="w-7 h-7 bg-[#0A2243] rounded-lg flex items-center justify-center flex-shrink-0">
@@ -98,21 +110,55 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
+      {/* User Profile Footer */}
       {!isCollapsed && (
         <div className="p-3 border-t border-gray-100 mt-auto">
-          <div className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-gray-50">
-            <div className="w-7 h-7 rounded-full bg-blue-50 flex items-center justify-center text-xs font-medium text-[#0C447C] flex-shrink-0">
-              {initials}
-            </div>
-            <div className="min-w-0">
+          <Link 
+            href={role === 'STUDENT' ? '/student/profile' : '/pyme/settings'}
+            className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer"
+          >
+            {avatarUrl ? (
+              <img 
+                src={avatarUrl} 
+                alt={fullName}
+                className="w-7 h-7 rounded-full object-cover flex-shrink-0"
+              />
+            ) : (
+              <div className="w-7 h-7 rounded-full bg-blue-50 flex items-center justify-center text-xs font-medium text-[#0C447C] flex-shrink-0">
+                {initials}
+              </div>
+            )}
+            <div className="min-w-0 flex-1">
               <p className="text-xs font-medium text-gray-800 truncate">
-                {user?.fullName ?? 'Dexpert User'}
+                {fullName}
               </p>
               <p className="text-[10px] text-gray-400 capitalize">
                 {role?.toLowerCase()}
               </p>
             </div>
-          </div>
+          </Link>
+        </div>
+      )}
+
+      {/* Collapsed User Avatar */}
+      {isCollapsed && (
+        <div className="p-2 border-t border-gray-100 mt-auto">
+          <Link 
+            href={role === 'STUDENT' ? '/student/profile' : '/pyme/settings'}
+            className="flex justify-center"
+          >
+            {avatarUrl ? (
+              <img 
+                src={avatarUrl} 
+                alt={fullName}
+                className="w-8 h-8 rounded-full object-cover border-2 border-gray-200"
+              />
+            ) : (
+              <div className="w-8 h-8 rounded-full bg-blue-50 border-2 border-gray-200 flex items-center justify-center text-xs font-medium text-[#0C447C]">
+                {initials}
+              </div>
+            )}
+          </Link>
         </div>
       )}
     </Sidebar>

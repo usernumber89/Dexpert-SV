@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useAuth } from "@clerk/nextjs";
+import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { useUserRole } from "@/hooks/useUserRole";
 import { TypeAnimation } from "react-type-animation";
 import { motion } from "framer-motion";
@@ -58,9 +58,24 @@ const STATS = [
 ];
 
 export function Hero() {
-  const { isSignedIn } = useAuth();
+  const { user, isLoading: authLoading } = useSupabaseAuth();
   const { role } = useUserRole();
-  const panelHref = role === "PYME" ? "/pyme/dashboard" : "/student/dashboard";
+  
+  // Determinar el dashboard según el rol
+  const getDashboardHref = () => {
+    if (!user) return "/auth/sign-up";
+    
+    switch (role) {
+      case "PYME":
+        return "/pyme/dashboard";
+      case "STUDENT":
+        return "/student/dashboard";
+      default:
+        return "/dashboard";
+    }
+  };
+
+  const panelHref = getDashboardHref();
 
   return (
     <section className="relative min-h-[95vh] flex items-center justify-center px-6 md:px-12 py-20 overflow-hidden bg-gradient-to-br from-white via-[#F0F7FF] to-[#E8F3FD]">
@@ -87,9 +102,9 @@ export function Hero() {
         >
           {/* Badge */}
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-sm rounded-full border border-[#BAD8F7] shadow-sm mb-6">
-            <Zap className="w-4 h-4" />
+            <Zap className="w-4 h-4 text-[#F59E0B] fill-[#F59E0B]" />
             <span className="text-xs font-semibold uppercase tracking-wider text-[#0D3A6E]">
-               Inclusive talent platform — El Salvador
+              Inclusive talent platform — El Salvador
             </span>
           </div>
           
@@ -119,11 +134,11 @@ export function Hero() {
           {/* CTA Buttons */}
           <div className="flex flex-wrap items-center gap-4 mb-12">
             <Link
-              href={isSignedIn ? panelHref : "/sign-up"}
+              href={panelHref}
               className="group relative inline-flex items-center gap-2 px-8 py-3.5 bg-gradient-to-r from-[#0D3A6E] to-[#1D5A9E] text-white text-sm font-semibold rounded-xl hover:shadow-lg hover:shadow-[#38A3F1]/25 transition-all duration-300 overflow-hidden"
             >
               <span className="relative z-10">
-                {isSignedIn ? "Go to dashboard" : "Get started free"}
+                {user ? "Go to dashboard" : "Get started free"}
               </span>
               <ArrowRight className="w-4 h-4 relative z-10 group-hover:translate-x-1 transition-transform" />
               <div className="absolute inset-0 bg-gradient-to-r from-[#38A3F1] to-[#1D9E75] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />

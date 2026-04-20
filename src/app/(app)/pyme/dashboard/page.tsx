@@ -1,43 +1,31 @@
-import { currentUser } from "@clerk/nextjs/server";
+import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
-import { prisma } from "@/lib/prisma";
 import { PymeDashboard } from "@/features/pyme/components/PymeDashboard";
-import { Suspense } from "react";
-import { PaymentFeedback } from "@/components/shared/PaymentFeedback";
 
 export default async function PymeDashboardPage() {
-  const user = await currentUser();
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/sign-in");
 
-  // 1. Buscamos primero la Pyme usando el ID de Clerk (userId)
-  const pyme = await prisma.pyme.findUnique({ 
-    where: { userId: user.id } 
-  });
+  const { data: pyme } = await supabase
+    .from("pymes")
+    .select("*")
+    .eq("user_id", user.id)
+    .single();
 
-  // 2. Si no existe la pyme, podrías redirigir al onboarding
-  if (!pyme) redirect("/sign-in");
+  if (!pyme) redirect("/onboarding/pyme");
 
-  // 3. Ahora buscamos los proyectos usando el ID interno de la pyme
-  const projects = await prisma.project.findMany({
-    where: { pymeId: pyme.id }, // <--- Cambio clave: pymeId en lugar de userId
-    include: {
-      applications: {
-        include: { student: true },
-      },
-    },
-    orderBy: { createdAt: "desc" },
-  });
+  const { data: projects } = await supabase
+    .from("projects")
+    .select(`*, applications(*, student:students(*))`)
+    .eq("pyme_id", pyme.id)
+    .order("created_at", { ascending: false });
 
   return (
-    <>
-      <Suspense fallback={null}>
-        <PaymentFeedback />
-      </Suspense>
-      <PymeDashboard
-        user={{ name: user.firstName ?? "Business", imageUrl: user.imageUrl }}
-        pyme={pyme}
-        projects={projects}
-      />
-    </>
+    <PymeDashboard
+      user={{ name: user.email?.split("@")[0] ?? "Business", avatarUrl: null }}
+      pyme={pyme}
+      projects={projects ?? []}
+    />
   );
 }

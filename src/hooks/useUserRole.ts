@@ -1,15 +1,29 @@
-import useSWR from "swr";
-
-const fetcher = (url: string) => fetch(url).then(r => r.json());
+import { useEffect, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
 
 export function useUserRole() {
-  const { data, isLoading } = useSWR("/api/auth/me", fetcher, {
-    revalidateOnFocus: false,
-    revalidateOnReconnect: false,
-  });
+  const [role, setRole] = useState<"STUDENT" | "PYME" | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  return {
-    role: data?.role as "STUDENT" | "PYME" | null ?? null,
-    isLoading,
-  };
+  useEffect(() => {
+    const supabase = createClient();
+
+    const getRole = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) { setIsLoading(false); return; }
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+      setRole(profile?.role ?? null);
+      setIsLoading(false);
+    };
+
+    getRole();
+  }, []);
+
+  return { role, isLoading };
 }

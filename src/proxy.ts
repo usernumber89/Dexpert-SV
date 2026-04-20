@@ -1,82 +1,90 @@
-import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
-import { NextResponse } from 'next/server';
+import { createServerClient } from '@supabase/ssr'
+import { NextResponse, type NextRequest } from 'next/server'
 
-// 1. Definición de rutas públicas y de autenticación
-const isPublicRoute = createRouteMatcher([
-  '/', 
-  '/auth/sign-in(.*)',   // Nueva ruta con /auth
-  '/auth/sign-up(.*)',   // Nueva ruta con /auth
-  '/onboarding(.*)', 
-  '/api/auth(.*)', 
-  '/api/webhooks(.*)', 
-  '/api/stripe/webhook(.*)',
-  '/api/uploadthing(.*)', 
-  '/terms(.*)', 
-  '/privacy(.*)',
-]);
+const PUBLIC_ROUTES = ['/sign-in', '/sign-up', '/terms', '/privacy']
+const AUTH_ROUTES = ['/sign-in', '/sign-up']
 
-const isStudentRoute = createRouteMatcher(['/student(.*)']);
-const isPymeRoute = createRouteMatcher(['/pyme(.*)']);
+export async function proxy(request: NextRequest) {
+  let supabaseResponse = NextResponse.next({ request })
 
-export default clerkMiddleware(async (auth, req) => {
-  const { userId, sessionClaims } = await auth();
-  const url = req.nextUrl.clone();
-  
-  // Extraer el rol desde los Session Claims (Metadata)
-  // Asegúrate de haber configurado esto en el Dashboard de Clerk
-  const role = sessionClaims?.metadata?.role as string | undefined;
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() { return request.cookies.getAll() },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
+          supabaseResponse = NextResponse.next({ request })
+          cookiesToSet.forEach(({ name, value, options }) =>
+            supabaseResponse.cookies.set(name, value, options)
+          )
+        },
+      },
+    }
+  )
 
-  // A. Lógica para Rutas Públicas
-  if (isPublicRoute(req)) {
-    // Si el usuario ya está logueado y trata de entrar a login/register, 
-    // lo mandamos directo a su dashboard correspondiente.
-    if (userId && (url.pathname.startsWith('/auth/sign-in') || url.pathname.startsWith('/auth/sign-up'))) {
-      if (role === 'STUDENT') {
-        url.pathname = '/student/dashboard';
-        return NextResponse.redirect(url);
-      }
-      if (role === 'PYME') {
-        url.pathname = '/pyme/dashboard';
-        return NextResponse.redirect(url);
+  const { data: { user } } = await supabase.auth.getUser()
+  const pathname = request.nextUrl.pathname
+  const url = request.nextUrl.clone()
+
+  // 1. Manejo de la raíz '/' por separado para evitar falsos positivos con startsWith
+  const isHomePage = pathname === '/'
+  const isPublicRoute = PUBLIC_ROUTES.some(r => pathname.startsWith(r)) || 
+                       pathname.startsWith('/api/stripe/webhook') ||
+                       pathname.startsWith('/onboarding')
+
+  // 2. Lógica para rutas públicas y Auth
+  if (isHomePage || isPublicRoute) {
+    if (user && AUTH_ROUTES.some(r => pathname.startsWith(r))) {
+      // Opcional: Solo consultar DB si el rol no está en user.app_metadata
+      const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+      if (profile?.role) {
+        url.pathname = profile.role === 'STUDENT' ? '/student/dashboard' : '/pyme/dashboard'
+        return NextResponse.redirect(url)
       }
     }
-    return NextResponse.next();
+    return supabaseResponse
   }
 
-  // B. Protección: Si no hay usuario en ruta privada, mandarlo al login con /auth
-  if (!userId) {
-    url.pathname = '/auth/sign-in';
-    return NextResponse.redirect(url);
+  // 3. Protección: Sin sesión
+  if (!user) {
+    url.pathname = '/sign-in'
+    // Guardar la URL original para redirigir después del login si quieres (opcional)
+    // url.searchParams.set('next', pathname) 
+    return NextResponse.redirect(url)
   }
 
-  // C. Lógica de Onboarding (Si el usuario existe pero no tiene rol asignado)
-  if (!role && !url.pathname.startsWith('/onboarding')) {
-    url.pathname = '/onboarding/select-role';
-    return NextResponse.redirect(url);
+  // 4. Obtener rol (Idealmente saca esto de los metadatos del JWT si puedes)
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+
+  if (!profile?.role) {
+    // Evitar bucle: si ya está en onboarding, dejar pasar
+    if (pathname.startsWith('/onboarding')) return supabaseResponse
+    url.pathname = '/onboarding/select-role'
+    return NextResponse.redirect(url)
   }
 
-  // D. Protección de Rutas por Rol (Evitar que un estudiante entre a pyme y viceversa)
-  if (isStudentRoute(req) && role !== 'STUDENT') {
-    url.pathname = '/pyme/dashboard';
-    return NextResponse.redirect(url);
+  // 5. Protección cruzada de roles (RBAC)
+  if (pathname.startsWith('/student') && profile.role !== 'STUDENT') {
+    url.pathname = '/pyme/dashboard'
+    return NextResponse.redirect(url)
   }
 
-  if (isPymeRoute(req) && role !== 'PYME') {
-    url.pathname = '/student/dashboard';
-    return NextResponse.redirect(url);
+  if (pathname.startsWith('/pyme') && profile.role !== 'PYME') {
+    url.pathname = '/student/dashboard'
+    return NextResponse.redirect(url)
   }
 
-  // E. Continuar con la petición y añadir el pathname a los headers (útil para layouts)
-  const res = NextResponse.next();
-  res.headers.set('x-pathname', req.nextUrl.pathname);
-  return res;
-});
+  return supabaseResponse
+}
 
 export const config = {
   matcher: [
-    // Ignorar archivos estáticos (imágenes, fuentes, etc.) y rutas internas de Next.js
-    '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
-    // Siempre ejecutar para rutas de API y TRPC
-    '/(api|trpc)(.*)',
+    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
-};
+}

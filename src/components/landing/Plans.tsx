@@ -1,6 +1,5 @@
 "use client";
 
-import { useAuth } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { motion } from "framer-motion";
@@ -16,6 +15,7 @@ import {
   Shield,
   TrendingUp
 } from "lucide-react";
+import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 
 type PlanKey = "BASIC" | "ASSISTED" | "PREMIUM";
 
@@ -99,28 +99,40 @@ const plans: Plan[] = [
   },
 ];
 
-export function Plans() {
-  const { isSignedIn } = useAuth();
+export default function Plans() {
+  const { user, isLoading: authLoading } = useSupabaseAuth();
   const router = useRouter();
   const [loading, setLoading] = useState<PlanKey | null>(null);
   const [hoveredPlan, setHoveredPlan] = useState<PlanKey | null>(null);
 
   const handleCheckout = async (plan: PlanKey) => {
-    if (!isSignedIn) { 
-      router.push("/sign-up"); 
+    if (!user) { 
+      // Guardar el plan seleccionado para redirigir después del login
+      sessionStorage.setItem("selectedPlan", plan);
+      router.push("/auth/sign-up"); 
       return; 
     }
+    
     setLoading(plan);
     try {
       const res = await fetch("/api/stripe/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plan }),
+        body: JSON.stringify({ 
+          plan,
+          userId: user.id // Enviar el ID del usuario de Supabase
+        }),
       });
+      
       const data = await res.json();
-      if (data.url) window.location.href = data.url;
-    } catch {
-      console.error("Checkout error");
+      
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        console.error("No URL returned from checkout");
+      }
+    } catch (error) {
+      console.error("Checkout error:", error);
     } finally {
       setLoading(null);
     }
@@ -309,7 +321,7 @@ export function Plans() {
                   {/* CTA Button */}
                   <motion.button
                     onClick={() => handleCheckout(plan.key)}
-                    disabled={loading === plan.key}
+                    disabled={loading === plan.key || authLoading}
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     className={`relative w-full py-3.5 rounded-xl font-semibold transition-all duration-300 overflow-hidden group ${

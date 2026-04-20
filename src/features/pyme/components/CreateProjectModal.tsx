@@ -18,7 +18,10 @@ const schema = z.object({
 
 type FormValues = z.infer<typeof schema>;
 
-export function CreateProjectModal({ onClose }: { onClose: () => void }) {
+export function CreateProjectModal({ onClose, onSuccess }: { 
+  onClose: () => void; 
+  onSuccess?: () => void;
+}) {
   const router = useRouter();
   const [generating, setGenerating] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -56,27 +59,37 @@ export function CreateProjectModal({ onClose }: { onClose: () => void }) {
   };
 
   const onSubmit = async (values: FormValues) => {
-    setSubmitting(true);
-    try {
-      const res = await axios.post("/api/project", values);
-      toast.success("Project created!");
-      router.push(`/pyme/projects/${res.data.id}`);
-      onClose();
-    } catch {
-      toast.error("Error creating project");
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
+  setSubmitting(true);
+  try {
+    const res = await axios.post("/api/project", values);
+    toast.success("Project created!");
+    onSuccess?.();
+    router.push(`/pyme/projects/${res.data.id}`);
+    onClose();
+  } catch {
+    toast.error("Error creating project");
+  } finally {
+    setSubmitting(false);
+  }
+};
+  // bg-brand-navy/40 → bg-[#0D3A6E]/40
+// border-brand-border → border-[#BAD8F7]
+// text-brand-navy → text-[#0D3A6E]
+// bg-surface-raised → bg-[#F0F7FF]
+// text-brand-mid → text-[#38A3F1]
+// text-ink-secondary → text-[#5B8DB8]
+// text-ink-muted → text-[#93B8D4]
+// focus:border-brand-mid → focus:border-[#38A3F1]
+// bg-brand-mid → bg-[#38A3F1]
+// hover:bg-brand-title → hover:bg-[#0D5FA6]
   return (
-    <div className="fixed inset-0 z-50 bg-brand-navy/40 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl border border-brand-border w-full max-w-md shadow-xl">
+    <div className="fixed inset-0 z-50  bg-[#0D3A6E]/40 flex items-center justify-center p-4">
+      <div className="bg-white rounded-2xl border  border-[#BAD8F7] w-full max-w-md shadow-xl">
 
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-brand-border">
-          <h2 className="text-sm font-semibold text-brand-navy">Create project</h2>
-          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-surface-raised transition">
+        <div className="flex items-center justify-between px-6 py-4 border-b  border-[#BAD8F7]">
+          <h2 className="text-sm font-semibold text-[#0D3A6E]">Create project</h2>
+          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-[#F0F7FF] transition">
             <X className="w-4 h-4 text-ink-secondary" />
           </button>
         </div>

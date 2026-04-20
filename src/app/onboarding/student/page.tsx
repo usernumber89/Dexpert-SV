@@ -1,82 +1,83 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
+import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
-
-const schema = z.object({
-  fullName: z.string().min(2, "Required"),
-  email: z.string().email("Invalid email"),
-  education: z.string().optional(),
-  skills: z.string().optional(),
-  linkedIn: z.string().optional(),
-});
-
-type FormValues = z.infer<typeof schema>;
 
 export default function StudentOnboardingPage() {
   const router = useRouter();
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormValues>({
-    resolver: zodResolver(schema),
+  const [loading, setLoading] = useState(false);
+  const [form, setForm] = useState({
+    full_name: "",
+    email: "",
+    education: "",
+    skills: "",
+    linked_in: "",
   });
 
-  const onSubmit = async (values: FormValues) => {
-    try {
-      const res = await fetch("/api/onboarding/student", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(values),
-      });
-      if (!res.ok) throw new Error();
-      toast.success("Profile created!");
-      router.push("/student/dashboard");
-    } catch {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) { router.push("/sign-in"); return; }
+
+    const { error } = await supabase.from("students").upsert({
+      user_id: user.id,
+      ...form,
+    });
+
+    if (error) {
       toast.error("Error saving profile");
+      setLoading(false);
+      return;
     }
+
+    toast.success("Profile created!");
+    router.push("/student/dashboard");
   };
 
+  const fields = [
+    { key: "full_name", label: "Full name", placeholder: "Rodrigo Campos", required: true },
+    { key: "email", label: "Email", placeholder: "rodrigo@email.com", required: true },
+    { key: "education", label: "Education", placeholder: "Universidad Dr. José Matías Delgado", required: false },
+    { key: "skills", label: "Skills", placeholder: "React, Design, Marketing...", required: false },
+    { key: "linked_in", label: "LinkedIn", placeholder: "linkedin.com/in/rodrigo", required: false },
+  ];
+
   return (
-    <div className="min-h-screen bg-surface-raised flex items-center justify-center p-6">
-      <div className="w-full max-w-md bg-white rounded-2xl border border-brand-border p-8">
+    <div className="min-h-screen bg-[#F0F7FF] flex items-center justify-center p-6">
+      <div className="w-full max-w-md bg-white rounded-2xl border border-[#BAD8F7] p-8">
         <div className="mb-8">
-          <p className="text-xs font-medium uppercase tracking-widest text-brand-mid mb-2">Step 2 of 2</p>
-          <h1 className="text-xl font-semibold text-brand-navy">Complete your profile</h1>
-          <p className="text-sm text-ink-secondary mt-1">This helps businesses find the right fit</p>
+          <p className="text-xs font-medium uppercase tracking-widest text-[#38A3F1] mb-2">Step 2 of 2</p>
+          <h1 className="text-xl font-semibold text-[#0D3A6E]">Complete your profile</h1>
+          <p className="text-sm text-[#5B8DB8] mt-1">This helps businesses find the right fit</p>
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          {[
-            { name: "fullName", label: "Full name", placeholder: "Rodrigo Campos" },
-            { name: "email", label: "Email", placeholder: "rodrigo@email.com" },
-            { name: "education", label: "Education (optional)", placeholder: "Universidad Dr. José Matías Delgado" },
-            { name: "skills", label: "Skills (optional)", placeholder: "React, Design, Marketing..." },
-            { name: "linkedIn", label: "LinkedIn (optional)", placeholder: "linkedin.com/in/rodrigo" },
-          ].map((field) => (
-            <div key={field.name}>
-              <label className="text-xs font-medium text-ink-secondary mb-1.5 block">
-                {field.label}
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {fields.map(f => (
+            <div key={f.key}>
+              <label className="text-xs font-medium text-[#5B8DB8] mb-1.5 block">
+                {f.label} {!f.required && <span className="text-[#93B8D4]">(optional)</span>}
               </label>
               <input
-                {...register(field.name as keyof FormValues)}
-                placeholder={field.placeholder}
-                className="w-full text-sm px-3 py-2.5 rounded-lg border border-brand-border text-brand-navy placeholder:text-ink-muted focus:outline-none focus:border-brand-mid"
+                value={form[f.key as keyof typeof form]}
+                onChange={e => setForm(prev => ({ ...prev, [f.key]: e.target.value }))}
+                placeholder={f.placeholder}
+                required={f.required}
+                className="w-full text-sm px-3 py-2.5 rounded-lg border border-[#BAD8F7] text-[#0D3A6E] placeholder:text-[#93B8D4] focus:outline-none focus:border-[#38A3F1]"
               />
-              {errors[field.name as keyof FormValues] && (
-                <p className="text-xs text-red-400 mt-1">
-                  {errors[field.name as keyof FormValues]?.message}
-                </p>
-              )}
             </div>
           ))}
 
           <button
             type="submit"
-            disabled={isSubmitting}
-            className="w-full bg-brand-mid text-white text-sm font-medium py-3 rounded-xl hover:bg-brand-title transition disabled:opacity-60 mt-2"
+            disabled={loading}
+            className="w-full bg-[#38A3F1] text-white text-sm font-medium py-3 rounded-xl hover:bg-[#0D5FA6] transition disabled:opacity-50 mt-2"
           >
-            {isSubmitting ? "Saving..." : "Go to dashboard"}
+            {loading ? "Saving..." : "Go to dashboard"}
           </button>
         </form>
       </div>

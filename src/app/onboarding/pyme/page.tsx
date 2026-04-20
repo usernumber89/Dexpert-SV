@@ -1,82 +1,94 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
+import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
-
-const schema = z.object({
-  name: z.string().min(2, "Required"),
-  contact: z.string().min(2, "Required"),
-  description: z.string().min(10, "Required"),
-  website: z.string().optional(),
-  location: z.string().optional(),
-});
-
-type FormValues = z.infer<typeof schema>;
 
 export default function PymeOnboardingPage() {
   const router = useRouter();
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormValues>({
-    resolver: zodResolver(schema),
+  const [loading, setLoading] = useState(false);
+  const [form, setForm] = useState({
+    name: "",
+    contact: "",
+    description: "",
+    website: "",
+    location: "",
   });
 
-  const onSubmit = async (values: FormValues) => {
-    try {
-      const res = await fetch("/api/onboarding/pyme", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(values),
-      });
-      if (!res.ok) throw new Error();
-      toast.success("Business profile created!");
-      router.push("/pyme/dashboard");
-    } catch {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) { router.push("/sign-in"); return; }
+
+    const { error } = await supabase.from("pymes").upsert({
+      user_id: user.id,
+      ...form,
+    });
+
+    if (error) {
       toast.error("Error saving profile");
+      setLoading(false);
+      return;
     }
+
+    toast.success("Business profile created!");
+    router.push("/pyme/dashboard");
   };
 
+  const fields = [
+    { key: "name", label: "Business name", placeholder: "Granja Los Campos", required: true },
+    { key: "contact", label: "Contact person", placeholder: "Rodrigo Campos", required: true },
+    { key: "description", label: "What does your business do?", placeholder: "We are a poultry farm...", required: true },
+    { key: "website", label: "Website", placeholder: "www.mibusiness.com", required: false },
+    { key: "location", label: "Location", placeholder: "San Juan Opico, La Libertad", required: false },
+  ];
+
   return (
-    <div className="min-h-screen bg-surface-raised flex items-center justify-center p-6">
-      <div className="w-full max-w-md bg-white rounded-2xl border border-brand-border p-8">
+    <div className="min-h-screen bg-[#F0F7FF] flex items-center justify-center p-6">
+      <div className="w-full max-w-md bg-white rounded-2xl border border-[#BAD8F7] p-8">
         <div className="mb-8">
-          <p className="text-xs font-medium uppercase tracking-widest text-brand-mid mb-2">Step 2 of 2</p>
-          <h1 className="text-xl font-semibold text-brand-navy">Set up your business</h1>
-          <p className="text-sm text-ink-secondary mt-1">Tell students about your company</p>
+          <p className="text-xs font-medium uppercase tracking-widest text-[#38A3F1] mb-2">Step 2 of 2</p>
+          <h1 className="text-xl font-semibold text-[#0D3A6E]">Set up your business</h1>
+          <p className="text-sm text-[#5B8DB8] mt-1">Tell students about your company</p>
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          {[
-            { name: "name", label: "Business name", placeholder: "Granja Los Campos" },
-            { name: "contact", label: "Contact person", placeholder: "Rodrigo Campos" },
-            { name: "description", label: "What does your business do?", placeholder: "We are a poultry farm..." },
-            { name: "website", label: "Website (optional)", placeholder: "www.mibusiness.com" },
-            { name: "location", label: "Location (optional)", placeholder: "San Juan Opico, La Libertad" },
-          ].map((field) => (
-            <div key={field.name}>
-              <label className="text-xs font-medium text-ink-secondary mb-1.5 block">
-                {field.label}
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {fields.map(f => (
+            <div key={f.key}>
+              <label className="text-xs font-medium text-[#5B8DB8] mb-1.5 block">
+                {f.label} {!f.required && <span className="text-[#93B8D4]">(optional)</span>}
               </label>
-              <input
-                {...register(field.name as keyof FormValues)}
-                placeholder={field.placeholder}
-                className="w-full text-sm px-3 py-2.5 rounded-lg border border-brand-border text-brand-navy placeholder:text-ink-muted focus:outline-none focus:border-brand-mid"
-              />
-              {errors[field.name as keyof FormValues] && (
-                <p className="text-xs text-red-400 mt-1">
-                  {errors[field.name as keyof FormValues]?.message}
-                </p>
+              {f.key === "description" ? (
+                <textarea
+                  value={form[f.key as keyof typeof form]}
+                  onChange={e => setForm(prev => ({ ...prev, [f.key]: e.target.value }))}
+                  placeholder={f.placeholder}
+                  required={f.required}
+                  rows={3}
+                  className="w-full text-sm px-3 py-2.5 rounded-lg border border-[#BAD8F7] text-[#0D3A6E] placeholder:text-[#93B8D4] focus:outline-none focus:border-[#38A3F1] resize-none"
+                />
+              ) : (
+                <input
+                  value={form[f.key as keyof typeof form]}
+                  onChange={e => setForm(prev => ({ ...prev, [f.key]: e.target.value }))}
+                  placeholder={f.placeholder}
+                  required={f.required}
+                  className="w-full text-sm px-3 py-2.5 rounded-lg border border-[#BAD8F7] text-[#0D3A6E] placeholder:text-[#93B8D4] focus:outline-none focus:border-[#38A3F1]"
+                />
               )}
             </div>
           ))}
 
           <button
             type="submit"
-            disabled={isSubmitting}
-            className="w-full bg-brand-mid text-white text-sm font-medium py-3 rounded-xl hover:bg-brand-title transition disabled:opacity-60 mt-2"
+            disabled={loading}
+            className="w-full bg-[#38A3F1] text-white text-sm font-medium py-3 rounded-xl hover:bg-[#0D5FA6] transition disabled:opacity-50 mt-2"
           >
-            {isSubmitting ? "Saving..." : "Go to dashboard"}
+            {loading ? "Saving..." : "Go to dashboard"}
           </button>
         </form>
       </div>
