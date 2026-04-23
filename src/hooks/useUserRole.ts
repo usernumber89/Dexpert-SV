@@ -1,29 +1,26 @@
+// hooks/useUserRole.ts
+import { useAuthContext } from "@/providers/AuthProvider";
 import { useEffect, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
 
 export function useUserRole() {
+  const { user, isLoading: authLoading } = useAuthContext();
   const [role, setRole] = useState<"STUDENT" | "PYME" | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const supabase = createClient();
+    if (authLoading) return;
 
-    const getRole = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) { setIsLoading(false); return; }
-
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single();
-
-      setRole(profile?.role ?? null);
+    if (!user) {
+      setRole(null);
       setIsLoading(false);
-    };
+      return;
+    }
 
-    getRole();
-  }, []);
+    // El rol viene en los metadatos del usuario (lo pusimos en el signUp)
+    const userRole = user.user_metadata?.role as "STUDENT" | "PYME" | undefined;
+    setRole(userRole || null);
+    setIsLoading(false);
+  }, [user, authLoading]);
 
   return { role, isLoading };
 }

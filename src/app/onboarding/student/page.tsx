@@ -13,7 +13,8 @@ import {
   ArrowRight,
   Sparkles,
   BookOpen,
-  MapPin
+  MapPin,
+  Globe
 } from "lucide-react";
 
 export default function StudentOnboardingPage() {
@@ -22,9 +23,9 @@ export default function StudentOnboardingPage() {
   const [form, setForm] = useState({
     full_name: "",
     email: "",
-    education: "",
+    university: "",      // antes education
     skills: "",
-    linked_in: "",
+    linkedin: "",        // antes linked_in
     location: "",
     major: "",
   });
@@ -40,16 +41,18 @@ export default function StudentOnboardingPage() {
     const skillsArray = form.skills.split(",").map(s => s.trim()).filter(Boolean);
 
     const { error } = await supabase.from("students").upsert({
-      id: user.id,
+      user_id: user.id,                     // Relación con el usuario autenticado
       full_name: form.full_name,
       email: form.email,
-      education: form.education,
+      university: form.university,          // Nombre correcto de la columna
       major: form.major,
-      skills: skillsArray,
-      linked_in: form.linked_in,
+      skills: skillsArray,                  // Array de strings
+      linkedin: form.linkedin,              // Nombre correcto (sin guión bajo)
       location: form.location,
       updated_at: new Date().toISOString(),
-    });
+    },
+  { onConflict: 'user_id' }
+  );
 
     if (error) {
       toast.error("Error saving profile");
@@ -130,7 +133,7 @@ export default function StudentOnboardingPage() {
                 </div>
               </div>
 
-              {/* Education */}
+              {/* University */}
               <div>
                 <label className="text-xs font-semibold text-[#0D3A6E] mb-1.5 block">
                   University/Institution
@@ -138,8 +141,8 @@ export default function StudentOnboardingPage() {
                 <div className="relative">
                   <BookOpen className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#93B8D4]" />
                   <input
-                    value={form.education}
-                    onChange={e => setForm(prev => ({ ...prev, education: e.target.value }))}
+                    value={form.university}
+                    onChange={e => setForm(prev => ({ ...prev, university: e.target.value }))}
                     placeholder="Universidad Dr. José Matías Delgado"
                     className="w-full text-sm pl-10 pr-3 py-2.5 rounded-xl border border-[#BAD8F7] bg-white/50 text-[#0D3A6E] placeholder:text-[#93B8D4] focus:outline-none focus:border-[#38A3F1] focus:ring-2 focus:ring-[#38A3F1]/20 transition-all"
                   />
@@ -184,10 +187,10 @@ export default function StudentOnboardingPage() {
                   LinkedIn Profile
                 </label>
                 <div className="relative">
-                  <Code className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#93B8D4]" />
+                  <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#93B8D4]" />
                   <input
-                    value={form.linked_in}
-                    onChange={e => setForm(prev => ({ ...prev, linked_in: e.target.value }))}
+                    value={form.linkedin}
+                    onChange={e => setForm(prev => ({ ...prev, linkedin: e.target.value }))}
                     placeholder="linkedin.com/in/username"
                     className="w-full text-sm pl-10 pr-3 py-2.5 rounded-xl border border-[#BAD8F7] bg-white/50 text-[#0D3A6E] placeholder:text-[#93B8D4] focus:outline-none focus:border-[#38A3F1] focus:ring-2 focus:ring-[#38A3F1]/20 transition-all"
                   />

@@ -1,20 +1,51 @@
 "use client";
 
-import { Application, Certificate, Project, Pyme, Student } from "@prisma/client";
 import { FolderOpen, Award, Clock, ChevronRight, Sparkles } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 
-type ApplicationWithRelations = Application & {
-  project: Project & { pyme: Pyme | null };
-  certificate: Certificate | null;
+// Tipos basados en Supabase (ajusta según tu esquema real)
+type Pyme = {
+  id: string;
+  company_name?: string;
+  logo_url?: string | null;
+};
+
+type Project = {
+  id: string;
+  title: string;
+  description?: string | null;
+  skills: string | string[];
+  level?: string | null;
+  pyme?: Pyme | null;
+};
+
+type Certificate = {
+  id: string;
+  file_url?: string | null;
+};
+
+type Application = {
+  id: string;
+  status: string;
+  project?: Project | null;
+  certificate?: Certificate | null;
+};
+
+type Student = {
+  id: string;
+  full_name?: string | null;
+  avatar_url?: string | null;
 };
 
 type Props = {
-  user: { name: string; imageUrl: string };
+  user: {
+    name: string;
+    avatarUrl?: string | null;   // puede ser null o undefined
+  };
   student: Student | null;
-  applications: ApplicationWithRelations[];
-  projects: (Project & { pyme: Pyme | null })[];
+  applications: Application[];
+  projects: Project[];
 };
 
 const statusConfig = {
@@ -31,6 +62,16 @@ export function StudentDashboard({ user, student, applications, projects }: Prop
     { label: "Certificates",   value: applications.filter(a => a.certificate).length,               icon: Award },
   ];
 
+  // Función para obtener iniciales del nombre
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(n => n[0])
+      .slice(0, 2)
+      .join('')
+      .toUpperCase();
+  };
+
   return (
     <div className="min-h-screen bg-surface-raised p-6 space-y-6">
 
@@ -44,13 +85,20 @@ export function StudentDashboard({ user, student, applications, projects }: Prop
             {user.name}
           </h1>
         </div>
-        <Image
-          src={user.imageUrl}
-          alt={user.name}
-          width={40}
-          height={40}
-          className="rounded-full border-2 border-brand-border"
-        />
+        {/* Avatar: solo renderiza Image si hay una URL válida */}
+        {user.avatarUrl ? (
+          <Image
+            src={user.avatarUrl}
+            alt={user.name}
+            width={40}
+            height={40}
+            className="rounded-full border-2 border-brand-border object-cover"
+          />
+        ) : (
+          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-mid to-brand-title flex items-center justify-center text-white text-sm font-bold border-2 border-brand-border">
+            {getInitials(user.name)}
+          </div>
+        )}
       </div>
 
       {/* Stats */}
@@ -108,15 +156,15 @@ export function StudentDashboard({ user, student, applications, projects }: Prop
         ) : (
           <div className="divide-y divide-brand-border">
             {applications.map((app) => {
-              const status = statusConfig[app.status as keyof typeof statusConfig];
+              const status = statusConfig[app.status as keyof typeof statusConfig] ?? statusConfig.PENDING;
               return (
                 <div key={app.id} className="flex items-center gap-4 px-5 py-3.5">
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-brand-navy truncate">
-                      {app.project.title}
+                      {app.project?.title ?? "Untitled Project"}
                     </p>
                     <p className="text-xs text-ink-secondary">
-                      {app.project.pyme?.name ?? "Company"} · Remote
+                      {app.project?.pyme?.company_name ?? "Company"} · Remote
                     </p>
                   </div>
                   <span className={`flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full ${status.bg} ${status.text}`}>
@@ -143,11 +191,11 @@ export function StudentDashboard({ user, student, applications, projects }: Prop
             <div key={project.id} className="bg-white rounded-xl border border-brand-border p-4 hover:border-brand-mid transition-colors">
               <div className="flex items-start justify-between mb-3">
                 <div className="w-8 h-8 rounded-lg bg-surface-raised flex items-center justify-center overflow-hidden flex-shrink-0">
-                  {project.pyme?.logoUrl ? (
-                    <Image src={project.pyme.logoUrl} alt="" width={32} height={32} className="object-cover" />
+                  {project.pyme?.logo_url ? (
+                    <Image src={project.pyme.logo_url} alt="" width={32} height={32} className="object-cover" />
                   ) : (
                     <span className="text-xs font-semibold text-brand-title">
-                      {project.pyme?.name?.[0] ?? "D"}
+                      {project.pyme?.company_name?.[0] ?? "D"}
                     </span>
                   )}
                 </div>
@@ -156,7 +204,7 @@ export function StudentDashboard({ user, student, applications, projects }: Prop
               <p className="text-sm font-medium text-brand-navy mb-1 line-clamp-2">{project.title}</p>
               <p className="text-xs text-ink-secondary mb-3 line-clamp-2">{project.description}</p>
               <div className="flex flex-wrap gap-1 mb-3">
-                {project.skills.split(",").slice(0, 3).map((s, i) => (
+                {(Array.isArray(project.skills) ? project.skills : project.skills?.split(",") ?? []).slice(0, 3).map((s: string, i: number) => (
                   <span key={i} className="text-xs bg-brand-light text-brand-title px-2 py-0.5 rounded-full">
                     {s.trim()}
                   </span>

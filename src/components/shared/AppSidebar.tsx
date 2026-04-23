@@ -9,8 +9,11 @@ import Link from 'next/link';
 import { useUserRole } from '@/hooks/useUserRole';
 import { usePathname } from 'next/navigation';
 import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
+import { createClient } from '@/lib/supabase/client';
+import { useRouter } from 'next/navigation';
 import {
-  LayoutDashboard, User, FolderOpen, Award, Bot, HelpCircle, Briefcase, Users,
+  LayoutDashboard, User, FolderOpen, Award, Bot,
+  HelpCircle, Briefcase, Users, LogOut,
 } from 'lucide-react';
 
 const studentRoutes = [
@@ -24,64 +27,80 @@ const studentRoutes = [
 
 const pymeRoutes = [
   { title: 'Dashboard', url: '/pyme/dashboard', icon: LayoutDashboard },
-  { title: 'My Projects', url: '/pyme/projects', icon: Briefcase },
+  /*{ title: 'My Projects', url: '/pyme/projects', icon: Briefcase },*/
   { title: 'Applications', url: '/pyme/applications', icon: Users },
+  { title: 'Profile', url: '/pyme/profile', icon: User },
   { title: 'Support', url: '/pyme/support', icon: HelpCircle },
 ];
 
 export function AppSidebar() {
-  const { state } = useSidebar();
+  const { state, setOpenMobile } = useSidebar();
   const { role, isLoading: roleLoading } = useUserRole();
   const { user, profile, isLoading: authLoading } = useSupabaseAuth();
   const pathname = usePathname();
+  const router = useRouter();
   const isCollapsed = state === 'collapsed';
-
-  // Estado de carga combinado
   const isLoading = roleLoading || authLoading;
+
+  const handleSignOut = async () => {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    router.push('/');
+    router.refresh();
+  };
+
+  const handleLinkClick = () => {
+    setOpenMobile(false);
+  };
 
   if (isLoading) {
     return (
-      <Sidebar collapsible="icon" className="border-r border-gray-100 bg-white">
+      <Sidebar collapsible="icon" className="border-r border-[#BAD8F7] bg-white">
         <div className="flex items-center justify-center h-full">
-          <div className="w-5 h-5 border-2 border-blue-200 border-t-[#2196F3] rounded-full animate-spin" />
+          <div className="w-5 h-5 border-2 border-[#BAD8F7] border-t-[#38A3F1] rounded-full animate-spin" />
         </div>
       </Sidebar>
     );
   }
 
   const routes = role === 'STUDENT' ? studentRoutes : pymeRoutes;
-  
-  // Obtener nombre e iniciales del perfil de Supabase
-  const fullName = profile?.full_name || user?.user_metadata?.full_name || 'Dexpert User';
-  const initials = fullName
-    ?.split(' ')
+  const profileHref = role === 'STUDENT' ? '/student/profile' : '/pyme/profile';
+
+  const displayName = profile?.full_name
+    || user?.email?.split('@')[0]
+    || 'User';
+
+  const initials = displayName
+    .split(' ')
     .map((n: string) => n[0])
     .slice(0, 2)
     .join('')
-    .toUpperCase() ?? role?.[0] ?? 'U';
+    .toUpperCase();
 
-  // Obtener avatar del usuario
-  const avatarUrl = profile?.avatar_url || user?.user_metadata?.avatar_url;
+  const avatarUrl = profile?.avatar_url;
 
   return (
-    <Sidebar collapsible="icon" className="border-r border-gray-100 bg-white">
-      <SidebarHeader className="px-4 py-5 border-b border-gray-100">
-        <Link href="/" className="flex items-center gap-2.5">
-          <div className="w-7 h-7 bg-[#0A2243] rounded-lg flex items-center justify-center flex-shrink-0">
+    <Sidebar collapsible="icon" className="border-r border-[#BAD8F7] bg-white">
+
+      {/* Header */}
+      <SidebarHeader className="px-4 py-5 border-b border-[#BAD8F7]">
+        <Link href="/" className="flex items-center gap-2.5" onClick={handleLinkClick}>
+          <div className="w-7 h-7 bg-[#0D3A6E] rounded-lg flex items-center justify-center flex-shrink-0">
             <span className="text-white text-xs font-bold">D</span>
           </div>
           {!isCollapsed && (
-            <span className="text-sm font-semibold text-[#0A2243]">
-              Dexpert<span className="text-[#2196F3]">.</span>
+            <span className="text-sm font-semibold text-[#0D3A6E]">
+              Dexpert<span className="text-[#38A3F1]">.</span>
             </span>
           )}
         </Link>
       </SidebarHeader>
 
+      {/* Nav */}
       <SidebarContent className="px-3 py-3">
         <SidebarGroup>
           {!isCollapsed && (
-            <SidebarGroupLabel className="text-[10px] font-medium uppercase tracking-widest text-gray-400 px-2 mb-2">
+            <SidebarGroupLabel className="text-[10px] font-medium uppercase tracking-widest text-[#93B8D4] px-2 mb-2">
               {role === 'STUDENT' ? 'Student' : 'Business'}
             </SidebarGroupLabel>
           )}
@@ -93,13 +112,16 @@ export function AppSidebar() {
                   <SidebarMenuButton asChild isActive={isActive} tooltip={item.title}>
                     <Link
                       href={item.url}
+                      onClick={handleLinkClick}
                       className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm ${
                         isActive
-                          ? 'bg-blue-50 text-[#0C447C] font-medium'
-                          : 'text-gray-500 hover:bg-gray-50 hover:text-gray-800'
+                          ? 'bg-[#F0F7FF] text-[#0D5FA6] font-medium'
+                          : 'text-[#5B8DB8] hover:bg-[#F0F7FF] hover:text-[#0D3A6E]'
                       }`}
                     >
-                      <item.icon className={`w-4 h-4 flex-shrink-0 ${isActive ? 'text-[#2196F3]' : 'text-gray-400'}`} />
+                      <item.icon className={`w-4 h-4 flex-shrink-0 ${
+                        isActive ? 'text-[#38A3F1]' : 'text-[#93B8D4]'
+                      }`} />
                       {!isCollapsed && <span>{item.title}</span>}
                     </Link>
                   </SidebarMenuButton>
@@ -110,55 +132,66 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      {/* User Profile Footer */}
+      {/* Footer */}
       {!isCollapsed && (
-        <div className="p-3 border-t border-gray-100 mt-auto">
-          <Link 
-            href={role === 'STUDENT' ? '/student/profile' : '/pyme/settings'}
-            className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer"
+        <div className="p-3 border-t border-[#BAD8F7] mt-auto space-y-1">
+          {/* User info */}
+          <Link
+            href={profileHref}
+            onClick={handleLinkClick}
+            className="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-[#F0F7FF] transition-colors group"
           >
             {avatarUrl ? (
-              <img 
-                src={avatarUrl} 
-                alt={fullName}
-                className="w-7 h-7 rounded-full object-cover flex-shrink-0"
+              <img
+                src={avatarUrl}
+                alt={displayName}
+                className="w-7 h-7 rounded-full object-cover flex-shrink-0 border border-[#BAD8F7]"
               />
             ) : (
-              <div className="w-7 h-7 rounded-full bg-blue-50 flex items-center justify-center text-xs font-medium text-[#0C447C] flex-shrink-0">
+              <div className="w-7 h-7 rounded-full bg-[#F0F7FF] border border-[#BAD8F7] flex items-center justify-center text-xs font-medium text-[#0D5FA6] flex-shrink-0">
                 {initials}
               </div>
             )}
             <div className="min-w-0 flex-1">
-              <p className="text-xs font-medium text-gray-800 truncate">
-                {fullName}
-              </p>
-              <p className="text-[10px] text-gray-400 capitalize">
-                {role?.toLowerCase()}
-              </p>
+              <p className="text-xs font-medium text-[#0D3A6E] truncate">{displayName}</p>
+              <p className="text-[10px] text-[#93B8D4] capitalize">{role?.toLowerCase()}</p>
             </div>
           </Link>
+
+          {/* Sign out */}
+          <button
+            onClick={handleSignOut}
+            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-[#93B8D4] hover:bg-red-50 hover:text-red-400 transition-colors text-sm"
+          >
+            <LogOut className="w-4 h-4 flex-shrink-0" />
+            <span>Sign out</span>
+          </button>
         </div>
       )}
 
-      {/* Collapsed User Avatar */}
+      {/* Collapsed footer */}
       {isCollapsed && (
-        <div className="p-2 border-t border-gray-100 mt-auto">
-          <Link 
-            href={role === 'STUDENT' ? '/student/profile' : '/pyme/settings'}
-            className="flex justify-center"
-          >
+        <div className="p-2 border-t border-[#BAD8F7] mt-auto flex flex-col items-center gap-2">
+          <Link href={profileHref} title={displayName}>
             {avatarUrl ? (
-              <img 
-                src={avatarUrl} 
-                alt={fullName}
-                className="w-8 h-8 rounded-full object-cover border-2 border-gray-200"
+              <img
+                src={avatarUrl}
+                alt={displayName}
+                className="w-8 h-8 rounded-full object-cover border border-[#BAD8F7]"
               />
             ) : (
-              <div className="w-8 h-8 rounded-full bg-blue-50 border-2 border-gray-200 flex items-center justify-center text-xs font-medium text-[#0C447C]">
+              <div className="w-8 h-8 rounded-full bg-[#F0F7FF] border border-[#BAD8F7] flex items-center justify-center text-xs font-medium text-[#0D5FA6]">
                 {initials}
               </div>
             )}
           </Link>
+          <button
+            onClick={handleSignOut}
+            title="Sign out"
+            className="p-1.5 rounded-lg text-[#93B8D4] hover:bg-red-50 hover:text-red-400 transition-colors"
+          >
+            <LogOut className="w-4 h-4" />
+          </button>
         </div>
       )}
     </Sidebar>

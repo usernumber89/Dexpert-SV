@@ -2,38 +2,29 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { createBrowserClient } from '@supabase/ssr';
 import { motion } from "framer-motion";
 import { 
   ArrowRight, Sparkles, Zap, Users, Rocket, Star, TrendingUp, Shield 
 } from "lucide-react";
+import { useAuthContext } from "@/providers/AuthProvider";
 
 export function CallToAction() {
-  const [user, setUser] = useState<any>(null);
+  const { supabase, user, isLoading: authLoading } = useAuthContext();
   const [role, setRole] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
-
   useEffect(() => {
-    const checkUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user) {
-        setUser(session.user);
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('role')
-          .eq('id', session.user.id)
-          .single();
-        setRole(profile?.role || null);
-      }
+    if (!user) {
+      setRole(null);
       setIsLoading(false);
-    };
-    checkUser();
-  }, [supabase]);
+      return;
+    }
+
+    // El rol está en los metadatos (guardado durante el signUp)
+    const userRole = user.user_metadata?.role as string;
+    setRole(userRole || null);
+    setIsLoading(false);
+  }, [user]);
 
   const href = !user 
     ? "/sign-up" 
@@ -43,7 +34,7 @@ export function CallToAction() {
 
   return (
     <section className="relative py-24 px-6 bg-white overflow-hidden">
-      {/* Background Decor */}
+      {/* Fondo decorativo */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-[#38A3F1] rounded-full opacity-[0.08] blur-3xl animate-pulse" />
         <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-[#1D9E75] rounded-full opacity-[0.08] blur-3xl animate-pulse delay-1000" />
@@ -56,7 +47,7 @@ export function CallToAction() {
           viewport={{ once: true }}
           className="relative bg-gradient-to-br from-[#0D3A6E] via-[#0D4A8E] to-[#1D5A9E] rounded-3xl p-12 md:p-16 text-center overflow-hidden shadow-2xl"
         >
-          {/* Content */}
+          {/* Contenido */}
           <div className="relative z-10">
             <motion.div className="inline-flex items-center gap-2 px-4 py-1.5 bg-white/10 backdrop-blur-sm rounded-full border border-white/20 mb-6">
               <Zap className="w-4 h-4 text-[#F59E0B] fill-[#F59E0B]" />
@@ -75,14 +66,14 @@ export function CallToAction() {
               <span className="block text-white font-medium mt-2">Dexpert is your bridge to growth.</span>
             </p>
 
-            {/* Feature Pills */}
+            {/* Píldoras de características */}
             <div className="flex flex-wrap items-center justify-center gap-3 mb-8">
               <FeaturePill icon={<Rocket className="w-4 h-4 text-[#38A3F1]" />} text="No experience needed" />
               <FeaturePill icon={<Shield className="w-4 h-4 text-[#1D9E75]" />} text="100% Free for students" />
               <FeaturePill icon={<TrendingUp className="w-4 h-4 text-[#F59E0B]" />} text="Real projects" />
             </div>
 
-            {/* CTA Button */}
+            {/* Botón CTA */}
             {!isLoading && (
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                 <Link
@@ -99,7 +90,7 @@ export function CallToAction() {
           </div>
         </motion.div>
 
-        {/* Stats */}
+        {/* Estadísticas */}
         <div className="grid grid-cols-3 gap-4 max-w-2xl mx-auto mt-8">
           <StatItem icon={<Users className="w-4 h-4 text-[#38A3F1]" />} value="500+" label="Active users" />
           <StatItem icon={<Rocket className="w-4 h-4 text-[#1D9E75]" />} value="200+" label="Projects" />
@@ -110,7 +101,6 @@ export function CallToAction() {
   );
 }
 
-// Sub-componentes para limpiar el código
 function FeaturePill({ icon, text }: { icon: React.ReactNode; text: string }) {
   return (
     <div className="flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full border border-white/20 text-sm text-white">
