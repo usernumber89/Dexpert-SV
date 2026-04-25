@@ -32,7 +32,7 @@ export default async function StudentDashboardPage() {
 
   return (
     <StudentDashboard
-      user={{ name: student.full_name ?? user.email ?? "Student", imageUrl: "" }}
+      user={{ name: student.full_name ?? user.email ?? "Student", avatarUrl: "" }}
       student={student}
       applications={applications ?? []}
       projects={projects ?? []}
