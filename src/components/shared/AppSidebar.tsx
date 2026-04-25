@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupLabel,
   SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton,
@@ -27,7 +28,6 @@ const studentRoutes = [
 
 const pymeRoutes = [
   { title: 'Dashboard', url: '/pyme/dashboard', icon: LayoutDashboard },
-  /*{ title: 'My Projects', url: '/pyme/projects', icon: Briefcase },*/
   { title: 'Applications', url: '/pyme/applications', icon: Users },
   { title: 'Profile', url: '/pyme/profile', icon: User },
   { title: 'Support', url: '/pyme/support', icon: HelpCircle },
@@ -40,7 +40,13 @@ export function AppSidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const isCollapsed = state === 'collapsed';
-  const isLoading = roleLoading || authLoading;
+
+  // Estado para hidratación segura
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleSignOut = async () => {
     const supabase = createClient();
@@ -53,7 +59,8 @@ export function AppSidebar() {
     setOpenMobile(false);
   };
 
-  if (isLoading) {
+  // Mientras no esté montado (SSR) o esté cargando, mostrar spinner
+  if (!mounted || authLoading || roleLoading) {
     return (
       <Sidebar collapsible="icon" className="border-r border-[#BAD8F7] bg-white">
         <div className="flex items-center justify-center h-full">
@@ -63,12 +70,16 @@ export function AppSidebar() {
     );
   }
 
+  // Si no hay usuario o no hay rol, podríamos mostrar algo, pero con el spinner ya se evita.
+  // Continuamos con el contenido normal.
+
   const routes = role === 'STUDENT' ? studentRoutes : pymeRoutes;
   const profileHref = role === 'STUDENT' ? '/student/profile' : '/pyme/profile';
 
-  const displayName = profile?.full_name
-    || user?.email?.split('@')[0]
-    || 'User';
+  const displayName =
+    profile?.full_name ||
+    user?.email?.split('@')[0] ||
+    'User';
 
   const initials = displayName
     .split(' ')
@@ -81,7 +92,6 @@ export function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon" className="border-r border-[#BAD8F7] bg-white">
-
       {/* Header */}
       <SidebarHeader className="px-4 py-5 border-b border-[#BAD8F7]">
         <Link href="/" className="flex items-center gap-2.5" onClick={handleLinkClick}>
@@ -119,9 +129,11 @@ export function AppSidebar() {
                           : 'text-[#5B8DB8] hover:bg-[#F0F7FF] hover:text-[#0D3A6E]'
                       }`}
                     >
-                      <item.icon className={`w-4 h-4 flex-shrink-0 ${
-                        isActive ? 'text-[#38A3F1]' : 'text-[#93B8D4]'
-                      }`} />
+                      <item.icon
+                        className={`w-4 h-4 flex-shrink-0 ${
+                          isActive ? 'text-[#38A3F1]' : 'text-[#93B8D4]'
+                        }`}
+                      />
                       {!isCollapsed && <span>{item.title}</span>}
                     </Link>
                   </SidebarMenuButton>
@@ -135,7 +147,6 @@ export function AppSidebar() {
       {/* Footer */}
       {!isCollapsed && (
         <div className="p-3 border-t border-[#BAD8F7] mt-auto space-y-1">
-          {/* User info */}
           <Link
             href={profileHref}
             onClick={handleLinkClick}
@@ -158,7 +169,6 @@ export function AppSidebar() {
             </div>
           </Link>
 
-          {/* Sign out */}
           <button
             onClick={handleSignOut}
             className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-[#93B8D4] hover:bg-red-50 hover:text-red-400 transition-colors text-sm"

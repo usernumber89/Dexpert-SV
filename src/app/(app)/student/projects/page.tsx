@@ -9,13 +9,13 @@ export default async function StudentProjectsPage() {
 
   const { data: student } = await supabase
     .from("students")
-    .select("id")
+    .select("id,skills")
     .eq("user_id", user.id)
     .single();
 
   const { data: projects } = await supabase
     .from("projects")
-    .select("*, pyme:pymes(*)")
+    .select("*, pyme:pymes(id, company_name, logo_url)")
     .eq("is_published", true)
     .eq("status", "active")
     .order("created_at", { ascending: false });
@@ -35,6 +35,7 @@ export default async function StudentProjectsPage() {
     <StudentProjects
       projects={projects ?? []}
       appliedProjectIds={appliedProjectIds}
+      studentSkills={student?.skills??[]}
     />
   );
 }
