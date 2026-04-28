@@ -10,23 +10,45 @@ export default async function PymeProjectDetailPage({
   const { id } = await params;
   const supabase = await createClient();
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) redirect("/sign-in");
 
-  const { data: project } = await supabase
-    .from("projects")
-    .select(`
+ const { data: project } = await supabase
+  .from("projects")
+  .select(
+    `
+    *,
+    pyme:pymes(*),
+    applications(
       *,
-      pyme:pymes(*),
-      applications(
-        *,
-        student:students(*)
+      students(
+        id,
+        full_name,
+        email,
+        education,
+        skills,
+        phone,
+        location,
+        bio,
+        university,
+        major,
+        graduation_year,
+        linkedin,
+        github,
+        portfolio,
+        resume_url,
+        avatar_url,
+        verified
       )
-    `)
-    .eq("id", id)
-    .single();
+    )
+  `
+  )
+  .eq("id", id)
+  .single();
 
   if (!project) notFound();
-
+    
   return <PymeProjectDetail project={project} />;
 }

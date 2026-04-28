@@ -14,7 +14,7 @@ import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 import {
   LayoutDashboard, User, FolderOpen, Award, Bot,
-  HelpCircle, Briefcase, Users, LogOut,
+  HelpCircle, Briefcase, Users, LogOut, Banknote,
 } from 'lucide-react';
 
 const studentRoutes = [
@@ -29,6 +29,7 @@ const studentRoutes = [
 const pymeRoutes = [
   { title: 'Dashboard', url: '/pyme/dashboard', icon: LayoutDashboard },
   { title: 'Applications', url: '/pyme/applications', icon: Users },
+  { title: 'Pricing', url: '/pyme/pricing', icon: Banknote },
   { title: 'Profile', url: '/pyme/profile', icon: User },
   { title: 'Support', url: '/pyme/support', icon: HelpCircle },
 ];

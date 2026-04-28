@@ -15,6 +15,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { createClient } from "@/lib/supabase/client";
 import { CreateProjectModal } from "./CreateProjectModal";
 import Image from "next/image";
+import {CreditsWidget} from "./CreditsWidget"
 
 type Student = {
   id: string;
@@ -50,9 +51,10 @@ type Props = {
   user: { name: string; avatarUrl?: string | null };
   pyme: Pyme | null;
   projects: Project[];
+  credits:{available:number;used:number};
 };
 
-export function PymeDashboard({ user, pyme, projects }: Props) {
+export function PymeDashboard({ user, pyme, projects,credits }: Props) {
   const router = useRouter();
   const [showCreate, setShowCreate] = useState(false);
   const [menuOpen, setMenuOpen] = useState<string | null>(null);
@@ -166,7 +168,6 @@ export function PymeDashboard({ user, pyme, projects }: Props) {
     <div className="min-h-screen bg-gradient-to-br from-[#F0F7FF] via-white to-[#E8F3FD]">
       <div className="max-w-7xl mx-auto px-6 py-8 space-y-6">
         
-        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -219,6 +220,7 @@ export function PymeDashboard({ user, pyme, projects }: Props) {
         </div>
 
         {/* AI Assistant Banner */}
+        <CreditsWidget available={credits.available} used={credits.used} />
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}

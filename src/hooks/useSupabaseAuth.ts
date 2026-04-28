@@ -1,4 +1,3 @@
-// hooks/useSupabaseAuth.ts
 import { useAuthContext } from "@/providers/AuthProvider";
 import { useEffect, useState, useRef } from "react";
 
@@ -14,19 +13,23 @@ export function useSupabaseAuth() {
   const fetchingRef = useRef(false);
 
   useEffect(() => {
+    // Si auth aún carga, esperar
+    if (authLoading) return;
+
+    // Sin usuario, limpiar y salir
+    if (!user) {
+      setProfile(null);
+      setIsLoading(false);
+      return;
+    }
+
+    // Evitar fetch duplicado
+    if (fetchingRef.current) return;
+    fetchingRef.current = true;
+
     let mounted = true;
 
     const loadProfile = async () => {
-      if (!user) {
-        setProfile(null);
-        setIsLoading(false);
-        return;
-      }
-
-      // Evitar consultas duplicadas
-      if (fetchingRef.current) return;
-      fetchingRef.current = true;
-
       try {
         const { data: profileRole } = await supabase
           .from("profiles")
@@ -42,44 +45,32 @@ export function useSupabaseAuth() {
             .select("full_name, avatar_url")
             .eq("user_id", user.id)
             .single();
-          setProfile({
-            full_name: student?.full_name,
-            avatar_url: student?.avatar_url,
-          });
+          if (mounted) setProfile({ full_name: student?.full_name, avatar_url: student?.avatar_url });
         } else if (profileRole?.role === "PYME") {
           const { data: pyme } = await supabase
             .from("pymes")
             .select("company_name, logo_url")
             .eq("user_id", user.id)
             .single();
-          setProfile({
-            full_name: pyme?.company_name,
-            avatar_url: pyme?.logo_url,
-          });
+          if (mounted) setProfile({ full_name: pyme?.company_name, avatar_url: pyme?.logo_url });
         } else {
-          setProfile({
-            full_name: user.user_metadata?.full_name ?? user.email,
-            avatar_url: null,
-          });
+          if (mounted) setProfile({ full_name: user.user_metadata?.full_name ?? user.email, avatar_url: null });
         }
       } catch (error) {
         console.error("Error loading profile:", error);
       } finally {
-        if (mounted) {
-          setIsLoading(false);
-          fetchingRef.current = false;
-        }
+        if (mounted) setIsLoading(false);
+        fetchingRef.current = false; // ← siempre resetear
       }
     };
 
-    if (!authLoading) {
-      loadProfile();
-    }
+    loadProfile();
 
     return () => {
       mounted = false;
+      fetchingRef.current = false; // ← resetear en cleanup también
     };
-  }, [user, supabase, authLoading]);
+  }, [user?.id, authLoading]); // ← solo user.id, no el objeto completo
 
   return { user, profile, isLoading: authLoading || isLoading };
 }

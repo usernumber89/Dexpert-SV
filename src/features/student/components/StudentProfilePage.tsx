@@ -39,7 +39,20 @@ type StudentProfile = {
   created_at: string;
   updated_at: string;
 };
-
+type ApplicationWithProject = {
+  id: string;
+  status: string;
+  created_at: string;
+  project: {
+    id: string;
+    title: string;
+    description: string | null;
+    skills: string;
+    pyme: {
+      company_name: string | null;
+    } | null;
+  } | null;
+};
 type ApplicationStats = {
   total: number;
   pending: number;
@@ -59,7 +72,7 @@ export default function StudentProfilePage() {
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [uploadingResume, setUploadingResume] = useState(false);
   const [skillInput, setSkillInput] = useState("");
-
+  const [applications, setApplications] = useState<ApplicationWithProject[]>([]);
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const resumeInputRef = useRef<HTMLInputElement>(null);
   const supabase = useRef(createClient());
@@ -82,19 +95,32 @@ export default function StudentProfilePage() {
       setEditedProfile(profileData);
 
       const { data: applications } = await supabase.current
-        .from("applications")
-        .select("status")
-        .eq("student_id", profileData.id);
+  .from("applications")
+  .select(`
+    id,
+    status,
+    created_at,
+    project:projects(
+      id,
+      title,
+      description,
+      skills,
+      pyme:pymes(company_name)
+    )
+  `)
+  .eq("student_id", profileData.id)
+  .order("created_at", { ascending: false });
 
-      if (applications) {
-        const apps = applications as { status: string }[];
-        setStats({
-          total: apps.length,
-          pending: apps.filter(a => a.status === "PENDING").length,
-          accepted: apps.filter(a => a.status === "ACCEPTED").length,
-          rejected: apps.filter(a => a.status === "REJECTED").length,
-        });
-      }
+if (applications) {
+  const apps = applications as any[];
+  setApplications(apps);
+  setStats({
+    total: apps.length,
+    pending: apps.filter(a => a.status === "PENDING").length,
+    accepted: apps.filter(a => a.status === "ACCEPTED").length,
+    rejected: apps.filter(a => a.status === "REJECTED").length,
+  });
+}
     } catch (error) {
       console.error("Error loading profile:", error);
       toast.error("Error loading profile");
@@ -598,29 +624,70 @@ export default function StudentProfilePage() {
                   )}
 
                   {activeTab === "applications" && (
-                    <motion.div 
-                      key="applications" 
-                      initial={{ opacity: 0, x: -10 }} 
-                      animate={{ opacity: 1, x: 0 }} 
-                      exit={{ opacity: 0, x: 10 }}
-                      transition={{ duration: 0.2 }}
-                      className="text-center py-16"
-                    >
-                      <div className="w-24 h-24 bg-[#F0F7FF] rounded-3xl flex items-center justify-center mx-auto mb-6">
-                        <FileText className="w-12 h-12 text-[#BAD8F7]" />
-                      </div>
-                      <h3 className="text-xl font-bold text-[#0D3A6E] mb-3">Your Applications</h3>
-                      <p className="text-sm text-[#5B8DB8] max-w-sm mx-auto mb-6">
-                        Track all your project applications in one place
-                      </p>
-                      <Link 
-                        href="/student/projects" 
-                        className="inline-flex items-center gap-2 bg-[#38A3F1] text-white px-6 py-3 rounded-xl hover:bg-[#0D5FA6] transition font-medium"
-                      >
-                        Browse Projects <ChevronRight className="w-4 h-4" />
-                      </Link>
-                    </motion.div>
-                  )}
+  <motion.div
+    key="applications"
+    initial={{ opacity: 0, x: -10 }}
+    animate={{ opacity: 1, x: 0 }}
+    exit={{ opacity: 0, x: 10 }}
+    transition={{ duration: 0.2 }}
+  >
+    <h3 className="text-base font-semibold text-[#0D3A6E] mb-4">My Applications</h3>
+
+    {applications.length === 0 ? (
+      <div className="text-center py-16">
+        <div className="w-20 h-20 bg-[#F0F7FF] rounded-3xl flex items-center justify-center mx-auto mb-4">
+          <FileText className="w-10 h-10 text-[#BAD8F7]" />
+        </div>
+        <p className="text-sm font-medium text-[#0D3A6E] mb-1">No applications yet</p>
+        <p className="text-xs text-[#93B8D4] mb-6">Browse projects and apply to get started</p>
+        <Link
+          href="/student/projects"
+          className="inline-flex items-center gap-2 bg-[#38A3F1] text-white px-6 py-3 rounded-xl hover:bg-[#0D5FA6] transition font-medium text-sm"
+        >
+          Browse Projects <ChevronRight className="w-4 h-4" />
+        </Link>
+      </div>
+    ) : (
+      <div className="space-y-3">
+        {applications.map((app) => {
+          const statusMap: Record<string, { label: string; bg: string; text: string }> = {
+            PENDING:   { label: "Pending",   bg: "bg-amber-50",  text: "text-amber-600" },
+            ACCEPTED:  { label: "Accepted",  bg: "bg-green-50",  text: "text-green-600" },
+            REJECTED:  { label: "Rejected",  bg: "bg-red-50",    text: "text-red-500" },
+            COMPLETED: { label: "Completed", bg: "bg-[#F0F7FF]", text: "text-[#0D5FA6]" },
+          };
+          const s = statusMap[app.status] ?? statusMap.PENDING;
+
+          return (
+            <Link
+              key={app.id}
+              href={`/student/projects/${app.project?.id}`}
+              className="flex items-center gap-4 p-4 bg-[#F8FBFE] rounded-xl border border-[#E8F3FD] hover:border-[#BAD8F7] hover:bg-[#F0F7FF] transition-all group"
+            >
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#38A3F1] to-[#0D5FA6] flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                {app.project?.title?.[0]?.toUpperCase() ?? "?"}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-[#0D3A6E] truncate group-hover:text-[#38A3F1] transition-colors">
+                  {app.project?.title ?? "Unknown project"}
+                </p>
+                <p className="text-xs text-[#93B8D4]">
+                  {app.project?.pyme?.company_name ?? "Unknown company"}
+                </p>
+              </div>
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${s.bg} ${s.text}`}>
+                  {s.label}
+                </span>
+                <ChevronRight className="w-4 h-4 text-[#93B8D4] group-hover:translate-x-1 transition-transform" />
+              </div>
+            </Link>
+          );
+        })}
+      </div>
+    )}
+  </motion.div>
+)}
 
                   {activeTab === "settings" && (
                     <motion.div 

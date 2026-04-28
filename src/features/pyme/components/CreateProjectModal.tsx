@@ -61,10 +61,28 @@ export function CreateProjectModal({ onClose, onSuccess }: {
   const onSubmit = async (values: FormValues) => {
   setSubmitting(true);
   try {
-    const res = await axios.post("/api/project", values);
+    const res = await fetch("/api/project", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(values),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      if (data.noCredits) {
+        toast.error("No tienes créditos disponibles. Adquiere un plan para publicar proyectos.");
+        onClose();
+        router.push("/pyme/pricing"); // ajusta la ruta si es diferente
+        return;
+      }
+      toast.error(data.error || "Error al crear el proyecto");
+      return;
+    }
+
     toast.success("Project created!");
     onSuccess?.();
-    router.push(`/pyme/projects/${res.data.id}`);
+    router.push(`/pyme/projects/${data.id}`);
     onClose();
   } catch {
     toast.error("Error creating project");
