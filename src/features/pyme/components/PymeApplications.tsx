@@ -54,9 +54,9 @@ type Props = { projects: Project[] };
 
 // ── Status config ────────────────────────────────────────────────
 const STATUS = {
-  PENDING:   { label: "Pending",   bg: "bg-amber-50",  text: "text-amber-600",  border: "border-amber-200",  icon: Clock },
-  ACCEPTED:  { label: "Accepted",  bg: "bg-green-50",  text: "text-green-600",  border: "border-green-200",  icon: CheckCircle },
-  REJECTED:  { label: "Rejected",  bg: "bg-red-50",    text: "text-red-500",    border: "border-red-200",    icon: XCircle },
+  PENDING:   { label: "Pending",   bg: "bg-[#1D5A9E]",  text: "text-white",  border: "border-white",  icon: Clock },
+  ACCEPTED:  { label: "Accepted",  bg: "bg-[#38A3F1]",  text: "text-white",  border: "border-[#1D5A9E]",  icon: CheckCircle },
+  REJECTED:  { label: "Rejected",  bg: "bg-[#F0F7FF]",    text: "text-[#1D5A9E]/60",    border: "border-red-200",    icon: XCircle },
   COMPLETED: { label: "Completed", bg: "bg-[#F0F7FF]", text: "text-[#0D5FA6]", border: "border-[#BAD8F7]",  icon: Star },
 } as const;
 
@@ -161,14 +161,14 @@ function StudentPanel({
               <button
                 onClick={() => handleAction("ACCEPTED")}
                 disabled={updating}
-                className="flex-1 flex items-center justify-center gap-2 bg-green-500 text-white text-sm font-semibold py-3 rounded-xl hover:bg-green-600 transition disabled:opacity-50"
+                className="flex-1 flex items-center justify-center gap-2 bg-[#38A3F1] text-white text-sm font-semibold py-3 rounded-xl hover:bg-green-600 transition disabled:opacity-50"
               >
                 <Check className="w-4 h-4" /> Accept
               </button>
               <button
                 onClick={() => handleAction("REJECTED")}
                 disabled={updating}
-                className="flex-1 flex items-center justify-center gap-2 bg-red-50 text-red-500 text-sm font-semibold py-3 rounded-xl hover:bg-red-100 transition disabled:opacity-50 border border-red-200"
+                className="flex-1 flex items-center justify-center gap-2 bg-[#1D5A9E] text-white text-sm font-semibold py-3 rounded-xl hover:bg-red-600 transition disabled:opacity-50 border border-red-200"
               >
                 <X className="w-4 h-4" /> Reject
               </button>
@@ -290,7 +290,7 @@ function ProjectGroup({
         </div>
         <div className="flex items-center gap-2">
           {pending > 0 && (
-            <span className="text-xs font-semibold bg-amber-50 text-amber-600 border border-amber-200 px-2 py-0.5 rounded-full">
+            <span className="text-xs font-semibold bg-[#1D5A9E] text-white border border-white px-2 py-0.5 rounded-full">
               {pending} pending
             </span>
           )}
@@ -431,9 +431,9 @@ export function PymeApplications({ projects }: Props) {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {[
               { label: "Total",    value: metrics.total,    icon: Users,       color: "text-[#38A3F1]", bg: "bg-[#F0F7FF]" },
-              { label: "Pending",  value: metrics.pending,  icon: Clock,       color: "text-amber-500", bg: "bg-amber-50" },
-              { label: "Accepted", value: metrics.accepted, icon: CheckCircle, color: "text-green-500", bg: "bg-green-50" },
-              { label: "Rejected", value: metrics.rejected, icon: XCircle,     color: "text-red-400",   bg: "bg-red-50" },
+              { label: "Pending",  value: metrics.pending,  icon: Clock,       color: "text-[#1D5A9E]", bg: "bg-[#F0F7FF]" },
+              { label: "Accepted", value: metrics.accepted, icon: CheckCircle, color: "text-[#38A3F1]", bg: "bg-[#F0F7FF]" },
+              { label: "Rejected", value: metrics.rejected, icon: XCircle,     color: "text-[#1D5A9E]", bg: "bg-[#F0F7FF]" },
             ].map((m, i) => {
               const Icon = m.icon;
               return (
@@ -464,26 +464,26 @@ export function PymeApplications({ projects }: Props) {
                   <BarChart2 className="w-4 h-4 text-[#38A3F1]" />
                   <p className="text-sm font-semibold text-[#0D3A6E]">Pipeline breakdown</p>
                 </div>
-                <p className="text-xs text-[#93B8D4]">
+                <p className="text-xs text-[#38A3F1] font-medium">
                   {Math.round((metrics.accepted / metrics.total) * 100)}% acceptance rate
                 </p>
               </div>
               <div className="flex h-2.5 rounded-full overflow-hidden gap-0.5">
                 {metrics.pending > 0 && (
-                  <div className="bg-amber-400 rounded-full transition-all" style={{ width: `${(metrics.pending / metrics.total) * 100}%` }} />
+                  <div className="bg-[#1D5A9E] rounded-full transition-all" style={{ width: `${(metrics.pending / metrics.total) * 100}%` }} />
                 )}
                 {metrics.accepted > 0 && (
-                  <div className="bg-green-400 rounded-full transition-all" style={{ width: `${(metrics.accepted / metrics.total) * 100}%` }} />
+                  <div className="bg-[#38A3F1] rounded-full transition-all" style={{ width: `${(metrics.accepted / metrics.total) * 100}%` }} />
                 )}
                 {metrics.rejected > 0 && (
-                  <div className="bg-red-300 rounded-full transition-all" style={{ width: `${(metrics.rejected / metrics.total) * 100}%` }} />
+                  <div className="bg-[#1D5A9E]/60 rounded-full transition-all" style={{ width: `${(metrics.rejected / metrics.total) * 100}%` }} />
                 )}
               </div>
               <div className="flex gap-4 mt-2">
                 {[
-                  { color: "bg-amber-400", label: "Pending" },
-                  { color: "bg-green-400", label: "Accepted" },
-                  { color: "bg-red-300",   label: "Rejected" },
+                  { color: "bg-[#1D5A9E]", label: "Pending" },
+                  { color: "bg-[#38A3F1]", label: "Accepted" },
+                  { color: "bg-[#1D5A9E]/60",   label: "Rejected" },
                 ].map(l => (
                   <div key={l.label} className="flex items-center gap-1.5">
                     <div className={`w-2 h-2 rounded-full ${l.color}`} />

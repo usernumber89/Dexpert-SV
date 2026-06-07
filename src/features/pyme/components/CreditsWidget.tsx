@@ -1,6 +1,6 @@
 "use client";
 
-import { Sparkles, Plus, CreditCard } from "lucide-react";
+import { Sparkles, Plus, CreditCard, Ticket } from "lucide-react";
 import Link from "next/link";
 
 type Props = {
@@ -13,10 +13,10 @@ export function CreditsWidget({ available, used }: Props) {
   const percentage = total > 0 ? (available / total) * 100 : 0;
 
   return (
-    <div className="bg-[#0D3A6E] rounded-xl p-5">
-      <div className="flex items-center justify-between mb-4">
+    <div className="bg-[#0D3A6E] rounded-xl h-32 p-4">
+      <div className="flex items-center justify-between ">
         <div className="flex items-center gap-2">
-          <Sparkles className="w-4 h-4 text-[#38A3F1]" />
+          <Ticket className="w-4 h-4 text-[#38A3F1]" />
           <p className="text-xs font-medium text-[#38A3F1] uppercase tracking-widest">
             Project Credits
           </p>
@@ -29,8 +29,8 @@ export function CreditsWidget({ available, used }: Props) {
         </Link>
       </div>
 
-      <div className="flex items-end gap-2 mb-3">
-        <span className="text-4xl font-bold text-white">{available}</span>
+      <div className="flex items-end gap-2 mb-2">
+        <span className="text-2xl font-bold text-white">{available}</span>
         <span className="text-[#BAD8F7] text-sm mb-1">credits available</span>
       </div>
 
@@ -42,7 +42,7 @@ export function CreditsWidget({ available, used }: Props) {
         />
       </div>
 
-      <div className="flex justify-between">
+      <div className="flex justify-between mb-2">
         <p className="text-[10px] text-[#BAD8F7]">{used} used</p>
         <p className="text-[10px] text-[#BAD8F7]">{total} total purchased</p>
       </div>

@@ -5,7 +5,7 @@ import {
   Edit, X, Trash, Sparkles, MoreHorizontal,
   Eye, Calendar, Briefcase, CheckCircle,
   Clock, AlertCircle, ArrowUpRight,
-  Search, Filter, Grid, List
+  Search, Filter, Grid, List, Ticket
 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
@@ -89,22 +89,22 @@ export function PymeDashboard({ user, pyme, projects,credits }: Props) {
       label: "Active", 
       value: projects.filter(p => p.status === "active" && p.is_published).length, 
       icon: TrendingUp,
-      color: "text-green-500",
-      bgColor: "bg-green-50"
+      color: "text-[#1D5A9E]",
+      bgColor: "bg-[#38A3F1]/10"
     },
     { 
       label: "Drafts", 
       value: projects.filter(p => !p.is_published).length, 
       icon: Clock,
-      color: "text-yellow-500",
-      bgColor: "bg-yellow-50"
+      color: "text-[#38A3F1]",
+      bgColor: "bg-[#38A3F1]/10"
     },
     { 
       label: "Applications", 
       value: projects.reduce((acc, p) => acc + (p.applications?.length || 0), 0), 
       icon: Users,
-      color: "text-[#F59E0B]",
-      bgColor: "bg-[#F59E0B]/10"
+      color: "text-[#1D5A9E]",
+      bgColor: "bg-[#38A3F1]/10"
     },
   ];
 

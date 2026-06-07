@@ -9,6 +9,7 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
+import {DexpertLogo} from "@/components/DexpertLogo";
 
 export function Navbar() {
   const { supabase, user } = useAuthContext();
@@ -65,13 +66,11 @@ export function Navbar() {
         <Link href="/" className="flex items-center gap-2 group">
           <motion.div
             whileHover={{ scale: 1.05 }}
-            className="w-8 h-8 bg-gradient-to-br from-[#0D3A6E] to-[#1D5A9E] rounded-lg flex items-center justify-center shadow-md"
+            className="  rounded-lg flex items-center justify-center "
           >
-            <span className="text-white text-xs font-bold">D</span>
+            <DexpertLogo height={50} />
           </motion.div>
-          <span className="text-sm font-semibold text-[#0D3A6E] group-hover:text-[#38A3F1] transition-colors">
-            Dexpert<span className="text-[#38A3F1]">.</span>
-          </span>
+          
         </Link>
 
         {/* Desktop navigation */}

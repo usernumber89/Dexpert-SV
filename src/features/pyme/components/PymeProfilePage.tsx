@@ -217,8 +217,8 @@ if (projectsData) {
                       className="rounded-2xl object-cover border-4 border-white shadow-xl"
                     />
                   ) : (
-                    <div className="w-full h-full rounded-2xl bg-gradient-to-br from-[#38A3F1] to-[#1D9E75] border-4 border-white shadow-xl flex items-center justify-center">
-                      <Building2 className="w-12 h-12 text-white" />
+                    <div className="w-full h-full rounded-2xl bg-[#F0F7FF] border-4 border-white shadow-xl flex items-center justify-center">
+                      <Building2 className="w-12 h-12 text-[#1D5A9E]" />
                     </div>
                   )}
                   {isEditing && (
@@ -252,9 +252,9 @@ if (projectsData) {
               {/* Stats Grid */}
               <div className="grid grid-cols-2 gap-2 p-4 bg-[#F8FBFE] border-y border-[#E8F3FD]">
                 <StatItem icon={Briefcase} value={stats.total} label="Projects" color="text-[#38A3F1]" bg="bg-[#F0F7FF]" />
-                <StatItem icon={Users} value={stats.totalApplications} label="Applications" color="text-[#F59E0B]" bg="bg-[#F0F7FF]" />
-                <StatItem icon={TrendingUp} value={stats.active} label="Active" color="text-green-600" bg="bg-green-50" />
-                <StatItem icon={CheckCircle} value={stats.completed} label="Completed" color="text-gray-600" bg="bg-gray-50" />
+                <StatItem icon={Users} value={stats.totalApplications} label="Applications" color="text-[#1D5A9E]" bg="bg-[#F0F7FF]" />
+                <StatItem icon={TrendingUp} value={stats.active} label="Active" color="text-[#38A3F1]" bg="bg-[#F0F7FF]" />
+                <StatItem icon={CheckCircle} value={stats.completed} label="Completed" color="text-[#1D5A9E]" bg="bg-[#F0F7FF]" />
               </div>
 
               {/* Contact Information */}
@@ -282,7 +282,7 @@ if (projectsData) {
                   <motion.button
                     whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
                     onClick={() => setIsEditing(true)}
-                    className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-[#38A3F1] to-[#1D9E75] text-white text-sm font-semibold py-3 rounded-xl hover:shadow-lg transition-all"
+                    className="w-full flex items-center justify-center gap-2 bg-[#38A3F1] text-white text-sm font-semibold py-3 rounded-xl hover:shadow-lg transition-all"
                   >
                     <Edit className="w-4 h-4" /> Edit Profile
                   </motion.button>
@@ -396,7 +396,7 @@ if (projectsData) {
                         <div className="space-y-6">
                           <div>
                             <h3 className="text-base font-semibold text-[#0D3A6E] mb-4 flex items-center gap-2">
-                              <span className="w-1 h-5 bg-gradient-to-b from-[#38A3F1] to-[#1D9E75] rounded-full" />
+                              <span className="w-1 h-5 bg-[#1D5A9E] rounded-full" />
                               About the Company
                             </h3>
                             <p className="text-sm text-[#5B8DB8] leading-relaxed">
@@ -406,7 +406,7 @@ if (projectsData) {
 
                           <div>
                             <h3 className="text-base font-semibold text-[#0D3A6E] mb-4 flex items-center gap-2">
-                              <span className="w-1 h-5 bg-gradient-to-b from-[#38A3F1] to-[#1D9E75] rounded-full" />
+                              <span className="w-1 h-5 bg-[#1D5A9E] rounded-full" />
                               Company Details
                             </h3>
                             <div className="grid grid-cols-2 gap-4">

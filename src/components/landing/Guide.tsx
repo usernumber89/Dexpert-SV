@@ -244,11 +244,11 @@ export function Guide() {
           className="mt-16 text-center"
         >
           <div className="inline-flex items-center gap-6 px-8 py-4 bg-white rounded-2xl border border-[#E8F3FD] shadow-lg">
-            <CheckCircle2 className="w-5 h-5 text-[#38A3F1]" />
+            
             <p className="text-[#0D3A6E] font-medium">
               Dexpert is more than a platform — it is your first real step into the professional world.
             </p>
-            <ArrowRight className="w-5 h-5 text-[#38A3F1]" />
+           
           </div>
         </motion.div>
 

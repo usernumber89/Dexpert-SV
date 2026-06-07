@@ -11,7 +11,7 @@ import {
   CheckCircle2,
   Target,
   Award,
-  Heart, HandHelping, Goal, Telescope
+  Heart, HandHelping, Goal, Telescope, CircleDollarSign, CheckCheck
 } from "lucide-react";
 
 const HIGHLIGHTS = [
@@ -50,7 +50,7 @@ const STATS = [
   { 
     value: "3", 
     label: "Business Plans", 
-    icon: Building2,
+    icon: CircleDollarSign,
     color: "#38A3F1",
     trend: "Discover the right fit"
   },
@@ -132,7 +132,7 @@ export function Aboutus() {
                 whileHover={{ y: -5 }}
                 className="group relative bg-white rounded-2xl p-6 border border-[#E8F3FD] hover:border-[#38A3F1] shadow-sm hover:shadow-xl transition-all duration-300"
               >
-                <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-[#38A3F1]/5 to-[#1D9E75]/5 rounded-tr-2xl rounded-bl-3xl -z-0" />
+                <div className="absolute top-0 right-0 w-24 h-24  rounded-tr-2xl rounded-bl-3xl -z-0" />
                 
                 <div className="relative z-10">
                   <div className="w-12 h-12 bg-gradient-to-br from-[#F0F7FF] to-[#E8F3FD] rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
@@ -183,7 +183,7 @@ export function Aboutus() {
                     transition={{ delay: index * 0.05 }}
                     className="flex items-center gap-2"
                   >
-                    <CheckCircle2 className="w-4 h-4 text-[#38A3F1] flex-shrink-0" />
+                    <CheckCheck  className="w-4 h-4 text-[#38A3F1] flex-shrink-0" />
                     <span className="text-sm text-[#0D3A6E]">{feature}</span>
                   </motion.div>
                 ))}
@@ -225,8 +225,8 @@ export function Aboutus() {
                     style={{ background: stat.color }}
                   />
                   
-                  {/* Background icon */}
-                  <Icon className="absolute -bottom-4 -right-4 w-20 h-20 opacity-5 group-hover:opacity-10 transition-opacity" />
+                  {/* Background icon 
+                  <Icon className="absolute -bottom-4 -right-4 w-20 h-20 opacity-5 group-hover:opacity-10 transition-opacity" /> */}
                   
                   {/* Content */}
                   <div className="relative">
