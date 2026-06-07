@@ -42,7 +42,7 @@ export function Hero() {
 
   return (
     <section className="relative min-h-screen flex items-center justify-center px-6 md:px-12 overflow-hidden bg-white">
-      {/* Background */}
+      {/* Background - sin cambios, se mantiene exactamente igual */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(ellipse_at_top_right,_#E8F3FD_0%,_transparent_60%)]" />
         <div className="absolute bottom-0 left-0 w-full h-full bg-[radial-gradient(ellipse_at_bottom_left,_#F0F7FF_0%,_transparent_60%)]" />
@@ -53,7 +53,7 @@ export function Hero() {
 
       <div className="relative max-w-7xl w-full mx-auto py-24">
         <div className="grid lg:grid-cols-2 gap-16 items-center">
-          {/* Columna izquierda: contenido textual */}
+          {/* Columna izquierda: contenido textual (sin cambios) */}
           <div className="flex flex-col items-center lg:items-start text-center lg:text-left space-y-8">
             {/* Heading */}
             <motion.h1
@@ -93,21 +93,21 @@ export function Hero() {
 
             {/* Pillars */}
             <motion.div
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.3 }}
-              className="flex flex-wrap justify-center lg:justify-start gap-3"
-            >
-              {PILLARS.map((p, i) => (
-                <div
-                  key={i}
-                  className="flex items-center gap-2 px-4 py-2 bg-white border border-[#E8F3FD] rounded-full shadow-sm"
-                >
-                  <CheckCircle className="w-3.5 h-3.5 text-[#38A3F1] flex-shrink-0" />
-                  <span className="text-xs font-medium text-[#5B8DB8]">{p}</span>
-                </div>
-              ))}
-            </motion.div>
+  initial={{ opacity: 0, y: 12 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{ duration: 0.6, delay: 0.3 }}
+  className="flex flex-wrap justify-center lg:justify-start gap-3"
+>
+  {PILLARS.map((p, i) => (
+    <div
+      key={i}
+      className="flex items-center gap-2 px-4 py-2 bg-white/40 backdrop-blur-sm border border-white/30 rounded-full shadow-md hover:shadow-xl hover:-translate-y-0.5 hover:border-[#38A3F1] transition-all duration-200"
+    >
+      <CheckCircle className="w-4 h-4 text-[#38A3F1] flex-shrink-0 drop-shadow-sm" />
+      <span className="text-sm font-medium text-[#2C5A8C]">{p}</span>
+    </div>
+  ))}
+</motion.div>
 
             {/* CTAs */}
             <motion.div
@@ -135,32 +135,52 @@ export function Hero() {
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </Link>
             </motion.div>
-
-            {/* Las estadísticas se pueden descomentar si se quieren mostrar dentro de la columna izquierda */}
-            {/*
-            <motion.div ...>
-              ...
-            </motion.div>
-            */}
           </div>
 
-          {/* Columna derecha: imagen */}
+          {/* Columna derecha: Mockup de MacBook (reemplaza la imagen simple) */}
           <motion.div
             initial={{ opacity: 0, x: 40 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8 }}
             className="flex justify-center lg:justify-end"
           >
-            <img
-              src="/animation.jpeg"
-              alt="Student working"
-              className="w-full max-w-xl rounded-xl"
-            />
+            <div className="w-full max-w-xl">
+              {/* Carcasa del MacBook - estilo aluminio */}
+              <div className="relative bg-gradient-to-b from-[#E5E7EB] to-[#D1D5DB] rounded-3xl shadow-2xl border border-gray-300/60 p-4">
+                {/* Barra superior con botones de control (similar a macOS) */}
+                <div className="flex items-center gap-2 pb-3 px-1">
+                  <div className="flex gap-1.5">
+                    <div className="w-3 h-3 rounded-full bg-[#FF5F57] shadow-inner" />
+                    <div className="w-3 h-3 rounded-full bg-[#FEBC2E] shadow-inner" />
+                    <div className="w-3 h-3 rounded-full bg-[#28C840] shadow-inner" />
+                  </div>
+                  {/* Cámara (notch simbólico) */}
+                  <div className="absolute left-1/2 transform -translate-x-1/2 w-3 h-3 bg-black/50 rounded-full" />
+                </div>
+
+                {/* Pantalla - aquí se muestra la imagen */}
+                <div className="relative bg-black rounded-xl overflow-hidden shadow-inner">
+                  {/* Aspect ratio 16:9 típico de MacBook */}
+                  <div className="aspect-video">
+                    <img
+                      src="/animation.jpeg"
+                      alt="Project preview"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                </div>
+
+                {/* Bisagra inferior sutil */}
+                <div className="mt-1 flex justify-center">
+                  <div className="w-16 h-1 bg-gray-400/40 rounded-full" />
+                </div>
+              </div>
+            </div>
           </motion.div>
         </div>
       </div>
 
-      {/* Shimmer animation */}
+      {/* Shimmer animation (sin cambios) */}
       <style jsx>{`
         @keyframes shimmer {
           0% {
