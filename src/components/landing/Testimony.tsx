@@ -18,7 +18,7 @@ const testimonies = [
     role: "Entrepreneur", 
     initials: "TS", 
     quote: "My small business got real support from talented young people. It was not just help, it was collaboration with future professionals.",
-    color: "#1D9E75",
+    color: "#0D3A6E",
     achievement: "3 projects completed",
     rating: 5
   },
@@ -27,7 +27,7 @@ const testimonies = [
     role: "Dexpert User", 
     initials: "SM", 
     quote: "As a person with a disability, it is hard to be taken seriously. On Dexpert, I was heard, included, and valued.",
-    color: "#F59E0B",
+    color: "#38A3F1",
     achievement: "Found inclusive team",
     rating: 5
   },
@@ -44,26 +44,7 @@ export function Testimony() {
     <section className="relative py-24 px-6 bg-gradient-to-b from-white to-[#F0F7FF] overflow-hidden">
       
       {/* Animated Background */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-20 right-0 w-96 h-96 bg-[#38A3F1] rounded-full opacity-5 blur-3xl animate-pulse" />
-        <div className="absolute bottom-20 left-0 w-96 h-96 bg-[#1D9E75] rounded-full opacity-5 blur-3xl animate-pulse delay-1000" />
-        
-        {/* Floating Quotes */}
-        <motion.div
-          animate={{ y: [0, -20, 0] }}
-          transition={{ duration: 6, repeat: Infinity }}
-          className="absolute top-40 left-10 text-[#38A3F1]/10"
-        >
-          <Quote className="w-24 h-24" />
-        </motion.div>
-        <motion.div
-          animate={{ y: [0, 20, 0] }}
-          transition={{ duration: 8, repeat: Infinity }}
-          className="absolute bottom-40 right-10 text-[#1D9E75]/10"
-        >
-          <Quote className="w-24 h-24 rotate-180" />
-        </motion.div>
-      </div>
+      
 
       <div className="relative max-w-7xl mx-auto">
         
@@ -74,18 +55,12 @@ export function Testimony() {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-white rounded-full shadow-sm border border-[#BAD8F7] mb-4">
-            <Sparkles className="w-4 h-4 text-[#F59E0B] fill-[#F59E0B]" />
-            <span className="text-xs font-semibold uppercase tracking-wider text-[#0D5FA6]">
-              Success Stories
-            </span>
-          </div>
+        
           
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-[#0D3A6E] mb-4">
+          <h2 className="text-xl md:text-xl lg:text-3xl font-bold text-[#0D3A6E] mb-4">
             What our{" "}
             <span className="relative">
-              <span className="relative z-10 bg-gradient-to-r from-[#38A3F1] via-[#1D9E75] to-[#F59E0B] bg-clip-text text-transparent">
+              <span className="relative z-10 bg-[#38A3F1] bg-clip-text text-transparent">
                 users say
               </span>
               <svg className="absolute -bottom-2 left-0 w-full h-3 text-[#38A3F1]/20" viewBox="0 0 100 10" preserveAspectRatio="none">
@@ -94,10 +69,10 @@ export function Testimony() {
             </span>
           </h2>
           
-          <p className="text-[#5B8DB8] max-w-2xl mx-auto">
+          <p className="text-[#5B8DB8] max-w-2xl text-sm mx-auto">
             Many young people in El Salvador just need one opportunity. 
             <br className="hidden md:block" />
-            <span className="font-medium text-[#0D3A6E]"> At Dexpert, they found it.</span>
+            <span className="font-medium text-[#38A3F1]"> At Dexpert, they found it.</span>
           </p>
         </motion.div>
 
@@ -114,13 +89,10 @@ export function Testimony() {
               className="group relative"
             >
               {/* Card */}
-              <div className="relative h-full bg-white rounded-3xl p-6 lg:p-8 border border-[#E8F3FD] shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden">
+              <div className="relative h-full bg-white  rounded-3xl p-6 lg:p-8 border-r shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden" style={{ borderColor: testimony.color, }}>
                 
                 {/* Colored Top Border */}
-                <div 
-                  className="absolute top-0 left-0 right-0 h-1.5"
-                  style={{ background: `linear-gradient(90deg, ${testimony.color}, ${testimony.color}cc, ${testimony.color}80)` }}
-                />
+                
                 
                 {/* Background Pattern */}
                 <div className="absolute inset-0 opacity-[0.02] pointer-events-none">
@@ -134,21 +106,10 @@ export function Testimony() {
                 </div>
 
                 {/* Rating Stars */}
-                <div className="flex gap-1 mb-4">
-                  {[...Array(testimony.rating)].map((_, i) => (
-                    <motion.div
-                      key={i}
-                      initial={{ opacity: 0, scale: 0 }}
-                      whileInView={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: index * 0.15 + i * 0.1 }}
-                    >
-                      <Star className="w-4 h-4 fill-[#F59E0B] text-[#F59E0B]" />
-                    </motion.div>
-                  ))}
-                </div>
+                
 
                 {/* Quote Text */}
-                <p className="text-sm lg:text-base text-[#5B8DB8] leading-relaxed mb-6 relative z-10">
+                <p className="text-sm lg:text-md text-[#5B8DB8] leading-relaxed mb-6 relative z-10">
                   "{testimony.quote}"
                 </p>
 
@@ -182,7 +143,7 @@ export function Testimony() {
                   </motion.div>
                   
                   <div>
-                    <p className="font-semibold text-[#0D3A6E]">{testimony.name}</p>
+                    <p className="font-semibold text-sm text-[#0D3A6E]">{testimony.name}</p>
                     <p className="text-xs text-[#93B8D4]">{testimony.role}</p>
                   </div>
                 </div>
@@ -191,7 +152,7 @@ export function Testimony() {
           ))}
         </div>
 
-        {/* Stats Section */}
+        {/* Stats Section 
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}

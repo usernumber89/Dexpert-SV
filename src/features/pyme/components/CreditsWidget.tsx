@@ -1,6 +1,6 @@
 "use client";
 
-import { Sparkles, Plus } from "lucide-react";
+import { Sparkles, Plus, CreditCard } from "lucide-react";
 import Link from "next/link";
 
 type Props = {
@@ -25,7 +25,7 @@ export function CreditsWidget({ available, used }: Props) {
           href="/pyme/pricing"
           className="flex items-center gap-1 text-xs font-medium text-white bg-[#38A3F1] px-3 py-1.5 rounded-lg hover:bg-[#0D5FA6] transition"
         >
-          <Plus className="w-3 h-3" /> Buy more
+          <CreditCard className="w-5 h-5" /> Buy more
         </Link>
       </div>
 

@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { motion } from "framer-motion";
 import {
-  Check, Sparkles, Zap, Crown, ArrowRight, Shield, Star
+  Check, Sparkles, Zap, Crown, ArrowRight, Shield, Star, Route , Sprout, Briefcase, Building2, X
 } from "lucide-react";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 
@@ -15,6 +15,7 @@ const plans = [
     key: "STARTER" as PlanKey,
     name: "Starter",
     price: "$9.99",
+    Icon: Route,
     credits: 3,
     description: "Perfect to try Dexpert with your first real projects.",
     color: "#38A3F1",
@@ -33,16 +34,17 @@ const plans = [
     name: "Growth",
     price: "$24.99",
     credits: 10,
+    Icon: Sprout,
     description: "For businesses that need consistent talent across multiple projects.",
-    color: "#1D9E75",
+    color: "#18508f",
     features: [
       { text: "10 project credits", highlight: true },
-      { text: "Everything in Starter", highlight: false },
+      { text: "Everything in Starter", highlight: true },
       { text: "AI brief writer (full)", highlight: true },
       { text: "Recommended candidates", highlight: true },
       { text: "Priority support", highlight: false },
     ],
-    badge: "Most popular",
+    badge: null,
     cta: "Get Growth",
   },
   {
@@ -50,16 +52,17 @@ const plans = [
     name: "Pro",
     price: "$49.99",
     credits: 25,
+    Icon: Crown,
     description: "Maximum reach for growing businesses with constant hiring needs.",
-    color: "#F59E0B",
+    color: "#38A3F1",
     features: [
       { text: "25 project credits", highlight: true },
-      { text: "Everything in Growth", highlight: false },
+      { text: "Everything in Growth", highlight: true },
       { text: "Featured listings", highlight: true },
       { text: "Top candidates only", highlight: true },
       { text: "Dedicated account manager", highlight: true },
     ],
-    badge: "Best value",
+    badge: null,
     cta: "Go Pro",
   },
 ];
@@ -98,23 +101,24 @@ export default function Plans() {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-white rounded-full shadow-sm border border-[#BAD8F7] mb-5">
-            <Zap className="w-4 h-4 text-[#F59E0B] fill-[#F59E0B]" />
-            <span className="text-xs font-semibold uppercase tracking-wider text-[#0D5FA6]">
-              For businesses
-            </span>
-          </div>
-          <h2 className="text-3xl md:text-4xl font-bold text-[#0D3A6E] mb-3">
-            Buy credits, publish projects
+          
+          <h2 className="lg:text-3xl md:text-2xl font-bold text-[#0D3A6E] mb-3">
+            Buy credits, <span className="text-[#38A3F1]">publish projects</span>
           </h2>
-          <p className="text-[#5B8DB8] max-w-xl mx-auto">
-            No subscriptions. Buy a credit pack and use them whenever you need.
+          <p className="text-[#5B8DB8] max-w-xl text-sm mx-auto mb-5 leading-relaxed">
+            <span className="font-bold text-[#38A3F1]">No subscriptions.</span> Buy a credit pack and use them whenever you need.
             Credits never expire.
           </p>
+          <div className="inline-flex  items-center gap-2 px-4 py-1.5 bg-white rounded-md shadow-sm border border-[#BAD8F7] mb-5">
+            <Building2 className="w-6 h-6 text-[#38A3F1] " />
+            <span className="text-xs font-semibold uppercase tracking-wider text-[#0D5FA6]">
+              Enterprise 
+            </span>
+          </div>
         </motion.div>
 
         {/* Cards */}
-        <div className="grid md:grid-cols-3 gap-6">
+        <div className="grid md:grid-cols-3 gap-7">
           {plans.map((plan, index) => (
             <motion.div
               key={plan.key}
@@ -122,25 +126,17 @@ export default function Plans() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: index * 0.1 }}
-              className={`relative bg-white rounded-2xl p-7 flex flex-col transition-all duration-300 hover:shadow-xl ${
+              className={`relative mt-0 bg-white rounded-2xl p-7 flex flex-col transition-all duration-300 hover:shadow-xl ${
                 plan.key === "GROWTH"
-                  ? "border-2 border-[#1D9E75] shadow-lg shadow-[#1D9E75]/10 md:scale-105 z-10"
+                  ? "border-2  shadow-lg shadow-[#38A3F1]/10 md:scale-105 z-10"
                   : "border border-[#E8F3FD] shadow-sm"
               }`}
             >
-              {/* Badge */}
-              {plan.badge && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                  <div className="flex items-center gap-1 px-3 py-1 rounded-full text-white text-xs font-bold"
-                    style={{ background: plan.color }}>
-                    <Star className="w-3 h-3 fill-white" />
-                    {plan.badge}
-                  </div>
-                </div>
-              )}
+              
 
               {/* Name */}
-              <div className="mb-4">
+              <div className="mb-2">
+                <plan.Icon className="w-6 h-6 mb-2" style={{ color: plan.color }} />
                 <h3 className="text-lg font-bold text-[#0D3A6E]">{plan.name}</h3>
                 <p className="text-xs text-[#5B8DB8] mt-1 leading-relaxed">{plan.description}</p>
               </div>
@@ -150,13 +146,7 @@ export default function Plans() {
                 <div className="flex items-end gap-1 mb-1">
                   <span className="text-3xl font-bold text-[#0D3A6E]">{plan.price}</span>
                 </div>
-                <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg w-fit"
-                  style={{ background: `${plan.color}15` }}>
-                  <Sparkles className="w-3.5 h-3.5" style={{ color: plan.color }} />
-                  <span className="text-sm font-semibold" style={{ color: plan.color }}>
-                    {plan.credits} project credits
-                  </span>
-                </div>
+                
                 <p className="text-[10px] text-[#93B8D4] mt-1.5">
                   ${(parseFloat(plan.price.replace("$", "")) / plan.credits).toFixed(2)} per project • Credits never expire
                 </p>
@@ -169,9 +159,9 @@ export default function Plans() {
                 {plan.features.map((f, i) => (
                   <li key={i} className="flex items-center gap-2.5">
                     <div className={`w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 ${
-                      f.highlight ? "bg-[#1D9E75]" : "bg-[#E8F3FD]"
+                      f.highlight ? "bg-[#38A3F1]" : "bg-[#E8F3FD]"
                     }`}>
-                      <Check className={`w-2.5 h-2.5 ${f.highlight ? "text-white" : "text-[#1D9E75]"}`} />
+                      {f.highlight ? <Check className="w-2.5 h-2.5 text-white" /> : <X className="w-2.5 h-2.5 text-[#38A3F1]" /> }
                     </div>
                     <span className={`text-sm ${f.highlight ? "text-[#0D3A6E] font-medium" : "text-[#5B8DB8]"}`}>
                       {f.text}
@@ -188,9 +178,9 @@ export default function Plans() {
                 whileTap={{ scale: 0.98 }}
                 className={`w-full py-3 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition-all disabled:opacity-50 group ${
                   plan.key === "GROWTH"
-                    ? "bg-[#1D9E75] text-white hover:bg-[#158A5F] shadow-lg shadow-[#1D9E75]/20"
+                    ? "bg-[#38A3F1] text-white shadow-lg shadow-[#38A3F1]/20"
                     : plan.key === "PRO"
-                    ? "bg-[#F59E0B] text-white hover:bg-[#D97706]"
+                    ? "bg-[#18508f] text-white  hover:bg-[ tranparent hover:text-white] shadow-lg shadow-[#18508f]/20"
                     : "border-2 border-[#38A3F1] text-[#38A3F1] hover:bg-[#38A3F1] hover:text-white"
                 }`}
               >
@@ -204,10 +194,7 @@ export default function Plans() {
                 )}
               </motion.button>
 
-              <div className="flex items-center justify-center gap-1.5 mt-4">
-                <Shield className="w-3 h-3 text-[#1D9E75]" />
-                <span className="text-[10px] text-[#93B8D4]">Secure checkout • SSL encrypted</span>
-              </div>
+             
             </motion.div>
           ))}
         </div>

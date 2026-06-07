@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
-import { Check, Zap, Star, Trophy, ArrowLeft, ShieldCheck, Infinity } from "lucide-react";
+import { Check, Zap, Star, Trophy, ArrowLeft, ShieldCheck, Infinity, Route , Sprout, Crown} from "lucide-react";
 import Link from "next/link";
 
 type Props = {
@@ -19,8 +19,8 @@ const PLANS = [
     price: 9.99,
     credits: 3,
     perCredit: "3.33",
-    icon: Zap,
-    iconBg: "bg-[#F0F7FF]",
+    icon: Route,
+    iconBg: "bg-white",
     iconColor: "text-[#38A3F1]",
     badge: null,
     cta: "Get started",
@@ -40,10 +40,10 @@ const PLANS = [
     price: 24.99,
     credits: 10,
     perCredit: "2.50",
-    icon: Star,
+    icon: Sprout,
     iconBg: "bg-[#0D3A6E]",
     iconColor: "text-white",
-    badge: "Most popular",
+    
     cta: "Get Growth",
     features: [
       "10 project credits",
@@ -61,10 +61,10 @@ const PLANS = [
     price: 49.99,
     credits: 25,
     perCredit: "2.00",
-    icon: Trophy,
-    iconBg: "bg-amber-50",
-    iconColor: "text-amber-500",
-    badge: "Best value",
+    icon: Crown,
+    iconBg: "bg-white",
+    iconColor: "text-[#38A3F1]",
+    
     cta: "Go Pro",
     features: [
       "25 project credits",
@@ -111,11 +111,12 @@ export function PymePricing({ creditsAvailable, creditsUsed }: Props) {
 
         {/* Header */}
         <div className="text-center space-y-3">
-          <p className="text-xs font-semibold uppercase tracking-widest text-[#38A3F1]">Credits</p>
-          <h1 className="text-3xl font-bold text-[#0D3A6E]">Buy credits, publish projects</h1>
-          <p className="text-sm text-[#5B8DB8] max-w-md mx-auto leading-relaxed">
-            No subscriptions. Buy a credit pack and use them whenever you need.
-            Credits never expire.
+          
+          <h1 className="text-2xl font-bold text-[#0D3A6E]">Buy credits, publish projects</h1>
+          <p className="text-sm text-[#5B8DB8]  mx-auto leading-relaxed">
+           <span className="font-semibold text-[#38A3F1]">No subscriptions. </span>
+            
+          Buy a credit pack and use them whenever you need.
           </p>
 
           {/* Current balance */}
@@ -126,7 +127,7 @@ export function PymePricing({ creditsAvailable, creditsUsed }: Props) {
               className="inline-flex items-center gap-3 bg-white border border-[#BAD8F7] rounded-2xl px-5 py-3 mt-2 shadow-sm"
             >
               <div className="flex items-center gap-1.5">
-                <div className="w-2 h-2 rounded-full bg-green-400" />
+                <div className="w-2 h-2 rounded-full bg-[#38A3F1]" />
                 <span className="text-sm font-bold text-[#0D3A6E]">{creditsAvailable}</span>
                 <span className="text-xs text-[#93B8D4]">credits available</span>
               </div>
@@ -166,15 +167,7 @@ export function PymePricing({ creditsAvailable, creditsUsed }: Props) {
                 }`}
               >
                 {/* Badge */}
-                {plan.badge && (
-                  <div className={`py-1.5 text-center text-[11px] font-bold uppercase tracking-widest ${
-                    plan.highlighted
-                      ? "bg-[#0D3A6E] text-white"
-                      : "bg-amber-400 text-white"
-                  }`}>
-                    {plan.badge}
-                  </div>
-                )}
+                
 
                 <div className="p-7 space-y-6">
                   {/* Icon + name */}
@@ -201,7 +194,7 @@ export function PymePricing({ creditsAvailable, creditsUsed }: Props) {
                   <button
                     onClick={() => handleCheckout(plan.id)}
                     disabled={!!loading}
-                    className={`w-full py-3.5 rounded-2xl text-sm font-bold transition-all flex items-center justify-center gap-2 disabled:opacity-60 ${
+                    className={`w-full cursor-pointer py-3.5 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2 disabled:opacity-60 ${
                       plan.highlighted
                         ? "bg-gradient-to-r from-[#0D3A6E] to-[#1D5A9E] text-white hover:shadow-lg hover:shadow-[#0D3A6E]/25"
                         : "bg-[#F0F7FF] text-[#0D3A6E] hover:bg-[#E8F3FD] border border-[#BAD8F7]"
@@ -246,7 +239,7 @@ export function PymePricing({ creditsAvailable, creditsUsed }: Props) {
             "Instant access after payment",
           ].map(t => (
             <div key={t} className="flex items-center gap-1.5">
-              <Check className="w-3.5 h-3.5 text-green-400" />
+              <Check className="w-3.5 h-3.5 text-[#38A3F1]" />
               {t}
             </div>
           ))}

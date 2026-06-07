@@ -10,7 +10,7 @@ import {
   Award,
   ArrowRight,
   CheckCircle2,
-  Zap
+  Zap, FileInput, SendToBack, Network
 } from "lucide-react";
 
 const steps = [
@@ -25,27 +25,27 @@ const steps = [
     title: "Browse real projects", 
     description: "Explore real-world challenges from small businesses that need your skills.",
     icon: Search,
-    color: "#1D9E75",
-    gradient: "from-[#1D9E75] to-[#3DB892]"
+    color: "#18508f",
+    gradient: "from-[#18508f] to-[#3DB892]"
   },
   { 
     title: "Publish your idea with AI", 
     description: "Our AI helps you describe and post your project clearly, even without tech experience.",
-    icon: Sparkles,
+    icon: FileInput,
      color: "#38A3F1",
     gradient: "from-[#38A3F1] to-[#5BB3F3]"
   },
   { 
     title: "Apply or choose collaborators", 
     description: "Students apply to projects, business owners select who they want to work with.",
-    icon: Users,
-    color: "#1D9E75",
-    gradient: "from-[#1D9E75] to-[#3DB892]"
+    icon: SendToBack,
+    color: "#18508f",
+    gradient: "from-[#18508f] to-[#3DB892]"
   },
   { 
     title: "Build with AI support", 
     description: "Get continuous feedback and suggestions from our AI Product Manager throughout the project.",
-    icon: Bot,
+    icon: Network,
     color: "#38A3F1",
     gradient: "from-[#38A3F1] to-[#5BB3F3]"
   },
@@ -53,8 +53,8 @@ const steps = [
     title: "Get results and recognition", 
     description: "Businesses get real solutions. Students earn certificates to showcase their experience.",
     icon: Award,
-    color: "#1D9E75",
-    gradient: "from-[#1D9E75] to-[#3DB892]"
+    color: "#18508f",
+    gradient: "from-[#18508f] to-[#3DB892]"
   },
 ];
 
@@ -62,11 +62,11 @@ export function Guide() {
   return (
     <section id="how" className="relative py-24 px-6 bg-gradient-to-b from-white to-[#F0F7FF] overflow-hidden">
       
-      {/* Animated Background */}
+      {/* Animated Background 
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute top-20 left-10 w-72 h-72 bg-[#38A3F1] rounded-full opacity-5 blur-3xl animate-pulse" />
         <div className="absolute bottom-20 right-10 w-96 h-96 bg-[#1D9E75] rounded-full opacity-5 blur-3xl animate-pulse delay-1000" />
-      </div>
+      </div> */}
 
       <div className="relative max-w-6xl mx-auto">
         
@@ -77,17 +77,11 @@ export function Guide() {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-white rounded-full shadow-sm border border-[#BAD8F7] mb-4">
-            <Zap className="w-4 h-4 text-[#F59E0B] fill-[#F59E0B]" />
-            <span className="text-xs font-semibold uppercase tracking-wider text-[#0D5FA6]">
-              How it works
-            </span>
-          </div>
           
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-[#0D3A6E] mb-4">
+          <h2 className="text-2xl md:text-2xl lg:text-3xl font-bold text-[#0D3A6E] mb-4">
             Six steps to your first{" "}
             <span className="relative">
-              <span className="relative z-10 bg-gradient-to-r from-[#38A3F1] via-[#1D9E75] to-[#F59E0B] bg-clip-text text-transparent">
+              <span className="relative z-10 bg-[#38A3F1] bg-clip-text text-transparent">
                 real experience
               </span>
               <svg className="absolute -bottom-2 left-0 w-full h-3 text-[#38A3F1]/20" viewBox="0 0 100 10" preserveAspectRatio="none">
@@ -95,7 +89,7 @@ export function Guide() {
               </svg>
             </span>
           </h2>
-          <p className="text-[#5B8DB8] max-w-2xl mx-auto">
+          <p className="text-[#5B8DB8] max-w-2xl text-sm mx-auto">
             From sign-up to certification — your journey to professional growth starts here.
           </p>
         </motion.div>
@@ -250,7 +244,7 @@ export function Guide() {
           className="mt-16 text-center"
         >
           <div className="inline-flex items-center gap-6 px-8 py-4 bg-white rounded-2xl border border-[#E8F3FD] shadow-lg">
-            <CheckCircle2 className="w-5 h-5 text-[#1D9E75]" />
+            <CheckCircle2 className="w-5 h-5 text-[#38A3F1]" />
             <p className="text-[#0D3A6E] font-medium">
               Dexpert is more than a platform — it is your first real step into the professional world.
             </p>

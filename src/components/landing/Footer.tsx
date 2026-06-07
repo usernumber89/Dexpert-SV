@@ -178,23 +178,7 @@ export function Footer() {
               </li>
             </ul>
 
-            {/* Newsletter Signup */}
-            <div className="mt-6">
-              <p className="text-xs text-[#5B8DB8] mb-2">Subscribe to our newsletter</p>
-              <form className="flex gap-2">
-                <input
-                  type="email"
-                  placeholder="Your email"
-                  className="flex-1 px-3 py-2 text-xs bg-white/10 border border-white/20 rounded-lg text-white placeholder-[#5B8DB8] focus:outline-none focus:border-[#38A3F1] transition-colors"
-                />
-                <button
-                  type="submit"
-                  className="px-3 py-2 bg-[#38A3F1] text-white text-xs font-medium rounded-lg hover:bg-[#0D5FA6] transition-colors"
-                >
-                  Subscribe
-                </button>
-              </form>
-            </div>
+            
           </div>
         </div>
 
@@ -205,23 +189,12 @@ export function Footer() {
             {/* Copyright */}
             <div className="flex items-center gap-2 text-xs text-[#5B8DB8]">
               <span>© {currentYear} Dexpert. All rights reserved.</span>
-              <span className="w-1 h-1 bg-[#5B8DB8] rounded-full" />
-              <span className="flex items-center gap-1">
-                Made in El Salvador
-              </span>
+              
+             
             </div>
 
             {/* Trust Badges */}
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-1">
-                <Shield className="w-3 h-3 text-[#1D9E75]" />
-                <span className="text-xs text-[#5B8DB8]">SSL Secure</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <Sparkles className="w-3 h-3 text-[#F59E0B] fill-[#F59E0B]" />
-                <span className="text-xs text-[#5B8DB8]">100% Inclusive</span>
-              </div>
-            </div>
+            
           </div>
         </div>
       </div>

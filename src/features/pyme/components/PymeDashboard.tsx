@@ -177,9 +177,7 @@ export function PymeDashboard({ user, pyme, projects,credits }: Props) {
             <p className="text-xs font-medium uppercase tracking-widest text-[#93B8D4] mb-2">
               Business Dashboard
             </p>
-            <h1 className="text-2xl font-bold text-[#0D3A6E]">
-              Welcome back, {pyme?.name ?? user.name}!
-            </h1>
+            
             <p className="text-sm text-[#5B8DB8] mt-1">
               Manage your projects and find talented students
             </p>
@@ -197,7 +195,7 @@ export function PymeDashboard({ user, pyme, projects,credits }: Props) {
         </motion.div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 w-full h-30">
           {stats.map((stat, index) => {
             const Icon = stat.icon;
             return (
@@ -209,7 +207,7 @@ export function PymeDashboard({ user, pyme, projects,credits }: Props) {
                 whileHover={{ y: -2 }}
                 className="bg-white rounded-xl border border-[#BAD8F7] p-4 hover:shadow-lg transition-all group"
               >
-                <div className={`w-10 h-10 ${stat.bgColor} rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform`}>
+                <div className={`w-7 h-7 ${stat.bgColor} rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform`}>
                   <Icon className={`w-5 h-5 ${stat.color}`} />
                 </div>
                 <p className="text-2xl font-bold text-[#0D3A6E]">{stat.value}</p>
@@ -221,17 +219,16 @@ export function PymeDashboard({ user, pyme, projects,credits }: Props) {
 
         {/* AI Assistant Banner */}
         <CreditsWidget available={credits.available} used={credits.used} />
-        <motion.div
+       {/* <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           className="relative overflow-hidden bg-gradient-to-r from-[#0D3A6E] to-[#1D5A9E] rounded-2xl p-6"
         >
           {/* Background Pattern */}
-          <div className="absolute inset-0 opacity-10">
+          {/*<div className="absolute inset-0 opacity-10">
             <div className="absolute top-0 right-0 w-64 h-64 bg-white rounded-full blur-3xl" />
             <div className="absolute bottom-0 left-0 w-48 h-48 bg-[#38A3F1] rounded-full blur-3xl" />
           </div>
-          
           <div className="relative flex items-center justify-between">
             <div className="flex items-center gap-4">
               <div className="w-14 h-14 bg-white/10 backdrop-blur-sm rounded-2xl flex items-center justify-center">
@@ -263,9 +260,9 @@ export function PymeDashboard({ user, pyme, projects,credits }: Props) {
             >
               <Sparkles className="w-4 h-4" />
               Create with AI
-            </motion.button>
+            </motion.button> 
           </div>
-        </motion.div>
+        </motion.div>*/}
 
         {/* Search and Filters */}
         <div className="bg-white rounded-xl border border-[#BAD8F7] p-4">

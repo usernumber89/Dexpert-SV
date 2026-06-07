@@ -9,7 +9,7 @@ import {
   Building2, Mail, Phone, Globe, MapPin, Save, X,
   Camera, AlertCircle, Edit, LogOut, ChevronRight,
   Bell, Lock, Users, CreditCard, Sparkles,
-  Briefcase, TrendingUp, CheckCircle, Calendar
+  Briefcase, TrendingUp, CheckCircle, Calendar, MessageSquareCheck
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -444,7 +444,7 @@ if (projectsData) {
                             <div className="absolute top-0 right-0 w-32 h-32 bg-white rounded-full opacity-5 blur-2xl" />
                             <div className="relative flex items-start gap-3">
                               <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center flex-shrink-0">
-                                <Sparkles className="w-5 h-5 text-[#F59E0B]" />
+                                <MessageSquareCheck className="w-5 h-5 text-white" />
                               </div>
                               <div>
                                 <p className="text-white font-semibold mb-1">Complete your profile to attract more talent</p>

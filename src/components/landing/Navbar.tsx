@@ -107,7 +107,7 @@ export function Navbar() {
                     className="rounded-full border-2 border-[#BAD8F7] group-hover:border-[#38A3F1] transition-colors object-cover"
                   />
                 ) : (
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#38A3F1] to-[#1D9E75] flex items-center justify-center text-white text-xs font-medium border-2 border-[#BAD8F7] group-hover:border-[#38A3F1] transition-colors">
+                  <div className="w-8 h-8 rounded-full bg-[#38A3F1] flex items-center justify-center text-white text-xs font-medium border-2 border-[#BAD8F7] group-hover:border-[#38A3F1] transition-colors">
                     {getInitials(userData.name)}
                   </div>
                 )}

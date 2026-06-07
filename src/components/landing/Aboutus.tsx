@@ -11,22 +11,22 @@ import {
   CheckCircle2,
   Target,
   Award,
-  Heart
+  Heart, HandHelping, Goal, Telescope
 } from "lucide-react";
 
 const HIGHLIGHTS = [
   {
-    icon: Target,
+    icon: Goal,
     title: "Our Mission",
     description: "Bridge the gap between talent and opportunity, creating real-world experiences."
   },
   {
-    icon: Award,
+    icon: Telescope,
     title: "Our Vision",
     description: "Become the leading platform for emerging talent in Central America."
   },
   {
-    icon: Heart,
+    icon: HandHelping,
     title: "Our Values",
     description: "Inclusion, practical learning, and community-driven growth."
   }
@@ -34,31 +34,31 @@ const HIGHLIGHTS = [
 
 const STATS = [
   { 
-    value: "38+", 
+    value: "working on it", 
     label: "Active Users", 
     icon: Users,
     color: "#38A3F1",
-    trend: "+12 this week"
+    trend: "Growing rapidly"
   },
   { 
-    value: "10+", 
+    value: "working on it", 
     label: "Live Projects", 
     icon: Briefcase,
-    color: "#1D9E75",
-    trend: "5 open positions"
+    color: "#18508f",
+    trend: "Real impact"
   },
   { 
     value: "3", 
     label: "Business Plans", 
     icon: Building2,
     color: "#38A3F1",
-    trend: "Free & Premium"
+    trend: "Discover the right fit"
   },
   { 
     value: "🇸🇻", 
     label: "El Salvador", 
     icon: MapPin,
-    color: "#1D9E75",
+    color: "#18508f",
     trend: "Expanding soon"
   },
 ];
@@ -100,20 +100,12 @@ export function Aboutus() {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-gradient-to-r from-[#F0F7FF] to-[#E8F3FD] rounded-full mb-4">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#38A3F1] opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-[#38A3F1]"></span>
-            </span>
-            <span className="text-xs font-semibold uppercase tracking-wider text-[#0D5FA6]">
-              About Dexpert
-            </span>
-          </div>
           
-          <h2 className="text-4xl md:text-5xl font-bold text-[#0D3A6E] mb-4">
+          
+          <h2 className="text-4xl md:text-3xl font-bold text-[#0D3A6E] mb-4">
             We believe in{" "}
             <span className="relative">
-              <span className="relative z-10 bg-gradient-to-r from-[#38A3F1] to-[#1D9E75] bg-clip-text text-transparent">
+              <span className="relative z-10 bg-[#38A3F1] bg-clip-text text-transparent">
                 what you can be
               </span>
               <svg className="absolute -bottom-2 left-0 w-full h-3 text-[#38A3F1]/20" viewBox="0 0 100 10" preserveAspectRatio="none">
@@ -121,7 +113,7 @@ export function Aboutus() {
               </svg>
             </span>
           </h2>
-          <p className="text-[#5B8DB8] max-w-2xl mx-auto">
+          <p className="text-[#5B8DB8] max-w-2xl text-sm mx-auto">
             Bridging the gap between emerging talent and real-world opportunities in El Salvador.
           </p>
         </motion.div>
@@ -191,7 +183,7 @@ export function Aboutus() {
                     transition={{ delay: index * 0.05 }}
                     className="flex items-center gap-2"
                   >
-                    <CheckCircle2 className="w-4 h-4 text-[#1D9E75] flex-shrink-0" />
+                    <CheckCircle2 className="w-4 h-4 text-[#38A3F1] flex-shrink-0" />
                     <span className="text-sm text-[#0D3A6E]">{feature}</span>
                   </motion.div>
                 ))}
@@ -246,7 +238,7 @@ export function Aboutus() {
                         <Icon className="w-5 h-5" style={{ color: stat.color }} />
                       </div>
                       {index === 0 && (
-                        <span className="px-2 py-1 bg-green-50 text-green-600 text-[10px] font-semibold rounded-full border border-green-200">
+                        <span className="px-2 py-1 bg-[#18508f] text-white text-[10px] font-semibold rounded-full border border-[#18508f]">
                           Growing
                         </span>
                       )}

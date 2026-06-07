@@ -26,7 +26,7 @@ const faqs = [
     question: "Do I need experience to join?", 
     answer: "No experience required. Dexpert is made for beginners. Our AI assistant guides you through each step.",
     category: "Students",
-    highlight: true
+    
   },
   { 
     question: "How does Dexpert help small businesses?", 
@@ -37,7 +37,7 @@ const faqs = [
     question: "Is Dexpert accessible to people with disabilities?", 
     answer: "Yes. Dexpert is fully inclusive with equal access, respect, and participation for all users.",
     category: "General",
-    highlight: true
+    
   },
   { 
     question: "What do students get from the experience?", 
@@ -75,8 +75,7 @@ export function Faq() {
       
       {/* Animated Background */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-[#38A3F1] rounded-full opacity-5 blur-3xl animate-pulse" />
-        <div className="absolute bottom-0 left-0 w-96 h-96 bg-[#1D9E75] rounded-full opacity-5 blur-3xl animate-pulse delay-1000" />
+        
         
         {/* Floating Icons */}
         <motion.div
@@ -105,17 +104,12 @@ export function Faq() {
           className="text-center mb-12"
         >
           {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-white rounded-full shadow-sm border border-[#BAD8F7] mb-4">
-            <Sparkles className="w-4 h-4 text-[#F59E0B] fill-[#F59E0B]" />
-            <span className="text-xs font-semibold uppercase tracking-wider text-[#0D5FA6]">
-              FAQ
-            </span>
-          </div>
           
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-[#0D3A6E] mb-4">
+          
+          <h2 className="text-2xl md:text-2xl lg:text-3xl font-bold text-[#0D3A6E] mb-4">
             Frequently asked{" "}
             <span className="relative">
-              <span className="relative z-10 bg-gradient-to-r from-[#38A3F1] to-[#1D9E75] bg-clip-text text-transparent">
+              <span className="relative z-10 bg-[#38A3F1] bg-clip-text text-transparent">
                 questions
               </span>
               <svg className="absolute -bottom-2 left-0 w-full h-3 text-[#38A3F1]/20" viewBox="0 0 100 10" preserveAspectRatio="none">
@@ -124,7 +118,7 @@ export function Faq() {
             </span>
           </h2>
           
-          <p className="text-[#5B8DB8] max-w-2xl mx-auto">
+          <p className="text-[#5B8DB8] text-sm max-w-2xl mx-auto">
             Everything you need to know about Dexpert. Can't find what you're looking for? 
             <br className="hidden md:block" />
             <a href="#contact" className="text-[#38A3F1] hover:underline ml-1">
@@ -163,9 +157,9 @@ export function Faq() {
             <button
               key={category}
               onClick={() => setActiveCategory(category)}
-              className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+              className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
                 activeCategory === category
-                  ? "bg-gradient-to-r from-[#38A3F1] to-[#1D9E75] text-white shadow-md"
+                  ? "bg-[#38A3F1] text-white shadow-md"
                   : "bg-white text-[#5B8DB8] hover:bg-[#F0F7FF] border border-[#BAD8F7]"
               }`}
             >
@@ -189,9 +183,7 @@ export function Faq() {
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.05 }}
-                className={`border-b border-[#E8F3FD] last:border-b-0 ${
-                  faq.highlight ? "bg-gradient-to-r from-[#F0F7FF]/50 to-transparent" : ""
-                }`}
+                className={`border-b border-[#E8F3FD] last:border-b-0 `}
               >
                 <div 
                   className="cursor-pointer group"
@@ -202,7 +194,7 @@ export function Faq() {
                       {/* Question Number */}
                       <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-all ${
                         openIndex === i 
-                          ? "bg-gradient-to-br from-[#38A3F1] to-[#1D9E75] text-white" 
+                          ? "bg-[#38A3F1] text-white" 
                           : "bg-[#F0F7FF] text-[#38A3F1] group-hover:bg-[#38A3F1] group-hover:text-white"
                       }`}>
                         <span className="text-xs font-bold">{i + 1}</span>
@@ -213,9 +205,7 @@ export function Faq() {
                         openIndex === i ? "text-[#38A3F1]" : "text-[#0D3A6E] group-hover:text-[#38A3F1]"
                       }`}>
                         {faq.question}
-                        {faq.highlight && (
-                          <Sparkles className="inline w-3 h-3 ml-2 text-[#F59E0B] fill-[#F59E0B]" />
-                        )}
+                        
                       </p>
                     </div>
                     
@@ -242,7 +232,7 @@ export function Faq() {
                     >
                       <div className="px-6 pb-5 pl-17">
                         <div className="relative">
-                          <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-gradient-to-b from-[#38A3F1] to-[#1D9E75] opacity-30" />
+                          <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-[#174e8c] opacity-30" />
                           <p className="text-sm text-[#5B8DB8] leading-relaxed pl-4">
                             {faq.answer}
                           </p>
@@ -286,7 +276,7 @@ export function Faq() {
         >
           <div className="inline-flex items-center gap-4 px-6 py-4 bg-white rounded-2xl border border-[#E8F3FD] shadow-lg">
             <MessageCircle className="w-5 h-5 text-[#38A3F1]" />
-            <p className="text-[#0D3A6E] font-medium">
+            <p className="text-[#0D3A6E] text-sm font-medium">
               Still have questions? We're here to help!
             </p>
             <a 
