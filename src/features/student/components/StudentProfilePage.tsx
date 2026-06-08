@@ -263,7 +263,7 @@ if (applications) {
                       className="rounded-full object-cover border-4 border-white shadow-xl" 
                     />
                   ) : (
-                    <div className="w-full h-full rounded-full bg-gradient-to-br from-[#38A3F1] to-[#1D9E75] border-4 border-white shadow-xl flex items-center justify-center">
+                    <div className="w-full h-full rounded-full bg-[#1D5A9E] border-4 border-white shadow-xl flex items-center justify-center">
                       <User className="w-12 h-12 text-white" />
                     </div>
                   )}
@@ -299,25 +299,25 @@ if (applications) {
                   <p className="text-[10px] text-[#93B8D4] uppercase tracking-wider">Total</p>
                 </div>
                 <div className="bg-white rounded-xl p-3 text-center shadow-sm">
-                  <div className="w-8 h-8 bg-amber-50 rounded-lg flex items-center justify-center mx-auto mb-2">
-                    <Clock className="w-4 h-4 text-amber-500" />
+                  <div className="w-8 h-8 bg-[#F0F7FF] rounded-lg flex items-center justify-center mx-auto mb-2">
+                    <Clock className="w-4 h-4 text-[#38A3F1]" />
                   </div>
-                  <p className="text-xl font-bold text-amber-600">{stats.pending}</p>
-                  <p className="text-[10px] text-amber-500 uppercase tracking-wider">Pending</p>
+                  <p className="text-xl font-bold text-[#0D3A6E]">{stats.pending}</p>
+                  <p className="text-[10px] text-[#93B8D4] uppercase tracking-wider">Pending</p>
                 </div>
                 <div className="bg-white rounded-xl p-3 text-center shadow-sm">
-                  <div className="w-8 h-8 bg-green-50 rounded-lg flex items-center justify-center mx-auto mb-2">
-                    <CheckCircle className="w-4 h-4 text-green-500" />
+                  <div className="w-8 h-8 bg-[#F0F7FF] rounded-lg flex items-center justify-center mx-auto mb-2">
+                    <CheckCircle className="w-4 h-4 text-[#1D5A9E]" />
                   </div>
-                  <p className="text-xl font-bold text-green-600">{stats.accepted}</p>
-                  <p className="text-[10px] text-green-500 uppercase tracking-wider">Accepted</p>
+                  <p className="text-xl font-bold text-[#0D3A6E]">{stats.accepted}</p>
+                  <p className="text-[10px] text-[#1D5A9E] uppercase tracking-wider">Accepted</p>
                 </div>
                 <div className="bg-white rounded-xl p-3 text-center shadow-sm">
-                  <div className="w-8 h-8 bg-red-50 rounded-lg flex items-center justify-center mx-auto mb-2">
-                    <X className="w-4 h-4 text-red-500" />
+                  <div className="w-8 h-8 bg-[#F0F7FF] rounded-lg flex items-center justify-center mx-auto mb-2">
+                    <X className="w-4 h-4 text-[#1D5A9E]" />
                   </div>
-                  <p className="text-xl font-bold text-red-500">{stats.rejected}</p>
-                  <p className="text-[10px] text-red-500 uppercase tracking-wider">Rejected</p>
+                  <p className="text-xl font-bold text-[#0D3A6E]">{stats.rejected}</p>
+                  <p className="text-[10px] text-[#1D5A9E] uppercase tracking-wider">Rejected</p>
                 </div>
               </div>
 
@@ -394,7 +394,7 @@ if (applications) {
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={() => setIsEditing(true)}
-                    className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-[#38A3F1] to-[#1D9E75] text-white text-sm font-semibold py-3 rounded-xl hover:shadow-lg transition-all"
+                    className="w-full flex items-center justify-center gap-2 bg-[#38A3F1] text-white text-sm font-semibold py-3 rounded-xl hover:shadow-lg transition-all"
                   >
                     <Edit className="w-4 h-4" />
                     Edit Profile
@@ -568,7 +568,7 @@ if (applications) {
                           {/* Bio */}
                           <div>
                             <h3 className="text-base font-semibold text-[#0D3A6E] mb-4 flex items-center gap-2">
-                              <span className="w-1 h-5 bg-gradient-to-b from-[#38A3F1] to-[#1D9E75] rounded-full" />
+                              <span className="w-1 h-5 bg-[#38A3F1] rounded-full" />
                               About Me
                             </h3>
                             <p className="text-sm text-[#5B8DB8] leading-relaxed">
@@ -604,7 +604,7 @@ if (applications) {
                           </div>
 
                           {/* Tip */}
-                          <div className="relative overflow-hidden bg-gradient-to-r from-[#38A3F1] to-[#1D9E75] rounded-xl p-5">
+                          <div className="relative overflow-hidden bg-[#1D5A9E] rounded-xl p-5">
                             <div className="absolute top-0 right-0 w-32 h-32 bg-white rounded-full opacity-10 blur-2xl" />
                             <div className="relative flex items-start gap-3">
                               <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center flex-shrink-0">

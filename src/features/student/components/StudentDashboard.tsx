@@ -1,6 +1,6 @@
 "use client";
 
-import { FolderOpen, Award, Clock, ChevronRight, Sparkles, MapPin } from "lucide-react";
+import { FolderOpen, Award, Clock, ChevronRight, Sparkles, MapPin, BotMessageSquare } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
@@ -125,14 +125,7 @@ export function StudentDashboard({ user, student, applications, projects }: Prop
             <p className="text-xs font-semibold uppercase tracking-wider text-[#5B8DB8] mb-1">Welcome back</p>
             <h1 className="text-2xl font-bold text-[#0D3A6E] md:text-3xl">{user.name}</h1>
           </div>
-          {user.avatarUrl ? (
-            <Image src={user.avatarUrl} alt={user.name} width={48} height={48}
-              className="rounded-full border-2 border-[#38A3F1] shadow-md object-cover" />
-          ) : (
-            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#38A3F1] to-[#1D9E75] flex items-center justify-center text-white text-base font-bold shadow-md">
-              {getInitials(user.name)}
-            </div>
-          )}
+          
         </div>
 
         {/* Stats */}
@@ -157,7 +150,7 @@ export function StudentDashboard({ user, student, applications, projects }: Prop
           <div className="relative flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="flex items-center gap-4">
               <div className="w-14 h-14 bg-white/15 backdrop-blur-sm rounded-2xl flex items-center justify-center flex-shrink-0">
-                <Sparkles className="w-7 h-7 text-[#F59E0B]" />
+                <BotMessageSquare className="w-7 h-7 text-[#F59E0B]" />
               </div>
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wider text-[#F59E0B] mb-1">AI Product Manager</p>

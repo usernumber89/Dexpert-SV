@@ -16,6 +16,7 @@ import { createClient } from "@/lib/supabase/client";
 import { CreateProjectModal } from "./CreateProjectModal";
 import Image from "next/image";
 import {CreditsWidget} from "./CreditsWidget"
+import {BriefcaseIcon }  from "@phosphor-icons/react";
 
 type Student = {
   id: string;
@@ -372,19 +373,7 @@ export function PymeDashboard({ user, pyme, projects,credits }: Props) {
                     {/* Project Icon */}
                     <div className="relative">
                       <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#F0F7FF] to-[#E8F3FD] border border-[#BAD8F7] flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
-                        {project.image_url ? (
-                          <Image
-                            src={project.image_url}
-                            alt={project.title}
-                            width={48}
-                            height={48}
-                            className="rounded-xl object-cover"
-                          />
-                        ) : (
-                          <span className="text-lg font-bold text-[#0D3A6E]">
-                            {project.title[0].toUpperCase()}
-                          </span>
-                        )}
+                        <BriefcaseIcon className="w-6 h-6 text-[#38A3F1]" />
                       </div>
                     </div>
 
@@ -513,7 +502,7 @@ export function PymeDashboard({ user, pyme, projects,credits }: Props) {
                   >
                     <div className="flex items-start justify-between mb-3">
                       <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#F0F7FF] to-[#E8F3FD] border border-[#BAD8F7] flex items-center justify-center">
-                        <Briefcase className="w-6 h-6 text-[#38A3F1]" />
+                        <BriefcaseIcon className="w-6 h-6 text-[#38A3F1]" />
                       </div>
                       <span className={`inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full border ${statusBadge.color}`}>
                         <StatusIcon className="w-3 h-3" />

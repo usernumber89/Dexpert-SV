@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import axios from "axios";
 import { toast } from "sonner";
 import { X, Sparkles } from "lucide-react";
 
@@ -59,77 +58,68 @@ export function CreateProjectModal({ onClose, onSuccess }: {
   };
 
   const onSubmit = async (values: FormValues) => {
-  setSubmitting(true);
-  try {
-    const res = await fetch("/api/project", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(values),
-    });
+    setSubmitting(true);
+    try {
+      const res = await fetch("/api/project", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(values),
+      });
 
-    const data = await res.json();
+      const data = await res.json();
 
-    if (!res.ok) {
-      if (data.noCredits) {
-        toast.error("No tienes créditos disponibles. Adquiere un plan para publicar proyectos.");
-        onClose();
-        router.push("/pyme/pricing"); // ajusta la ruta si es diferente
+      if (!res.ok) {
+        if (data.noCredits) {
+          toast.error("No tienes créditos disponibles. Adquiere un plan para publicar proyectos.");
+          onClose();
+          router.push("/pyme/pricing"); // ajusta la ruta si es diferente
+          return;
+        }
+        toast.error(data.error || "Error al crear el proyecto");
         return;
       }
-      toast.error(data.error || "Error al crear el proyecto");
-      return;
-    }
 
-    toast.success("Project created!");
-    onSuccess?.();
-    router.push(`/pyme/projects/${data.id}`);
-    onClose();
-  } catch {
-    toast.error("Error creating project");
-  } finally {
-    setSubmitting(false);
-  }
-};
-  // bg-brand-navy/40 → bg-[#0D3A6E]/40
-// border-brand-border → border-[#BAD8F7]
-// text-brand-navy → text-[#0D3A6E]
-// bg-surface-raised → bg-[#F0F7FF]
-// text-brand-mid → text-[#38A3F1]
-// text-ink-secondary → text-[#5B8DB8]
-// text-ink-muted → text-[#93B8D4]
-// focus:border-brand-mid → focus:border-[#38A3F1]
-// bg-brand-mid → bg-[#38A3F1]
-// hover:bg-brand-title → hover:bg-[#0D5FA6]
+      toast.success("Project created!");
+      onSuccess?.();
+      router.push(`/pyme/projects/${data.id}`);
+      onClose();
+    } catch {
+      toast.error("Error creating project");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   return (
-    <div className="fixed inset-0 z-50  bg-[#0D3A6E]/40 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl border  border-[#BAD8F7] w-full max-w-md shadow-xl">
+    <div className="fixed inset-0 z-50 bg-[#0D3A6E]/40 flex items-center justify-center p-4">
+      <div className="bg-white rounded-2xl border border-[#BAD8F7] w-full max-w-md shadow-xl">
 
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b  border-[#BAD8F7]">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-[#BAD8F7]">
           <h2 className="text-sm font-semibold text-[#0D3A6E]">Create project</h2>
           <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-[#F0F7FF] transition">
-            <X className="w-4 h-4 text-ink-secondary" />
+            <X className="w-4 h-4 text-[#5B8DB8]" />
           </button>
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-4">
 
           {/* AI section */}
-          <div className="rounded-xl bg-surface-raised border border-brand-border p-4 space-y-3">
+          <div className="rounded-xl bg-[#F0F7FF] border border-[#BAD8F7] p-4 space-y-3">
             <div className="flex items-center gap-2">
-              <Sparkles className="w-3.5 h-3.5 text-brand-mid" />
-              <p className="text-xs font-medium text-brand-mid uppercase tracking-widest">Generate with AI</p>
+              <Sparkles className="w-3.5 h-3.5 text-[#38A3F1]" />
+              <p className="text-xs font-medium text-[#38A3F1] uppercase tracking-widest">Generate with AI</p>
             </div>
             <input
               {...register("prompt")}
               placeholder="e.g. I need a website for my bakery in Santa Ana"
-              className="w-full text-sm px-3 py-2.5 rounded-lg border border-brand-border bg-white text-brand-navy placeholder:text-ink-muted focus:outline-none focus:border-brand-mid"
+              className="w-full text-sm px-3 py-2.5 rounded-lg border border-[#BAD8F7] bg-white text-[#0D3A6E] placeholder:text-[#93B8D4] focus:outline-none focus:border-[#38A3F1] transition-colors"
             />
             <button
               type="button"
               onClick={generateWithAI}
               disabled={generating}
-              className="flex items-center gap-2 text-sm font-medium text-brand-mid hover:text-brand-title transition disabled:opacity-50"
+              className="flex items-center gap-2 text-sm font-medium text-[#38A3F1] hover:text-[#0D5FA6] transition disabled:opacity-50"
             >
               <Sparkles className="w-3.5 h-3.5" />
               {generating ? "Generating..." : "Generate brief"}
@@ -139,32 +129,32 @@ export function CreateProjectModal({ onClose, onSuccess }: {
           {/* Fields */}
           <div className="space-y-3">
             <div>
-              <label className="text-xs font-medium text-ink-secondary mb-1.5 block">Project name</label>
+              <label className="text-xs font-medium text-[#5B8DB8] mb-1.5 block">Project name</label>
               <input
                 {...register("projectName")}
                 placeholder="E-commerce store"
-                className="w-full text-sm px-3 py-2.5 rounded-lg border border-brand-border text-brand-navy placeholder:text-ink-muted focus:outline-none focus:border-brand-mid"
+                className="w-full text-sm px-3 py-2.5 rounded-lg border border-[#BAD8F7] text-[#0D3A6E] placeholder:text-[#93B8D4] focus:outline-none focus:border-[#38A3F1] transition-colors"
               />
               {errors.projectName && <p className="text-xs text-red-400 mt-1">{errors.projectName.message}</p>}
             </div>
 
             <div>
-              <label className="text-xs font-medium text-ink-secondary mb-1.5 block">Description</label>
+              <label className="text-xs font-medium text-[#5B8DB8] mb-1.5 block">Description</label>
               <textarea
                 {...register("description")}
                 placeholder="Describe what you need..."
                 rows={3}
-                className="w-full text-sm px-3 py-2.5 rounded-lg border border-brand-border text-brand-navy placeholder:text-ink-muted focus:outline-none focus:border-brand-mid resize-none"
+                className="w-full text-sm px-3 py-2.5 rounded-lg border border-[#BAD8F7] text-[#0D3A6E] placeholder:text-[#93B8D4] focus:outline-none focus:border-[#38A3F1] resize-none transition-colors"
               />
               {errors.description && <p className="text-xs text-red-400 mt-1">{errors.description.message}</p>}
             </div>
 
             <div>
-              <label className="text-xs font-medium text-ink-secondary mb-1.5 block">Required skills</label>
+              <label className="text-xs font-medium text-[#5B8DB8] mb-1.5 block">Required skills</label>
               <input
                 {...register("skills")}
                 placeholder="React, UX Design, Marketing..."
-                className="w-full text-sm px-3 py-2.5 rounded-lg border border-brand-border text-brand-navy placeholder:text-ink-muted focus:outline-none focus:border-brand-mid"
+                className="w-full text-sm px-3 py-2.5 rounded-lg border border-[#BAD8F7] text-[#0D3A6E] placeholder:text-[#93B8D4] focus:outline-none focus:border-[#38A3F1] transition-colors"
               />
               {errors.skills && <p className="text-xs text-red-400 mt-1">{errors.skills.message}</p>}
             </div>
@@ -174,7 +164,7 @@ export function CreateProjectModal({ onClose, onSuccess }: {
           <button
             type="submit"
             disabled={submitting}
-            className="w-full bg-brand-mid text-white text-sm font-medium py-2.5 rounded-xl hover:bg-brand-title transition disabled:opacity-60"
+            className="w-full bg-[#38A3F1] cursor-pointer text-white text-sm font-medium py-2.5 rounded-xl hover:bg-[#0D5FA6] transition active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-[#38A3F1]/70 disabled:hover:bg-[#38A3F1]/70"
           >
             {submitting ? "Creating..." : "Publish project"}
           </button>
