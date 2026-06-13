@@ -9,9 +9,9 @@ import { toast } from "sonner";
 import { X, Sparkles } from "lucide-react";
 
 const schema = z.object({
-  projectName: z.string().min(3, "Name is required"),
-  description: z.string().min(10, "Description is required"),
-  skills: z.string().min(2, "Skills are required"),
+  projectName: z.string().min(3, "El nombre del proyecto es requerido"),
+  description: z.string().min(10, "La descripción es requerida"),
+  skills: z.string().min(2, "Las habilidades son requeridas"),
   prompt: z.string().optional(),
 });
 
@@ -32,7 +32,7 @@ export function CreateProjectModal({ onClose, onSuccess }: {
 
   const generateWithAI = async () => {
     const prompt = watch("prompt")?.trim();
-    if (!prompt) { toast.error("Write a prompt first"); return; }
+    if (!prompt) { toast.error("Escribe un prompt primero"); return; }
 
     setGenerating(true);
     try {
@@ -46,12 +46,12 @@ export function CreateProjectModal({ onClose, onSuccess }: {
         setValue("projectName", data.title);
         setValue("description", data.description);
         setValue("skills", data.skills);
-        toast.success("Brief generated!");
+        toast.success("Brief generado!");
       } else {
-        toast.error("Try a different prompt");
+        toast.error("Intenta con un prompt diferente");
       }
     } catch {
-      toast.error("AI error");
+      toast.error("Error en la IA, intenta de nuevo");
     } finally {
       setGenerating(false);
     }
@@ -79,12 +79,12 @@ export function CreateProjectModal({ onClose, onSuccess }: {
         return;
       }
 
-      toast.success("Project created!");
+      toast.success("Proyecto creado!");
       onSuccess?.();
       router.push(`/pyme/projects/${data.id}`);
       onClose();
     } catch {
-      toast.error("Error creating project");
+      toast.error("Error creando el proyecto, intenta de nuevo");
     } finally {
       setSubmitting(false);
     }
@@ -96,7 +96,7 @@ export function CreateProjectModal({ onClose, onSuccess }: {
 
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-[#BAD8F7]">
-          <h2 className="text-sm font-semibold text-[#0D3A6E]">Create project</h2>
+          <h2 className="text-sm font-semibold text-[#0D3A6E]">Crear proyecto</h2>
           <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-[#F0F7FF] transition">
             <X className="w-4 h-4 text-[#5B8DB8]" />
           </button>
@@ -108,11 +108,11 @@ export function CreateProjectModal({ onClose, onSuccess }: {
           <div className="rounded-xl bg-[#F0F7FF] border border-[#BAD8F7] p-4 space-y-3">
             <div className="flex items-center gap-2">
               <Sparkles className="w-3.5 h-3.5 text-[#38A3F1]" />
-              <p className="text-xs font-medium text-[#38A3F1] uppercase tracking-widest">Generate with AI</p>
+              <p className="text-xs font-medium text-[#38A3F1] uppercase tracking-widest">Generar con IA</p>
             </div>
             <input
               {...register("prompt")}
-              placeholder="e.g. I need a website for my bakery in Santa Ana"
+              placeholder="ej. Necesito un sitio web para mi panadería en Santa Ana"
               className="w-full text-sm px-3 py-2.5 rounded-lg border border-[#BAD8F7] bg-white text-[#0D3A6E] placeholder:text-[#93B8D4] focus:outline-none focus:border-[#38A3F1] transition-colors"
             />
             <button
@@ -122,27 +122,27 @@ export function CreateProjectModal({ onClose, onSuccess }: {
               className="flex items-center gap-2 text-sm font-medium text-[#38A3F1] hover:text-[#0D5FA6] transition disabled:opacity-50"
             >
               <Sparkles className="w-3.5 h-3.5" />
-              {generating ? "Generating..." : "Generate brief"}
+              {generating ? "Generando..." : "Generar descripción"}
             </button>
           </div>
 
           {/* Fields */}
           <div className="space-y-3">
             <div>
-              <label className="text-xs font-medium text-[#5B8DB8] mb-1.5 block">Project name</label>
+              <label className="text-xs font-medium text-[#5B8DB8] mb-1.5 block">Nombre del proyecto</label>
               <input
                 {...register("projectName")}
-                placeholder="E-commerce store"
+                placeholder="Tienda de comercio electrónico para mi panadería"
                 className="w-full text-sm px-3 py-2.5 rounded-lg border border-[#BAD8F7] text-[#0D3A6E] placeholder:text-[#93B8D4] focus:outline-none focus:border-[#38A3F1] transition-colors"
               />
               {errors.projectName && <p className="text-xs text-red-400 mt-1">{errors.projectName.message}</p>}
             </div>
 
             <div>
-              <label className="text-xs font-medium text-[#5B8DB8] mb-1.5 block">Description</label>
+              <label className="text-xs font-medium text-[#5B8DB8] mb-1.5 block">Descripción</label>
               <textarea
                 {...register("description")}
-                placeholder="Describe what you need..."
+                placeholder="Describe lo que necesitas..."
                 rows={3}
                 className="w-full text-sm px-3 py-2.5 rounded-lg border border-[#BAD8F7] text-[#0D3A6E] placeholder:text-[#93B8D4] focus:outline-none focus:border-[#38A3F1] resize-none transition-colors"
               />
@@ -150,10 +150,10 @@ export function CreateProjectModal({ onClose, onSuccess }: {
             </div>
 
             <div>
-              <label className="text-xs font-medium text-[#5B8DB8] mb-1.5 block">Required skills</label>
+              <label className="text-xs font-medium text-[#5B8DB8] mb-1.5 block">Habilidades necesarias</label>
               <input
                 {...register("skills")}
-                placeholder="React, UX Design, Marketing..."
+                placeholder="React, Diseño UX, Django, Marketing..."
                 className="w-full text-sm px-3 py-2.5 rounded-lg border border-[#BAD8F7] text-[#0D3A6E] placeholder:text-[#93B8D4] focus:outline-none focus:border-[#38A3F1] transition-colors"
               />
               {errors.skills && <p className="text-xs text-red-400 mt-1">{errors.skills.message}</p>}
@@ -166,7 +166,7 @@ export function CreateProjectModal({ onClose, onSuccess }: {
             disabled={submitting}
             className="w-full bg-[#38A3F1] cursor-pointer text-white text-sm font-medium py-2.5 rounded-xl hover:bg-[#0D5FA6] transition active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-[#38A3F1]/70 disabled:hover:bg-[#38A3F1]/70"
           >
-            {submitting ? "Creating..." : "Publish project"}
+            {submitting ? "Creando..." : "Publicar proyecto"}
           </button>
         </form>
       </div>

@@ -20,19 +20,19 @@ export async function POST(req: Request) {
       );
     }
 
-    const systemPrompt = `You are helping a small business owner in El Salvador create a project brief for Dexpert, a talent marketplace connecting businesses with young students.
+    const systemPrompt = `Ayudarás al dueño de una pequeña empresa en El Salvador a crear una descripción de su proyecto para Dexpert, una plataforma que conecta empresas con jóvenes estudiantes.
 
-Generate a clear, professional project brief with:
-- title: short and descriptive (max 8 words)
-- description: 2-3 sentences explaining the project clearly
-- skills: comma-separated list of 3-5 required skills
+Genera una descripción del proyecto claro y profesional con:
+- Título: breve y descriptivo (máximo 8 palabras)
+- Descripción: 2-3 frases que expliquen el proyecto con claridad
+- Habilidades: lista de 3 a 5 habilidades requeridas, separadas por comas
 
-Respond ONLY with a valid JSON object in this exact format:
+Responde ÚNICAMENTE con un objeto JSON válido en este formato exacto:
 {"title": "...", "description": "...", "skills": "..."}
 
-Respond in the same language the user used.`;
+Responde en el mismo idioma que utilizó el usuario.`;
 
-    const userPrompt = `The business owner described their need as: "${prompt}"`;
+    const userPrompt = `El dueño de la empresa describió su necesidad como: "${prompt}"`;
 
     const { text } = await generateText({
   model: groq("llama-3.3-70b-versatile"),
