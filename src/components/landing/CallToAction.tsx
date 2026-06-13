@@ -44,16 +44,16 @@ export function CallToAction() {
         >
           {/* Título */}
           <h2 className="text-3xl md:text-4xl font-bold text-[#0D3A6E] mb-4">
-            Ready to take the{" "}
-            <span className="text-[#38A3F1]">first step</span>?
+            Listo para tomar el{" "}
+            <span className="text-[#38A3F1]">primer paso</span>?
           </h2>
 
           {/* Descripción */}
           <p className="text-[#5B8DB8] text-lg mb-8 max-w-xl mx-auto leading-relaxed">
-            Whether you are a young talent looking for experience or a small
-            business needing real solutions,{" "}
+            No importa si eres un joven talento buscando experiencia o una pequeña
+            empresa que necesita soluciones reales,{" "}
             <span className="font-semibold text-[#0D3A6E]">
-              Dexpert is your bridge to growth.
+              Dexpert es tu puente al crecimiento.
             </span>
           </p>
 
@@ -61,15 +61,15 @@ export function CallToAction() {
           <div className="flex flex-wrap items-center justify-center gap-3 mb-8">
             <FeaturePill
               icon={<Rocket className="w-4 h-4" />}
-              text="No experience needed"
+              text="No experiencia previa requerida"
             />
             <FeaturePill
               icon={<Medal className="w-4 h-4" />}
-              text="100% Free for students"
+              text="100% Gratis para estudiantes"
             />
             <FeaturePill
               icon={<Briefcase className="w-4 h-4" />}
-              text="Real projects"
+              text="Proyectos reales de empresas salvadoreñas"
             />
           </div>
 
@@ -84,7 +84,7 @@ export function CallToAction() {
                 className="group inline-flex items-center gap-2 px-8 py-4 bg-[#0D3A6E] text-white font-semibold rounded-xl hover:bg-[#1D5A9E] transition-colors shadow-md"
               >
                 <span>
-                  {user ? "Go to dashboard" : "Join Dexpert now — it's free"}
+                  {user ? "Ir al panel de control" : "Únete a Dexpert ahora — es gratis"}
                 </span>
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </Link>

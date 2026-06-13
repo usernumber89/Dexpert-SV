@@ -17,17 +17,17 @@ const plans = [
     price: "$9.99",
     Icon: Route,
     credits: 3,
-    description: "Perfect to try Dexpert with your first real projects.",
+    description: "Perfecto para probar Dexpert con tus primeros proyectos reales.",
     color: "#38A3F1",
     features: [
-      { text: "3 project credits", highlight: true },
-      { text: "Student applications", highlight: false },
-      { text: "Standard visibility", highlight: false },
-      { text: "Basic AI brief writer", highlight: false },
-      { text: "Email support", highlight: false },
+      { text: "3 créditos de proyecto", highlight: true },
+      { text: "Aplicaciones de estudiantes", highlight: true },
+      { text: "Visibilidad estándar", highlight: true },
+      { text: "Asistente de IA básico", highlight: true },
+      { text: "Soporte por correo electrónico", highlight: true },
     ],
     badge: null,
-    cta: "Get started",
+    cta: "Comenzar",
   },
   {
     key: "GROWTH" as PlanKey,
@@ -35,17 +35,17 @@ const plans = [
     price: "$24.99",
     credits: 10,
     Icon: Sprout,
-    description: "For businesses that need consistent talent across multiple projects.",
+    description: "Para empresas que necesitan talento consistente en múltiples proyectos.",
     color: "#18508f",
     features: [
-      { text: "10 project credits", highlight: true },
-      { text: "Everything in Starter", highlight: true },
-      { text: "AI brief writer (full)", highlight: true },
-      { text: "Recommended candidates", highlight: true },
-      { text: "Priority support", highlight: false },
+      { text: "10 créditos de proyecto", highlight: true },
+      { text: "Todo en Starter", highlight: true },
+      { text: "Asistente de IA (completo)", highlight: true },
+      { text: "Candidatos recomendados", highlight: true },
+      { text: "Soporte prioritario", highlight:true },
     ],
     badge: null,
-    cta: "Get Growth",
+    cta: "Obtener Growth",
   },
   {
     key: "PRO" as PlanKey,
@@ -53,17 +53,17 @@ const plans = [
     price: "$49.99",
     credits: 25,
     Icon: Crown,
-    description: "Maximum reach for growing businesses with constant hiring needs.",
+    description: "Máximo alcance para empresas en crecimiento con necesidades constantes de contratación.",
     color: "#38A3F1",
     features: [
-      { text: "25 project credits", highlight: true },
-      { text: "Everything in Growth", highlight: true },
-      { text: "Featured listings", highlight: true },
-      { text: "Top candidates only", highlight: true },
-      { text: "Dedicated account manager", highlight: true },
+      { text: "25 créditos de proyecto", highlight: true },
+      { text: "Todo en Growth", highlight: true },
+      { text: "Listados destacados", highlight: true },
+      { text: "Solo candidatos destacados", highlight: true },
+      { text: "Account Manager dedicado", highlight: true },
     ],
     badge: null,
-    cta: "Go Pro",
+    cta: "Obtener Pro",
   },
 ];
 
@@ -103,16 +103,16 @@ export default function Plans() {
         >
           
           <h2 className="lg:text-3xl md:text-2xl font-bold text-[#0D3A6E] mb-3">
-            Buy credits, <span className="text-[#38A3F1]">publish projects</span>
+            Compra créditos, <span className="text-[#38A3F1]">publica proyectos</span>
           </h2>
           <p className="text-[#5B8DB8] max-w-xl text-sm mx-auto mb-5 leading-relaxed">
-            <span className="font-bold text-[#38A3F1]">No subscriptions.</span> Buy a credit pack and use them whenever you need.
-            Credits never expire.
+            <span className="font-bold text-[#38A3F1]">No hay suscripciones.</span> Compra un paquete de créditos y úsalos cuando los necesites.
+            Los créditos nunca expiran.
           </p>
           <div className="inline-flex  items-center gap-2 px-4 py-1.5 bg-white rounded-md shadow-sm border border-[#BAD8F7] mb-5">
             <Building2 className="w-6 h-6 text-[#38A3F1] " />
             <span className="text-xs font-semibold uppercase tracking-wider text-[#0D5FA6]">
-              Enterprise 
+              Negocios
             </span>
           </div>
         </motion.div>
@@ -148,7 +148,7 @@ export default function Plans() {
                 </div>
                 
                 <p className="text-[10px] text-[#93B8D4] mt-1.5">
-                  ${(parseFloat(plan.price.replace("$", "")) / plan.credits).toFixed(2)} per project • Credits never expire
+                  ${(parseFloat(plan.price.replace("$", "")) / plan.credits).toFixed(2)} por proyecto • Los créditos nunca expiran
                 </p>
               </div>
 
@@ -206,9 +206,9 @@ export default function Plans() {
           viewport={{ once: true }}
           className="text-center text-xs text-[#93B8D4] mt-10"
         >
-          All plans include AI-powered matching and student access. Credits never expire.
+          Todos los planes incluyen emparejamiento impulsado por IA y acceso para estudiantes. Los créditos nunca expiran.
           <br />
-          <span className="text-[#38A3F1]">Questions? Contact us at dexpertwork@gmail.com</span>
+          <span className="text-[#38A3F1]">¿Preguntas? Contáctanos en dexpertwork@gmail.com</span>
         </motion.p>
       </div>
     </section>

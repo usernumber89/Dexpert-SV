@@ -50,7 +50,7 @@ export default function PymeProfilePage() {
   });
   const [isEditing, setIsEditing] = useState(false);
   const [editedProfile, setEditedProfile] = useState<Partial<PymeProfile>>({});
-  const [activeTab, setActiveTab] = useState<"profile" | "settings" | "billing">("profile");
+  const [activeTab, setActiveTab] = useState<"perfil" | "configuración" | "cuenta">("perfil");
   const [uploadingLogo, setUploadingLogo] = useState(false);
 
   const logoInputRef = useRef<HTMLInputElement>(null);
@@ -97,7 +97,7 @@ if (projectsData) {
 }
     } catch (error) {
       console.error(error);
-      toast.error("Error loading profile");
+      toast.error("Error cargando el perfil. Por favor, inténtalo de nuevo.");
     } finally {
       setLoading(false);
     }
@@ -115,9 +115,9 @@ if (projectsData) {
       if (error) throw error;
       setProfile({ ...profile, ...editedProfile });
       setIsEditing(false);
-      toast.success("Profile updated!");
+      toast.success("Perfil actualizado!");
     } catch {
-      toast.error("Error saving profile");
+      toast.error("Error guardando el perfil. Por favor, inténtalo de nuevo.");
     } finally {
       setSaving(false);
     }
@@ -140,9 +140,9 @@ if (projectsData) {
 
       setProfile({ ...profile, logo_url: publicUrl });
       setEditedProfile({ ...editedProfile, logo_url: publicUrl });
-      toast.success("Logo uploaded!");
+      toast.success("Logo subido!");
     } catch {
-      toast.error("Upload error");
+      toast.error("Error al subir el logo. Por favor, inténtalo de nuevo.");
     } finally {
       setUploadingLogo(false);
     }
@@ -161,7 +161,7 @@ if (projectsData) {
           <div className="w-16 h-16 border-4 border-[#BAD8F7] border-t-[#38A3F1] rounded-full animate-spin mx-auto" />
           <div className="absolute inset-0 w-16 h-16 border-4 border-transparent border-t-[#1D9E75] rounded-full animate-pulse opacity-50" />
         </div>
-        <p className="text-[#5B8DB8] mt-4 font-medium">Loading your profile...</p>
+        <p className="text-[#5B8DB8] mt-4 font-medium">Cargando tu perfil...</p>
       </div>
     </div>
   );
@@ -177,15 +177,15 @@ if (projectsData) {
           <div className="w-20 h-20 bg-red-50 rounded-2xl flex items-center justify-center mx-auto mb-6">
             <AlertCircle className="w-10 h-10 text-red-400" />
           </div>
-          <h2 className="text-2xl font-bold text-[#0D3A6E] mb-3">Profile Not Found</h2>
+          <h2 className="text-2xl font-bold text-[#0D3A6E] mb-3">Perfil No Encontrado</h2>
           <p className="text-[#5B8DB8] mb-8 leading-relaxed">
-            Complete your business profile to start posting projects and connecting with talented students.
+            Completa tu perfil empresarial para comenzar a publicar proyectos y conectarte con estudiantes talentosos.
           </p>
           <Link
             href="/onboarding/pyme"
             className="inline-flex items-center justify-center gap-2 w-full bg-gradient-to-r from-[#0D3A6E] to-[#1D5A9E] text-white font-semibold py-3.5 rounded-xl hover:shadow-lg hover:shadow-[#38A3F1]/25 transition-all group"
           >
-            Complete Your Profile
+            Completa Tu Perfil
             <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
           </Link>
         </div>
@@ -251,15 +251,15 @@ if (projectsData) {
 
               {/* Stats Grid */}
               <div className="grid grid-cols-2 gap-2 p-4 bg-[#F8FBFE] border-y border-[#E8F3FD]">
-                <StatItem icon={Briefcase} value={stats.total} label="Projects" color="text-[#38A3F1]" bg="bg-[#F0F7FF]" />
-                <StatItem icon={Users} value={stats.totalApplications} label="Applications" color="text-[#1D5A9E]" bg="bg-[#F0F7FF]" />
-                <StatItem icon={TrendingUp} value={stats.active} label="Active" color="text-[#38A3F1]" bg="bg-[#F0F7FF]" />
-                <StatItem icon={CheckCircle} value={stats.completed} label="Completed" color="text-[#1D5A9E]" bg="bg-[#F0F7FF]" />
+                <StatItem icon={Briefcase} value={stats.total} label="Proyectos" color="text-[#38A3F1]" bg="bg-[#F0F7FF]" />
+                <StatItem icon={Users} value={stats.totalApplications} label="Aplicantes / Solicitudes" color="text-[#1D5A9E]" bg="bg-[#F0F7FF]" />
+                <StatItem icon={TrendingUp} value={stats.active} label="Activos" color="text-[#38A3F1]" bg="bg-[#F0F7FF]" />
+                <StatItem icon={CheckCircle} value={stats.completed} label="Completados" color="text-[#1D5A9E]" bg="bg-[#F0F7FF]" />
               </div>
 
               {/* Contact Information */}
               <div className="p-6 space-y-3">
-                <h3 className="text-xs font-semibold text-[#0D3A6E] uppercase tracking-wider mb-3">Contact Information</h3>
+                <h3 className="text-xs font-semibold text-[#0D3A6E] uppercase tracking-wider mb-3">Información de Contacto</h3>
                 {profile.email && <ContactItem icon={Mail} value={profile.email} />}
                 {profile.phone && <ContactItem icon={Phone} value={profile.phone} />}
                 {profile.website && (
@@ -284,7 +284,7 @@ if (projectsData) {
                     onClick={() => setIsEditing(true)}
                     className="w-full flex items-center justify-center gap-2 bg-[#38A3F1] text-white text-sm font-semibold py-3 rounded-xl hover:shadow-lg transition-all"
                   >
-                    <Edit className="w-4 h-4" /> Edit Profile
+                    <Edit className="w-4 h-4" /> Editar Perfil
                   </motion.button>
                 ) : (
                   <div className="flex gap-2">
@@ -293,14 +293,14 @@ if (projectsData) {
                       onClick={handleSave} disabled={saving}
                       className="flex-1 flex items-center justify-center gap-2 bg-[#1D9E75] text-white text-sm font-semibold py-3 rounded-xl hover:bg-[#158A5F] hover:shadow-lg transition-all disabled:opacity-50"
                     >
-                      <Save className="w-4 h-4" /> {saving ? "Saving..." : "Save"}
+                      <Save className="w-4 h-4" /> {saving ? "Guardando..." : "Guardar"}
                     </motion.button>
                     <motion.button
                       whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
                       onClick={() => { setIsEditing(false); setEditedProfile(profile); }}
                       className="flex-1 flex items-center justify-center gap-2 bg-gray-100 text-[#5B8DB8] text-sm font-semibold py-3 rounded-xl hover:bg-gray-200 transition-all"
                     >
-                      <X className="w-4 h-4" /> Cancel
+                      <X className="w-4 h-4" /> Cancelar
                     </motion.button>
                   </div>
                 )}
@@ -318,7 +318,7 @@ if (projectsData) {
             >
               {/* Tabs */}
               <div className="flex p-1.5 bg-[#F0F7FF] m-4 rounded-xl">
-                {(["profile", "settings", "billing"] as const).map(tab => (
+                {(["perfil", "configuración", "cuenta"] as const).map(tab => (
                   <button
                     key={tab}
                     onClick={() => setActiveTab(tab)}
@@ -328,14 +328,14 @@ if (projectsData) {
                         : "text-[#93B8D4] hover:text-[#0D3A6E] hover:bg-white/50"
                     }`}
                   >
-                    {tab === "profile" ? "Company Profile" : tab}
+                    {tab === "perfil" ? "Perfil de la Empresa" : tab}
                   </button>
                 ))}
               </div>
 
               <div className="p-6">
                 <AnimatePresence mode="wait">
-                  {activeTab === "profile" && (
+                  {activeTab === "perfil" && (
                     <motion.div
                       key="profile"
                       initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }}
@@ -345,14 +345,14 @@ if (projectsData) {
                         <div className="space-y-5">
                           <div className="grid md:grid-cols-2 gap-4">
                             {[
-                              { key: "company_name", label: "Company name", type: "text", required: true },
-                              { key: "contact_person", label: "Contact person", type: "text", required: true },
-                              { key: "email", label: "Email address", type: "email", required: true },
-                              { key: "phone", label: "Phone number", type: "tel" },
-                              { key: "website", label: "Website URL", type: "url" },
-                              { key: "industry", label: "Industry", type: "text" },
-                              { key: "founded_year", label: "Founded year", type: "text" },
-                              { key: "location", label: "Location", type: "text" },
+                              { key: "company_name", label: "Nombre de la Empresa", type: "text", required: true },
+                              { key: "contact_person", label: "Persona de Contacto", type: "text", required: true },
+                              { key: "email", label: "Dirección de Email", type: "email", required: true },
+                              { key: "phone", label: "Número de Teléfono", type: "tel" },
+                              { key: "website", label: "URL del Sitio Web", type: "url" },
+                              { key: "industry", label: "Industria", type: "text" },
+                              { key: "founded_year", label: "Año de Fundación", type: "text" },
+                              { key: "location", label: "Ubicación", type: "text" },
                             ].map(f => (
                               <div key={f.key} className={f.key === "company_name" || f.key === "email" ? "md:col-span-2" : ""}>
                                 <label className="text-xs font-semibold text-[#0D3A6E] mb-1.5 block">
@@ -368,26 +368,26 @@ if (projectsData) {
                               </div>
                             ))}
                             <div className="md:col-span-2">
-                              <label className="text-xs font-semibold text-[#0D3A6E] mb-1.5 block">Employee count</label>
+                              <label className="text-xs font-semibold text-[#0D3A6E] mb-1.5 block">Cantidad de Empleados</label>
                               <select
                                 value={editedProfile.employee_count ?? ""}
                                 onChange={e => setEditedProfile({ ...editedProfile, employee_count: e.target.value })}
                                 className="w-full px-4 py-3 rounded-xl border border-[#BAD8F7] bg-white/50 text-sm focus:outline-none focus:border-[#38A3F1] focus:ring-2 focus:ring-[#38A3F1]/20 transition-all cursor-pointer"
                               >
-                                <option value="">Select employee count...</option>
+                                <option value="">Seleccionar cantidad de empleados...</option>
                                 {["1-10", "11-50", "51-200", "201-500", "500+"].map(v => (
-                                  <option key={v} value={v}>{v} employees</option>
+                                  <option key={v} value={v}>{v} empleados</option>
                                 ))}
                               </select>
                             </div>
                             <div className="md:col-span-2">
-                              <label className="text-xs font-semibold text-[#0D3A6E] mb-1.5 block">Company description</label>
+                              <label className="text-xs font-semibold text-[#0D3A6E] mb-1.5 block">Descripción de la Empresa</label>
                               <textarea
                                 value={editedProfile.description ?? ""}
                                 onChange={e => setEditedProfile({ ...editedProfile, description: e.target.value })}
                                 rows={5}
                                 className="w-full px-4 py-3 rounded-xl border border-[#BAD8F7] bg-white/50 text-sm focus:outline-none focus:border-[#38A3F1] focus:ring-2 focus:ring-[#38A3F1]/20 transition-all resize-none"
-                                placeholder="Tell us about your company..."
+                                placeholder="Cuéntanos sobre tu empresa..."
                               />
                             </div>
                           </div>
@@ -397,7 +397,7 @@ if (projectsData) {
                           <div>
                             <h3 className="text-base font-semibold text-[#0D3A6E] mb-4 flex items-center gap-2">
                               <span className="w-1 h-5 bg-[#1D5A9E] rounded-full" />
-                              About the Company
+                                Descripción de la Empresa
                             </h3>
                             <p className="text-sm text-[#5B8DB8] leading-relaxed">
                               {profile.description || "No description provided yet. Add a description to help students understand your business better."}
@@ -407,13 +407,13 @@ if (projectsData) {
                           <div>
                             <h3 className="text-base font-semibold text-[#0D3A6E] mb-4 flex items-center gap-2">
                               <span className="w-1 h-5 bg-[#1D5A9E] rounded-full" />
-                              Company Details
+                                Detalles de la Empresa
                             </h3>
                             <div className="grid grid-cols-2 gap-4">
                               <div className="bg-gradient-to-br from-[#F0F7FF] to-white rounded-xl p-4 border border-[#E8F3FD]">
                                 <div className="flex items-center gap-2 mb-2">
                                   <Calendar className="w-4 h-4 text-[#38A3F1]" />
-                                  <p className="text-xs text-[#93B8D4] uppercase tracking-wider">Founded</p>
+                                  <p className="text-xs text-[#93B8D4] uppercase tracking-wider">Año de Fundación</p>
                                 </div>
                                 <p className="text-lg font-semibold text-[#0D3A6E]">
                                   {profile.founded_year || "—"}
@@ -422,7 +422,7 @@ if (projectsData) {
                               <div className="bg-gradient-to-br from-[#F0F7FF] to-white rounded-xl p-4 border border-[#E8F3FD]">
                                 <div className="flex items-center gap-2 mb-2">
                                   <Users className="w-4 h-4 text-[#38A3F1]" />
-                                  <p className="text-xs text-[#93B8D4] uppercase tracking-wider">Company Size</p>
+                                  <p className="text-xs text-[#93B8D4] uppercase tracking-wider">Cantidad de Empleados</p>
                                 </div>
                                 <p className="text-lg font-semibold text-[#0D3A6E]">
                                   {profile.employee_count || "—"}
@@ -431,7 +431,7 @@ if (projectsData) {
                               <div className="col-span-2 bg-gradient-to-br from-[#F0F7FF] to-white rounded-xl p-4 border border-[#E8F3FD]">
                                 <div className="flex items-center gap-2 mb-2">
                                   <MapPin className="w-4 h-4 text-[#38A3F1]" />
-                                  <p className="text-xs text-[#93B8D4] uppercase tracking-wider">Location</p>
+                                  <p className="text-xs text-[#93B8D4] uppercase tracking-wider">Ubicación</p>
                                 </div>
                                 <p className="text-base font-medium text-[#0D3A6E]">
                                   {profile.location || "—"}
@@ -447,9 +447,9 @@ if (projectsData) {
                                 <MessageSquareCheck className="w-5 h-5 text-white" />
                               </div>
                               <div>
-                                <p className="text-white font-semibold mb-1">Complete your profile to attract more talent</p>
+                                <p className="text-white font-semibold mb-1">Completa tu perfil</p>
                                 <p className="text-[#BAD8F7] text-xs">
-                                  Businesses with complete profiles receive 3x more quality applications
+                                  Las empresas con perfiles completos reciben 3x más solicitudes de calidad
                                 </p>
                               </div>
                             </div>
@@ -460,18 +460,18 @@ if (projectsData) {
                   )}
 
                   {/* Settings Tab */}
-                  {activeTab === "settings" && (
+                  {activeTab === "configuración" && (
                     <motion.div
-                      key="settings"
+                      key="configuración"
                       initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }}
                       transition={{ duration: 0.2 }}
                       className="space-y-3"
                     >
-                      <h3 className="text-base font-semibold text-[#0D3A6E] mb-4">Account Settings</h3>
+                      <h3 className="text-base font-semibold text-[#0D3A6E] mb-4">Configuración de la Cuenta</h3>
                       {[
-                        { icon: Bell, label: "Notifications", desc: "Manage how you receive alerts and updates" },
-                        { icon: Lock, label: "Security", desc: "Update password and security preferences" },
-                        { icon: Users, label: "Team Management", desc: "Add or remove team members" },
+                        { icon: Bell, label: "Notificaciones", desc: "Gestiona cómo recibes alertas y actualizaciones" },
+                        { icon: Lock, label: "Seguridad", desc: "Actualiza tu contraseña y preferencias de seguridad" },
+                        { icon: Users, label: "Equipo", desc: "Añade o elimina miembros del equipo" },
                       ].map((item, index) => (
                         <motion.div
                           key={item.label}
@@ -513,7 +513,7 @@ if (projectsData) {
                   )}
 
                   {/* Billing Tab */}
-                  {activeTab === "billing" && (
+                  {activeTab === "cuenta" && (
                     <motion.div
                       key="billing"
                       initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }}
@@ -523,7 +523,7 @@ if (projectsData) {
                       <div className="w-24 h-24 bg-[#F0F7FF] rounded-3xl flex items-center justify-center mx-auto mb-6">
                         <CreditCard className="w-12 h-12 text-[#BAD8F7]" />
                       </div>
-                      <h3 className="text-xl font-bold text-[#0D3A6E] mb-3">Billing Coming Soon</h3>
+                      <h3 className="text-xl font-bold text-[#0D3A6E] mb-3">Facturación Próximamente</h3>
                       <p className="text-sm text-[#5B8DB8] max-w-sm mx-auto">
                         We're working on bringing you powerful billing features. Stay tuned!
                       </p>

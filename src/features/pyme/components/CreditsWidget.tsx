@@ -18,20 +18,20 @@ export function CreditsWidget({ available, used }: Props) {
         <div className="flex items-center gap-2">
           <Ticket className="w-4 h-4 text-[#38A3F1]" />
           <p className="text-xs font-medium text-[#38A3F1] uppercase tracking-widest">
-            Project Credits
+            Créditos
           </p>
         </div>
         <Link
           href="/pyme/pricing"
           className="flex items-center gap-1 text-xs font-medium text-white bg-[#38A3F1] px-3 py-1.5 rounded-lg hover:bg-[#0D5FA6] transition"
         >
-          <CreditCard className="w-5 h-5" /> Buy more
+          <CreditCard className="w-5 h-5" /> Comprar más
         </Link>
       </div>
 
       <div className="flex items-end gap-2 mb-2">
         <span className="text-2xl font-bold text-white">{available}</span>
-        <span className="text-[#BAD8F7] text-sm mb-1">credits available</span>
+        <span className="text-[#BAD8F7] text-sm mb-1">créditos disponibles</span>
       </div>
 
       {/* Progress bar */}
@@ -43,14 +43,14 @@ export function CreditsWidget({ available, used }: Props) {
       </div>
 
       <div className="flex justify-between mb-2">
-        <p className="text-[10px] text-[#BAD8F7]">{used} used</p>
-        <p className="text-[10px] text-[#BAD8F7]">{total} total purchased</p>
+        <p className="text-[10px] text-[#BAD8F7]">{used} usados</p>
+        <p className="text-[10px] text-[#BAD8F7]">{total} total comprados</p>
       </div>
 
       {available === 0 && (
         <div className="mt-3 p-2.5 bg-red-500/10 border border-red-400/20 rounded-lg">
           <p className="text-xs text-red-300">
-            No credits left. Buy a plan to publish more projects.
+            No tienes créditos disponibles. Compra un plan para publicar más proyectos.
           </p>
         </div>
       )}

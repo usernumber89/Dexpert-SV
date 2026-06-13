@@ -13,60 +13,58 @@ import {
 
 const faqs = [
   { 
-    question: "What is Dexpert?", 
-    answer: "Dexpert is a platform that connects young people without work experience to small businesses that need help with real projects.",
-    category: "General"
+    "question": "¿Qué es Dexpert?", 
+    "answer": "Dexpert es una plataforma que conecta a jóvenes sin experiencia laboral con pequeñas empresas que necesitan ayuda con proyectos reales.",
+    "category": "General"
   },
   { 
-    question: "Who can use Dexpert?", 
-    answer: "Young people including those with disabilities who want to gain experience, and small businesses looking for affordable talent.",
-    category: "General"
+    "question": "¿Quiénes pueden usar Dexpert?", 
+    "answer": "Jóvenes, incluyendo aquellos con discapacidades, que desean adquirir experiencia, y pequeñas empresas que buscan talento asequible.",
+    "category": "General"
   },
   { 
-    question: "Do I need experience to join?", 
-    answer: "No experience required. Dexpert is made for beginners. Our AI assistant guides you through each step.",
-    category: "Students",
-    
+    "question": "¿Necesito experiencia para unirme?", 
+    "answer": "No se requiere experiencia. Dexpert está diseñado para principiantes. Nuestro asistente de inteligencia artificial te guía en cada paso.",
+    "category": "Estudiantes"
   },
   { 
-    question: "How does Dexpert help small businesses?", 
-    answer: "Businesses post projects with AI help, get support from motivated students, and choose plans that fit their budget.",
-    category: "Business"
+    "question": "¿Cómo ayuda Dexpert a las pequeñas empresas?", 
+    "answer": "Las empresas publican proyectos con la ayuda de IA, reciben el apoyo de estudiantes motivados y eligen planes que se ajusten a su presupuesto.",
+    "category": "Empresas"
   },
   { 
-    question: "Is Dexpert accessible to people with disabilities?", 
-    answer: "Yes. Dexpert is fully inclusive with equal access, respect, and participation for all users.",
-    category: "General",
-    
+    "question": "¿Dexpert es accesible para personas con discapacidades?", 
+    "answer": "Sí. Dexpert es totalmente inclusivo, ofreciendo igualdad de acceso, respeto y participación para todos los usuarios.",
+    "category": "General"
   },
   { 
-    question: "What do students get from the experience?", 
-    answer: "Practical experience, AI mentorship, and a certificate proving their contribution to real-world projects.",
-    category: "Students"
+    "question": "¿Qué obtienen los estudiantes de la experiencia?", 
+    "answer": "Experiencia práctica, mentoría mediante IA y un certificado que demuestra su contribución en proyectos del mundo real.",
+    "category": "Estudiantes"
   },
   { 
-    question: "How much does it cost for businesses?", 
-    answer: "Three plans: $4.99 Basic, $14.99 Assisted with AI, and $24.99 Premium with full support.",
-    category: "Business"
+    "question": "¿Cuánto cuesta para las empresas?", 
+    "answer": "Hay tres planes: Básico por $4.99, Asistido con IA por $14.99 y Premium con soporte completo por $24.99.",
+    "category": "Empresas"
   },
   { 
-    question: "Where is Dexpert available?", 
-    answer: "Currently focused on El Salvador with plans to expand across Latin America.",
-    category: "General"
+    "question": "¿Dónde está disponible Dexpert?", 
+    "answer": "Actualmente está enfocado en El Salvador, con planes de expansión por toda América Latina.",
+    "category": "General"
   },
 ];
 
-const categories = ["All", "General", "Students", "Business"];
+const categories = ["Todas", "General", "Estudiantes", "Empresas"];
 
 export function Faq() {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [activeCategory, setActiveCategory] = useState("All");
+  const [activeCategory, setActiveCategory] = useState("Todas");
 
   const filteredFaqs = faqs.filter(faq => {
     const matchesSearch = faq.question.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          faq.answer.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = activeCategory === "All" || faq.category === activeCategory;
+    const matchesCategory = activeCategory === "Todas" || faq.category === activeCategory;
     return matchesSearch && matchesCategory;
   });
 
@@ -107,10 +105,10 @@ export function Faq() {
           
           
           <h2 className="text-2xl md:text-2xl lg:text-3xl font-bold text-[#0D3A6E] mb-4">
-            Frequently asked{" "}
+            Preguntas{" "}
             <span className="relative">
               <span className="relative z-10 bg-[#38A3F1] bg-clip-text text-transparent">
-                questions
+                Frecuentes
               </span>
               <svg className="absolute -bottom-2 left-0 w-full h-3 text-[#38A3F1]/20" viewBox="0 0 100 10" preserveAspectRatio="none">
                 <path d="M0,5 Q50,10 100,5" stroke="currentColor" strokeWidth="8" fill="none" />
@@ -119,10 +117,10 @@ export function Faq() {
           </h2>
           
           <p className="text-[#5B8DB8] text-sm max-w-2xl mx-auto">
-            Everything you need to know about Dexpert. Can't find what you're looking for? 
+          Todo lo que necesitas saber sobre Dexpert. ¿No encuentras lo que estás buscando? 
             <br className="hidden md:block" />
             <a href="#contact" className="text-[#38A3F1] hover:underline ml-1">
-              Contact our support team
+              Contacta a nuestro equipo de soporte
             </a>
           </p>
         </motion.div>
@@ -138,7 +136,7 @@ export function Faq() {
             <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#93B8D4]" />
             <input
               type="text"
-              placeholder="Search questions..."
+              placeholder="Buscar preguntas..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-12 pr-4 py-3.5 bg-white border border-[#BAD8F7] rounded-2xl text-sm text-[#0D3A6E] placeholder-[#93B8D4] focus:outline-none focus:border-[#38A3F1] focus:ring-2 focus:ring-[#38A3F1]/20 transition-all"
@@ -253,15 +251,15 @@ export function Faq() {
           ) : (
             <div className="text-center py-16">
               <HelpCircle className="w-16 h-16 text-[#93B8D4] mx-auto mb-4 opacity-50" />
-              <p className="text-[#5B8DB8]">No questions found matching your search.</p>
+              <p className="text-[#5B8DB8]">No se encontraron preguntas que coincidan con tu búsqueda.</p>
               <button
                 onClick={() => {
                   setSearchTerm("");
-                  setActiveCategory("All");
+                  setActiveCategory("Todas");
                 }}
                 className="mt-4 text-[#38A3F1] hover:underline"
               >
-                Clear filters
+                Limpiar filtros
               </button>
             </div>
           )}
@@ -277,13 +275,13 @@ export function Faq() {
           <div className="inline-flex items-center gap-4 px-6 py-4 bg-white rounded-2xl border border-[#E8F3FD] shadow-lg">
             <MessageCircle className="w-5 h-5 text-[#38A3F1]" />
             <p className="text-[#0D3A6E] text-sm font-medium">
-              Still have questions? We're here to help!
+              ¿Todavía tienes preguntas? ¡Estamos aquí para ayudarte!
             </p>
             <a 
               href="#contact" 
               className="inline-flex items-center gap-2 text-[#38A3F1] font-medium hover:gap-3 transition-all"
             >
-              Contact us
+              Contáctanos
               <ArrowRight className="w-4 h-4" />
             </a>
           </div>

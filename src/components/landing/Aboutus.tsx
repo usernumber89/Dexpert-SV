@@ -17,18 +17,18 @@ import {
 const HIGHLIGHTS = [
   {
     icon: Goal,
-    title: "Our Mission",
-    description: "Bridge the gap between talent and opportunity, creating real-world experiences."
+    title: "Nuestra Misión",
+    description: "Cerrar la brecha entre el talento y la oportunidad, creando experiencias del mundo real."
   },
   {
     icon: Telescope,
-    title: "Our Vision",
-    description: "Become the leading platform for emerging talent in Central America."
+    title: "Nuestra Visión",
+    description: "Convertirnos en la plataforma líder para el talento emergente en América Central."
   },
   {
     icon: HandHelping,
-    title: "Our Values",
-    description: "Inclusion, practical learning, and community-driven growth."
+    title: "Nuestros Valores",
+    description: "Inclusión, aprendizaje práctico, y crecimiento impulsado por la comunidad."
   }
 ];
 
@@ -64,12 +64,12 @@ const STATS = [
 ];
 
 const FEATURES = [
-  "Real project experience",
-  "Professional portfolio building",
-  "Direct mentorship",
-  "Skill certifications",
-  "Flexible participation",
-  "Community networking"
+  "Experiencia en proyectos reales",
+  "Construcción de portafolio profesional",
+  "Mentoría directa",
+  "Certificaciones de habilidades",
+  "Participación flexible",
+  "Redes de comunicación comunitaria"
 ];
 
 export function Aboutus() {
@@ -103,10 +103,10 @@ export function Aboutus() {
           
           
           <h2 className="text-4xl md:text-3xl font-bold text-[#0D3A6E] mb-4">
-            We believe in{" "}
+            Creemos en{" "}
             <span className="relative">
               <span className="relative z-10 bg-[#38A3F1] bg-clip-text text-transparent">
-                what you can be
+                lo que puedes ser
               </span>
               <svg className="absolute -bottom-2 left-0 w-full h-3 text-[#38A3F1]/20" viewBox="0 0 100 10" preserveAspectRatio="none">
                 <path d="M0,5 Q50,10 100,5" stroke="currentColor" strokeWidth="8" fill="none" />
@@ -114,7 +114,7 @@ export function Aboutus() {
             </span>
           </h2>
           <p className="text-[#5B8DB8] max-w-2xl text-sm mx-auto">
-            Bridging the gap between emerging talent and real-world opportunities in El Salvador.
+            Cerrando la brecha entre el talento y las oportunidades del mundo real en El Salvador.
           </p>
         </motion.div>
 
@@ -161,15 +161,15 @@ export function Aboutus() {
               <div className="absolute -top-6 -left-6 text-6xl text-[#38A3F1]/10 font-serif">"</div>
               
               <p className="text-lg text-[#0D3A6E] leading-relaxed mb-6 font-medium">
-                Dexpert is an inclusive platform that connects young people with no work experience
-                to micro and small businesses, allowing them to participate in real projects,
-                gain practice, develop skills, and strengthen their professional profile.
+                Dexpert es una plataforma inclusiva que conecta a jóvenes sin experiencia laboral
+                con micro y pequeñas empresas, permitiéndoles participar en proyectos reales,
+                ganar práctica, desarrollar habilidades y fortalecer su perfil profesional.
               </p>
               
               <p className="text-[#5B8DB8] leading-relaxed mb-8">
-                We believe that everyone deserves a chance to showcase their potential. 
-                Our platform provides the tools, mentorship, and opportunities needed to 
-                transform theoretical knowledge into practical expertise.
+                Creemos que todos merecen una oportunidad para mostrar su potencial. 
+                Nuestra plataforma proporciona las herramientas, mentoría y oportunidades necesarias para 
+                transformar el conocimiento teórico en experticia práctica.
               </p>
 
               {/* Feature List */}
@@ -194,7 +194,7 @@ export function Aboutus() {
                 href="#contact"
                 className="group inline-flex items-center gap-2 px-6 py-3 bg-white border-2 border-[#0D3A6E] text-[#0D3A6E] font-semibold rounded-xl hover:bg-[#0D3A6E] hover:text-white transition-all duration-300"
               >
-                Get in touch
+                Contáctanos
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </Link>
             </div>

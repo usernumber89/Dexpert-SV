@@ -25,12 +25,33 @@ export default async function PymeApplicationsPage() {
           id, full_name, email, phone, location, bio,
           university, major, graduation_year,
           skills, linkedin, github, portfolio, resume_url,
-          avatar_url, verified, education
+          avatar_url, verified, education,
+          all_apps:applications ( status )
         )
       )
     `)
     .eq("pyme_id", pyme.id)
     .order("created_at", { ascending: false });
 
-  return <PymeApplications projects={(projects ?? []) as any} />;
+  // Transformar los datos para inyectar las métricas de DExpert
+  const projectsWithMetrics = (projects || []).map((project) => ({
+    ...project,
+    applications: project.applications.map((app) => {
+      const studentData = app.students as any;
+      
+      if (studentData) {
+        const studentApps = studentData.all_apps || [];
+        studentData.total_applications = studentApps.length;
+        studentData.accepted_applications = studentApps.filter(
+          (a: any) => a.status === 'ACCEPTED'
+        ).length;
+        
+        // Limpiamos la propiedad temporal
+        delete studentData.all_apps;
+      }
+      return app;
+    }),
+  }));
+
+  return <PymeApplications projects={projectsWithMetrics as any} />;
 }

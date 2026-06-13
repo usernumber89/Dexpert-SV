@@ -61,7 +61,7 @@ export function PymeDashboard({ user, pyme, projects,credits }: Props) {
   const [menuOpen, setMenuOpen] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "draft" | "closed">("all");
+  const [statusFilter, setStatusFilter] = useState<"Todos" | "Activos" | "Borradores" | "Cerrados">("Todos");
   const [viewMode, setViewMode] = useState<"grid" | "list">("list");
 
   const filteredProjects = projects.filter(project => {
@@ -70,38 +70,38 @@ export function PymeDashboard({ user, pyme, projects,credits }: Props) {
     
     if (!matchesSearch) return false;
     
-    if (statusFilter === "all") return true;
-    if (statusFilter === "active") return project.status === "active" && project.is_published;
-    if (statusFilter === "draft") return !project.is_published;
-    if (statusFilter === "closed") return project.status === "closed";
+    if (statusFilter === "Todos") return true;
+    if (statusFilter === "Activos") return project.status === "active" && project.is_published;
+    if (statusFilter === "Borradores") return !project.is_published;
+    if (statusFilter === "Cerrados") return project.status === "closed";
     
     return true;
   });
 
   const stats = [
     { 
-      label: "Total projects", 
+      label: "Proyectos totales", 
       value: projects.length, 
       icon: FolderOpen,
       color: "text-[#38A3F1]",
       bgColor: "bg-[#38A3F1]/10"
     },
     { 
-      label: "Active", 
-      value: projects.filter(p => p.status === "active" && p.is_published).length, 
+      label: "Activos", 
+      value: projects.filter(p => p.status === "activo" && p.is_published).length, 
       icon: TrendingUp,
       color: "text-[#1D5A9E]",
       bgColor: "bg-[#38A3F1]/10"
     },
     { 
-      label: "Drafts", 
+      label: "Borradores", 
       value: projects.filter(p => !p.is_published).length, 
       icon: Clock,
       color: "text-[#38A3F1]",
       bgColor: "bg-[#38A3F1]/10"
     },
     { 
-      label: "Applications", 
+      label: "Aplicantes", 
       value: projects.reduce((acc, p) => acc + (p.applications?.length || 0), 0), 
       icon: Users,
       color: "text-[#1D5A9E]",
@@ -118,9 +118,9 @@ export function PymeDashboard({ user, pyme, projects,credits }: Props) {
       .eq("id", id);
 
     if (error) {
-      toast.error("Error closing project");
+      toast.error("Error cerrando proyecto");
     } else {
-      toast.success("Project closed successfully");
+      toast.success("Proyecto cerrado exitosamente");
       router.refresh();
     }
     setIsLoading(false);
@@ -128,15 +128,15 @@ export function PymeDashboard({ user, pyme, projects,credits }: Props) {
   };
 
   const deleteProject = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this project? This action cannot be undone.")) return;
+    if (!confirm("¿Estás seguro de que quieres eliminar este proyecto? Esta acción no se puede deshacer.")) return;
     setIsLoading(true);
     const supabase = createClient();
     const { error } = await supabase.from("projects").delete().eq("id", id);
 
     if (error) {
-      toast.error("Error deleting project");
+      toast.error("Error eliminando proyecto");
     } else {
-      toast.success("Project deleted successfully");
+      toast.success("Proyecto eliminado exitosamente");
       router.refresh();
     }
     setIsLoading(false);
@@ -153,13 +153,13 @@ export function PymeDashboard({ user, pyme, projects,credits }: Props) {
     }
     if (!project.is_published) {
       return {
-        label: "Draft",
-        color: "bg-gray-50 text-gray-600 border-gray-200",
+          label: "Draft",
+          color: "bg-gray-50 text-gray-600 border-gray-200",
         icon: Clock
       };
     }
     return {
-      label: "Active",
+      label: "Activo",
       color: "bg-green-50 text-green-600 border-green-200",
       icon: CheckCircle
     };
@@ -176,11 +176,11 @@ export function PymeDashboard({ user, pyme, projects,credits }: Props) {
         >
           <div>
             <p className="text-xs font-medium uppercase tracking-widest text-[#93B8D4] mb-2">
-              Business Dashboard
+              Dashboard de PYME
             </p>
             
             <p className="text-sm text-[#5B8DB8] mt-1">
-              Manage your projects and find talented students
+              Gestiona tus proyectos y encuentra estudiantes talentosos para tu empresa.{" "}
             </p>
           </div>
           
@@ -191,7 +191,7 @@ export function PymeDashboard({ user, pyme, projects,credits }: Props) {
             className="flex items-center gap-2 bg-gradient-to-r from-[#0D3A6E] to-[#1D5A9E] text-white text-sm font-medium px-5 py-2.5 rounded-xl hover:shadow-lg hover:shadow-[#38A3F1]/25 transition-all"
           >
             <Plus className="w-4 h-4" />
-            New Project
+            Nuevo proyecto
           </motion.button>
         </motion.div>
 
@@ -272,7 +272,7 @@ export function PymeDashboard({ user, pyme, projects,credits }: Props) {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#93B8D4]" />
               <input
                 type="text"
-                placeholder="Search projects..."
+                placeholder="Buscar proyectos..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-[#BAD8F7] text-sm focus:outline-none focus:border-[#38A3F1] focus:ring-2 focus:ring-[#38A3F1]/20"
@@ -285,10 +285,10 @@ export function PymeDashboard({ user, pyme, projects,credits }: Props) {
                 onChange={(e) => setStatusFilter(e.target.value as any)}
                 className="px-4 py-2.5 rounded-lg border border-[#BAD8F7] text-sm text-[#0D3A6E] bg-white focus:outline-none focus:border-[#38A3F1] cursor-pointer"
               >
-                <option value="all">All Projects</option>
-                <option value="active">Active</option>
-                <option value="draft">Drafts</option>
-                <option value="closed">Closed</option>
+                <option value="Todos">Todos los proyectos</option>
+                <option value="Activos">Activos</option>
+                <option value="Borradores">Borradores</option>
+                <option value="Cerrados">Cerrados</option>
               </select>
 
               <div className="flex gap-1 p-1 bg-[#F0F7FF] rounded-lg">
@@ -321,9 +321,9 @@ export function PymeDashboard({ user, pyme, projects,credits }: Props) {
         <div className="bg-white rounded-xl border border-[#BAD8F7] overflow-hidden">
           <div className="flex items-center justify-between px-6 py-4 border-b border-[#E8F3FD] bg-gradient-to-r from-[#F0F7FF]/50 to-transparent">
             <div>
-              <h2 className="text-sm font-semibold text-[#0D3A6E]">My Projects</h2>
+              <h2 className="text-sm font-semibold text-[#0D3A6E]">Mis Proyectos</h2>
               <p className="text-xs text-[#93B8D4] mt-0.5">
-                {filteredProjects.length} {filteredProjects.length === 1 ? "project" : "projects"} found
+                {filteredProjects.length} {filteredProjects.length === 1 ? "proyecto" : "proyectos"} encontrados
               </p>
             </div>
           </div>
@@ -339,12 +339,12 @@ export function PymeDashboard({ user, pyme, projects,credits }: Props) {
               </div>
               <div className="text-center">
                 <p className="text-sm font-medium text-[#0D3A6E] mb-1">
-                  {searchTerm || statusFilter !== "all" ? "No matching projects" : "No projects yet"}
+                  {searchTerm || statusFilter !== "Todos" ? "No hay proyectos que coincidan" : "Aún no tienes proyectos"}
                 </p>
                 <p className="text-xs text-[#5B8DB8] mb-4">
-                  {searchTerm || statusFilter !== "all" 
-                    ? "Try adjusting your filters" 
-                    : "Create your first project to get started"
+                  {searchTerm || statusFilter !== "Todos" 
+                    ? "Intenta ajustar tus filtros" 
+                    : "Crea tu primer proyecto para comenzar"
                   }
                 </p>
                 <button
@@ -352,7 +352,7 @@ export function PymeDashboard({ user, pyme, projects,credits }: Props) {
                   className="inline-flex items-center gap-2 bg-[#38A3F1] text-white text-xs font-medium px-4 py-2 rounded-lg hover:bg-[#0D5FA6] transition"
                 >
                   <Plus className="w-3.5 h-3.5" />
-                  Create Project
+                  Crear proyecto
                 </button>
               </div>
             </motion.div>
@@ -402,7 +402,7 @@ export function PymeDashboard({ user, pyme, projects,credits }: Props) {
                         <div className="flex items-center gap-1 text-xs text-[#93B8D4]">
                           <Users className="w-3 h-3" />
                           <span className="font-medium text-[#0D3A6E]">{project.applications?.length || 0}</span>
-                          <span>application{(project.applications?.length || 0) !== 1 ? "s" : ""}</span>
+                          <span>aplicante{(project.applications?.length || 0) !== 1 ? "s" : ""}</span>
                         </div>
                         
                         <div className="flex flex-wrap gap-1">
@@ -465,7 +465,7 @@ export function PymeDashboard({ user, pyme, projects,credits }: Props) {
                                   className="flex items-center gap-2 w-full px-4 py-2.5 text-xs text-[#5B8DB8] hover:bg-[#F0F7FF] disabled:opacity-40 transition"
                                 >
                                   <X className="w-3.5 h-3.5" />
-                                  Close project
+                                  Cerrar proyecto
                                 </button>
                                 <button
                                   onClick={() => deleteProject(project.id)}
@@ -473,7 +473,7 @@ export function PymeDashboard({ user, pyme, projects,credits }: Props) {
                                   className="flex items-center gap-2 w-full px-4 py-2.5 text-xs text-red-500 hover:bg-red-50 transition"
                                 >
                                   <Trash className="w-3.5 h-3.5" />
-                                  Delete project
+                                  Eliminar proyecto
                                 </button>
                               </motion.div>
                             </>
@@ -527,7 +527,7 @@ export function PymeDashboard({ user, pyme, projects,credits }: Props) {
                       </div>
                       <div className="flex items-center gap-1 text-xs text-[#93B8D4]">
                         <Calendar className="w-3 h-3" />
-                        <span>Active</span>
+                        <span>Activo</span>
                       </div>
                     </div>
 
@@ -561,7 +561,7 @@ export function PymeDashboard({ user, pyme, projects,credits }: Props) {
                         href={`/pyme/projects/${project.id}/applications`}
                         className="text-[10px] font-medium text-[#38A3F1] hover:text-[#0D5FA6] flex items-center gap-1"
                       >
-                        Applications
+                        Aplicantes
                         <ArrowUpRight className="w-3 h-3" />
                       </Link>
                     </div>
@@ -581,7 +581,7 @@ export function PymeDashboard({ user, pyme, projects,credits }: Props) {
             onSuccess={() => { 
               setShowCreate(false); 
               router.refresh(); 
-              toast.success("Project created successfully!");
+              toast.success("Proyecto creado exitosamente!");
             }}
           />
         )}

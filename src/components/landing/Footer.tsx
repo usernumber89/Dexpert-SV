@@ -14,6 +14,8 @@ import {
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
+import {DexpertLogo} from "@/components/DexpertLogo";
+import {InstagramLogoIcon, XLogoIcon,FacebookLogoIcon  }  from "@phosphor-icons/react";
 
 export function Footer() {
   const [showScrollTop, setShowScrollTop] = useState(false);
@@ -59,29 +61,21 @@ export function Footer() {
           {/* Brand Column */}
           <div className="md:col-span-1">
             <div className="flex items-center gap-2 mb-4">
-              <motion.div 
-                whileHover={{ rotate: 360 }}
-                transition={{ duration: 0.5 }}
-                className="w-10 h-10 bg-gradient-to-br from-[#38A3F1] to-[#1D9E75] rounded-xl flex items-center justify-center shadow-lg"
-              >
-                <span className="text-white text-lg font-bold">D</span>
-              </motion.div>
-              <span className="text-xl font-bold text-white">
-                Dexpert<span className="text-[#38A3F1]">.</span>
-              </span>
+            
+              <DexpertLogo variant="dark"/>
             </div>
             
             <p className="text-sm text-[#BAD8F7] leading-relaxed mb-6">
-              Bridging the gap between emerging talent and real-world opportunities in El Salvador.
+              Rompiendo la brecha entre el talento emergente y las oportunidades del mundo real en El Salvador.
             </p>
             
             {/* Social Links */}
             <div className="flex gap-3">
               {[
-                { icon: Globe, href: "https://www.instagram.com/dexpert.sv", label: "Instagram" },
-                { icon: Globe, href: "#", label: "Website" }, // ✅ Facebook → Globe
-                { icon: Globe, href: "#", label: "Twitter" },
-                { icon: Globe, href: "#", label: "LinkedIn" },
+                { icon: InstagramLogoIcon, href: "https://www.instagram.com/dexpert.sv", label: "Instagram" },
+                { icon: FacebookLogoIcon, href: "#", label: "Facebook" }, // ✅ Facebook → Globe
+                { icon: XLogoIcon, href: "#", label: "Twitter" },
+                
               ].map((social, i) => {
                 const Icon = social.icon;
                 return (
@@ -103,12 +97,12 @@ export function Footer() {
 
           {/* Quick Links */}
           <div className="md:col-span-1">
-            <h3 className="text-sm font-semibold text-white mb-4">Quick Links</h3>
+            <h3 className="text-sm font-semibold text-white mb-4">Enlaces Rápidos</h3>
             <ul className="space-y-3">
               {[
-                { href: "#about", label: "About us" },
-                { href: "#how", label: "How it works" },
-                { href: "#plans", label: "Plans" },
+                { href: "#about", label: "Sobre nosotros" },
+                { href: "#how", label: "¿Cómo funciona?" },
+                { href: "#plans", label: "Planes" },
                 { href: "#faq", label: "FAQ" },
               ].map((link) => (
                 <li key={link.href}>
@@ -128,10 +122,10 @@ export function Footer() {
             <h3 className="text-sm font-semibold text-white mb-4">Legal</h3>
             <ul className="space-y-3">
               {[
-                { href: "/privacy", label: "Privacy Policy", icon: Shield },
-                { href: "/terms", label: "Terms & Conditions", icon: Shield },
-                { href: "/cookies", label: "Cookie Policy", icon: Shield },
-                { href: "/accessibility", label: "Accessibility", icon: HelpCircle },
+                { href: "/privacy", label: "Política de Privacidad", icon: Shield },
+                { href: "/terms", label: "Términos y Condiciones", icon: Shield },
+                { href: "/cookies", label: "Política de Cookies", icon: Shield },
+                { href: "/accessibility", label: "Accesibilidad", icon: HelpCircle },
               ].map((link) => {
                 const Icon = link.icon;
                 return (
@@ -153,7 +147,7 @@ export function Footer() {
 
           {/* Contact Info */}
           <div className="md:col-span-1">
-            <h3 className="text-sm font-semibold text-white mb-4">Get in Touch</h3>
+            <h3 className="text-sm font-semibold text-white mb-4">Información de Contacto</h3>
             <ul className="space-y-4">
               <li>
                 <a 
@@ -188,7 +182,7 @@ export function Footer() {
             
             {/* Copyright */}
             <div className="flex items-center gap-2 text-xs text-[#5B8DB8]">
-              <span>© {currentYear} Dexpert. All rights reserved.</span>
+              <span>© {currentYear} Dexpert. Todos los derechos reservados.</span>
               
              
             </div>

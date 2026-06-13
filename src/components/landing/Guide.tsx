@@ -15,43 +15,43 @@ import {
 
 const steps = [
   { 
-    title: "Sign up for free", 
-    description: "Create your account as a student or small business owner. It only takes a minute.",
+    title: "Regístrate gratis", 
+    description: "Crea tu cuenta como estudiante o propietario de una pequeña empresa. Solo toma un minuto.",
     icon: UserPlus,
     color: "#38A3F1",
     gradient: "from-[#38A3F1] to-[#5BB3F3]"
   },
   { 
-    title: "Browse real projects", 
-    description: "Explore real-world challenges from small businesses that need your skills.",
+    title: "Explora proyectos reales", 
+    description: "Explora desafíos del mundo real de empresas pequeñas que necesitan tus habilidades.",
     icon: Search,
     color: "#18508f",
     gradient: "from-[#18508f] to-[#3DB892]"
   },
   { 
-    title: "Publish your idea with AI", 
-    description: "Our AI helps you describe and post your project clearly, even without tech experience.",
+    title: "Publica tu idea con IA", 
+    description: "Nuestra IA te ayuda a describir y publicar tu proyecto claramente, incluso sin experiencia técnica.",
     icon: FileInput,
      color: "#38A3F1",
     gradient: "from-[#38A3F1] to-[#5BB3F3]"
   },
   { 
-    title: "Apply or choose collaborators", 
-    description: "Students apply to projects, business owners select who they want to work with.",
+    title: "Aplica o elige colaboradores", 
+    description: "Los estudiantes aplican a proyectos, los propietarios de negocios seleccionan con quienes quieren trabajar.",
     icon: SendToBack,
     color: "#18508f",
     gradient: "from-[#18508f] to-[#3DB892]"
   },
   { 
-    title: "Build with AI support", 
-    description: "Get continuous feedback and suggestions from our AI Product Manager throughout the project.",
+    title: "Trabaja con soporte de IA", 
+    description: "Obtén retroalimentación y sugerencias continuas de nuestro Product Owner AI a lo largo del proyecto.",
     icon: Network,
     color: "#38A3F1",
     gradient: "from-[#38A3F1] to-[#5BB3F3]"
   },
   { 
-    title: "Get results and recognition", 
-    description: "Businesses get real solutions. Students earn certificates to showcase their experience.",
+    title: "Obtén resultados y reconocimiento", 
+    description: "Las empresas obtienen soluciones reales. Los estudiantes ganan certificados para mostrar su experiencia.",
     icon: Award,
     color: "#18508f",
     gradient: "from-[#18508f] to-[#3DB892]"
@@ -79,10 +79,10 @@ export function Guide() {
         >
           
           <h2 className="text-2xl md:text-2xl lg:text-3xl font-bold text-[#0D3A6E] mb-4">
-            Six steps to your first{" "}
+            Seis pasos a tu primera{" "}
             <span className="relative">
               <span className="relative z-10 bg-[#38A3F1] bg-clip-text text-transparent">
-                real experience
+                experiencia real
               </span>
               <svg className="absolute -bottom-2 left-0 w-full h-3 text-[#38A3F1]/20" viewBox="0 0 100 10" preserveAspectRatio="none">
                 <path d="M0,5 Q50,10 100,5" stroke="currentColor" strokeWidth="8" fill="none" />
@@ -90,7 +90,7 @@ export function Guide() {
             </span>
           </h2>
           <p className="text-[#5B8DB8] max-w-2xl text-sm mx-auto">
-            From sign-up to certification — your journey to professional growth starts here.
+            Desde el registro hasta la certificación — tu viaje hacia el crecimiento profesional comienza aquí.
           </p>
         </motion.div>
 
@@ -246,7 +246,7 @@ export function Guide() {
           <div className="inline-flex items-center gap-6 px-8 py-4 bg-white rounded-2xl border border-[#E8F3FD] shadow-lg">
             
             <p className="text-[#0D3A6E] font-medium">
-              Dexpert is more than a platform — it is your first real step into the professional world.
+              Dexpert es más que una plataforma — es tu primer paso real hacia el mundo profesional.
             </p>
            
           </div>

@@ -6,37 +6,37 @@ import { Quote, Star, Heart, Sparkles, Users, Award } from "lucide-react";
 const testimonies = [
   { 
     name: "Fernando Pérez", 
-    role: "Dexpert User", 
+    role: "Usuario de Dexpert", 
     initials: "FP", 
-    quote: "I had never worked on a real project before. Dexpert helped me believe in what I can do and now I feel ready to apply for my first job.",
+    quote: "Yo nunca había trabajado en un proyecto real antes. Dexpert me ayudó a creer en lo que puedo hacer y ahora me siento listo para aplicar a mi primer trabajo.",
     color: "#38A3F1",
-    achievement: "First job secured",
+    achievement: "Primer trabajo asegurado",
     rating: 5
   },
   { 
     name: "Tatiana Salazar", 
-    role: "Entrepreneur", 
+    role: "Emprendedora", 
     initials: "TS", 
-    quote: "My small business got real support from talented young people. It was not just help, it was collaboration with future professionals.",
+    quote: "Mi pequeña empresa recibió apoyo real de jóvenes talentosos. No fue solo ayuda, fue colaboración con profesionales del futuro.",
     color: "#0D3A6E",
-    achievement: "3 projects completed",
+    achievement: "3 proyectos exitosos",
     rating: 5
   },
   { 
     name: "Sara Mejía", 
-    role: "Dexpert User", 
+    role: "Usuario de Dexpert", 
     initials: "SM", 
-    quote: "As a person with a disability, it is hard to be taken seriously. On Dexpert, I was heard, included, and valued.",
+    quote: "Como persona con discapacidad, es difícil ser tomada en serio. En Dexpert, me escucharon, incluyeron y valoraron.",
     color: "#38A3F1",
-    achievement: "Found inclusive team",
+    achievement: "Encontró un equipo inclusivo",
     rating: 5
   },
 ];
 
 const STATS = [
-  { value: "95%", label: "Satisfaction Rate", icon: Heart },
-  { value: "200+", label: "Success Stories", icon: Award },
-  { value: "50+", label: "Active Businesses", icon: Users },
+  { value: "95%", label: "Tasa de Satisfacción", icon: Heart },
+  { value: "200+", label: "Historias de Éxito", icon: Award },
+  { value: "50+", label: "Empresas Activas", icon: Users },
 ];
 
 export function Testimony() {
@@ -58,10 +58,10 @@ export function Testimony() {
         
           
           <h2 className="text-xl md:text-xl lg:text-3xl font-bold text-[#0D3A6E] mb-4">
-            What our{" "}
+            Lo que nuestros usuarios{" "}
             <span className="relative">
               <span className="relative z-10 bg-[#38A3F1] bg-clip-text text-transparent">
-                users say
+                dicen
               </span>
               <svg className="absolute -bottom-2 left-0 w-full h-3 text-[#38A3F1]/20" viewBox="0 0 100 10" preserveAspectRatio="none">
                 <path d="M0,5 Q50,10 100,5" stroke="currentColor" strokeWidth="8" fill="none" />
@@ -70,9 +70,9 @@ export function Testimony() {
           </h2>
           
           <p className="text-[#5B8DB8] max-w-2xl text-sm mx-auto">
-            Many young people in El Salvador just need one opportunity. 
+            Muchas personas jóvenes en El Salvador simplemente necesitan una oportunidad. 
             <br className="hidden md:block" />
-            <span className="font-medium text-[#38A3F1]"> At Dexpert, they found it.</span>
+            <span className="font-medium text-[#38A3F1]"> En Dexpert, la encontraron.</span>
           </p>
         </motion.div>
 
@@ -187,7 +187,7 @@ export function Testimony() {
           className="mt-12 text-center"
         >
           <p className="text-sm text-[#93B8D4]">
-            Join hundreds of satisfied users who found their opportunity with Dexpert
+            Únete a cientos de usuarios satisfechos que encontraron su oportunidad con Dexpert
           </p>
         </motion.div>
       </div>

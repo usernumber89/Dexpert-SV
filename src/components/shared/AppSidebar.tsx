@@ -20,20 +20,20 @@
   import { BriefcaseIcon } from "@phosphor-icons/react";
 
   const studentRoutes = [
-    { title: 'Dashboard', url: '/student/dashboard', icon: LayoutDashboard },
-    { title: 'Projects', url: '/student/projects', icon: FolderOpen },
-    { title: 'Profile', url: '/student/profile', icon: User },
-    { title: 'Certificates', url: '/student/certificates', icon: Award },
-    { title: 'AI Simulator', url: '/student/ai', icon: Bot },
-    { title: 'Support', url: '/student/support', icon: HelpCircle },
+    { title: 'Panel de Control', url: '/student/dashboard', icon: LayoutDashboard },
+    { title: 'Proyectos', url: '/student/projects', icon: FolderOpen },
+    { title: 'Perfil', url: '/student/profile', icon: User },
+    { title: 'Certificados', url: '/student/certificates', icon: Award },
+    { title: 'Simulador de IA', url: '/student/ai', icon: Bot },
+    { title: 'Soporte', url: '/student/support', icon: HelpCircle },
   ];
 
   const pymeRoutes = [
-    { title: 'Dashboard', url: '/pyme/dashboard', icon: LayoutDashboard },
-    { title: 'Applications', url: '/pyme/applications', icon: Users },
-    { title: 'Pricing', url: '/pyme/pricing', icon: Banknote },
-    { title: 'Profile', url: '/pyme/profile', icon: User },
-    { title: 'Support', url: '/pyme/support', icon: HelpCircle },
+    { title: 'Panel de Control', url: '/pyme/dashboard', icon: LayoutDashboard },
+    { title: 'Aplicantes / Solicitudes', url: '/pyme/applications', icon: Users },
+    { title: 'Precios', url: '/pyme/pricing', icon: Banknote },
+    { title: 'Perfil', url: '/pyme/profile', icon: User },
+    { title: 'Soporte', url: '/pyme/support', icon: HelpCircle },
   ];
 
   export function AppSidebar() {
@@ -118,7 +118,7 @@
           <SidebarGroup>
             {!isCollapsed && (
               <SidebarGroupLabel className="text-[10px] font-medium uppercase tracking-widest text-[#93B8D4] px-2 mb-2">
-                {role === 'STUDENT' ? 'Student' : 'Business'}
+                {role === 'STUDENT' ? 'Estudiante' : 'PYME'}
               </SidebarGroupLabel>
             )}
             <SidebarMenu className={`gap-1 ${isCollapsed ? 'items-center' : ''}`}>
@@ -187,7 +187,7 @@
               className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-[#93B8D4] hover:bg-red-50 hover:text-red-400 transition-colors text-sm"
             >
               <LogOut className="w-4 h-4 flex-shrink-0" />
-              <span>Sign out</span>
+              <span>Cerrar sesión</span>
             </button>
           </div>
         )}

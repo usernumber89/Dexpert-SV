@@ -76,13 +76,13 @@ export function Navbar() {
         {/* Desktop navigation */}
         <div className="hidden md:flex items-center gap-8">
           <Link href="#about" className="text-sm text-[#5B8DB8] hover:text-[#0D3A6E] transition-colors">
-            About
+            Acerca de
           </Link>
           <Link href="#how" className="text-sm text-[#5B8DB8] hover:text-[#0D3A6E] transition-colors">
-            How it works
+            ¿Cómo funciona?
           </Link>
           <Link href="#plans" className="text-sm text-[#5B8DB8] hover:text-[#0D3A6E] transition-colors">
-            Plans
+            Planes
           </Link>
           <Link href="#faq" className="text-sm text-[#5B8DB8] hover:text-[#0D3A6E] transition-colors">
             FAQ

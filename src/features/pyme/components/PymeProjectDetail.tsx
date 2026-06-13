@@ -27,6 +27,9 @@ type Student = {
   resume_url?: string | null;
   avatar_url?: string | null;
   verified?: boolean | null;
+  // Nuevas métricas agregadas
+  total_applications?: number;
+  accepted_applications?: number;
 };
 
 type Pyme = {
@@ -58,15 +61,15 @@ type Props = {
 };
 
 const statusConfig: Record<string, { label: string; bg: string; text: string }> = {
-  PENDING:   { label: "Pending",   bg: "bg-amber-50",  text: "text-amber-600" },
-  ACCEPTED:  { label: "Accepted",  bg: "bg-[#F0F7FF]", text: "text-[#0D5FA6]" },
-  REJECTED:  { label: "Rejected",  bg: "bg-red-50",    text: "text-red-500" },
-  COMPLETED: { label: "Completed", bg: "bg-green-50",  text: "text-green-600" },
+  PENDING:   { label: "Pendiente",  bg: "bg-amber-50",  text: "text-amber-600" },
+  ACCEPTED:  { label: "Aceptado",  bg: "bg-[#F0F7FF]", text: "text-[#0D5FA6]" },
+  REJECTED:  { label: "Rechazado",  bg: "bg-red-50",    text: "text-red-500" },
+  COMPLETED: { label: "Completado", bg: "bg-green-50",  text: "text-green-600" },
 };
 
 function StudentProfile({ student }: { student: Student }) {
   return (
-    <div className="mt-4 pt-4 border-t border-[#E8F3FD] space-y-4">
+    <div className="mt-4 pt-4 border-t border-[#E8F3FD] space-y-5">
 
       {/* Bio */}
       {student.bio && (
@@ -91,9 +94,26 @@ function StudentProfile({ student }: { student: Student }) {
           {student.graduation_year && (
             <div className="flex items-center gap-1.5 text-xs text-[#5B8DB8]">
               <Star className="w-3.5 h-3.5 text-[#38A3F1]" />
-              Class of {student.graduation_year}
+              Promoción {student.graduation_year}
             </div>
           )}
+        </div>
+      )}
+
+      {/* Platform Stats (NUEVO RECUDARO DE ESTADÍSTICAS) */}
+      {(student.total_applications !== undefined && student.accepted_applications !== undefined) && (
+        <div>
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-[#93B8D4] mb-2">Historial en DExpert</p>
+          <div className="flex gap-3">
+            <div className="bg-white border border-[#E8F3FD] px-4 py-2.5 rounded-xl flex-1 shadow-sm">
+              <p className="text-xl font-bold text-[#0D3A6E]">{student.total_applications}</p>
+              <p className="text-[10px] text-[#93B8D4] uppercase tracking-wide mt-0.5">Solicitudes Totales</p>
+            </div>
+            <div className="bg-white border border-[#E8F3FD] px-4 py-2.5 rounded-xl flex-1 shadow-sm">
+              <p className="text-xl font-bold text-[#0D5FA6]">{student.accepted_applications}</p>
+              <p className="text-[10px] text-[#93B8D4] uppercase tracking-wide mt-0.5">Solicitudes Aceptadas</p>
+            </div>
+          </div>
         </div>
       )}
 
@@ -122,7 +142,7 @@ function StudentProfile({ student }: { student: Student }) {
       {/* Skills */}
       {student.skills && student.skills.length > 0 && (
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-[#93B8D4] mb-2">Skills</p>
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-[#93B8D4] mb-2">Habilidades</p>
           <div className="flex flex-wrap gap-1.5">
             {student.skills.map((skill, i) => (
               <span
@@ -169,7 +189,7 @@ function StudentProfile({ student }: { student: Student }) {
               className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg bg-[#F0F7FF] text-[#5B8DB8] hover:bg-[#BAD8F7] transition"
             >
               <Globe className="w-3.5 h-3.5" />
-              Portfolio
+              Portafolio
             </a>
           )}
           {student.resume_url && (
@@ -180,7 +200,7 @@ function StudentProfile({ student }: { student: Student }) {
               className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg bg-[#0D3A6E] text-white hover:bg-[#0D5FA6] transition"
             >
               <FileText className="w-3.5 h-3.5" />
-              Resume
+              Currículum
             </a>
           )}
         </div>
@@ -201,7 +221,7 @@ function ApplicationCard({
   const [expanded, setExpanded] = useState(false);
   const status = statusConfig[app.status] || statusConfig.PENDING;
   const student = app.students ?? app.student ?? null;
-  const studentName = student?.full_name ?? "Unknown";
+  const studentName = student?.full_name ?? "Desconocido";
   const studentInitial = studentName.charAt(0).toUpperCase();
   const education = student?.education ?? null;
 
@@ -234,7 +254,7 @@ function ApplicationCard({
             <p className="text-sm font-semibold text-[#0D3A6E] truncate">{studentName}</p>
             {student?.verified && (
               <span className="text-[10px] font-medium text-green-600 bg-green-50 px-1.5 py-0.5 rounded-full">
-                Verified
+                Verificado
               </span>
             )}
           </div>
@@ -255,7 +275,7 @@ function ApplicationCard({
                 onClick={() => onUpdateStatus(app.id, "ACCEPTED")}
                 disabled={updating === app.id}
                 className="w-8 h-8 rounded-lg bg-green-50 flex items-center justify-center text-green-600 hover:bg-green-100 transition disabled:opacity-50"
-                title="Accept"
+                title="Aceptar"
               >
                 <Check className="w-4 h-4" />
               </button>
@@ -263,7 +283,7 @@ function ApplicationCard({
                 onClick={() => onUpdateStatus(app.id, "REJECTED")}
                 disabled={updating === app.id}
                 className="w-8 h-8 rounded-lg bg-red-50 flex items-center justify-center text-red-400 hover:bg-red-100 transition disabled:opacity-50"
-                title="Reject"
+                title="Rechazar"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -273,7 +293,7 @@ function ApplicationCard({
           <button
             onClick={() => setExpanded(!expanded)}
             className="w-8 h-8 rounded-lg bg-[#F0F7FF] flex items-center justify-center text-[#5B8DB8] hover:bg-[#BAD8F7] transition"
-            title={expanded ? "Hide profile" : "View profile"}
+            title={expanded ? "Ocultar perfil" : "Ver perfil"}
           >
             {expanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
           </button>
@@ -283,7 +303,7 @@ function ApplicationCard({
       {/* Expanded profile */}
       {expanded && student && (
         <div className="px-6 pb-5">
-          <div className="bg-[#F8FBFF] rounded-xl border border-[#E8F3FD] p-4">
+          <div className="bg-[#F8FBFF] rounded-xl border border-[#E8F3FD] p-5">
             <StudentProfile student={student} />
           </div>
         </div>
@@ -293,7 +313,7 @@ function ApplicationCard({
         <div className="px-6 pb-5">
           <div className="bg-[#F8FBFF] rounded-xl border border-[#E8F3FD] p-4 flex items-center gap-2 text-sm text-[#93B8D4]">
             <User className="w-4 h-4" />
-            No profile information available
+            Información de perfil no disponible
           </div>
         </div>
       )}
@@ -317,9 +337,9 @@ export function PymeProjectDetail({ project }: Props) {
       setApplications(prev =>
         prev.map(a => (a.id === appId ? { ...a, status } : a))
       );
-      toast.success(status === "ACCEPTED" ? "Applicant accepted!" : "Applicant rejected");
+      toast.success(status === "ACCEPTED" ? "¡Solicitud aceptada!" : "Solicitud rechazada");
     } catch {
-      toast.error("Error updating status");
+      toast.error("Error actualizando estado de la solicitud. Por favor, inténtalo de nuevo.");
     } finally {
       setUpdating(null);
     }
@@ -333,9 +353,9 @@ export function PymeProjectDetail({ project }: Props) {
         body: JSON.stringify({ isPublished: !isPublished }),
       });
       setIsPublished(!isPublished);
-      toast.success(isPublished ? "Project unpublished" : "Project published!");
+      toast.success(isPublished ? "Proyecto no publicado" : "¡Proyecto publicado!");
     } catch {
-      toast.error("Error updating project");
+      toast.error("Error actualizando el proyecto. Por favor, inténtalo de nuevo.");
     }
   };
 
@@ -351,7 +371,7 @@ export function PymeProjectDetail({ project }: Props) {
           href="/pyme/dashboard"
           className="inline-flex items-center gap-2 text-sm text-[#5B8DB8] hover:text-[#0D3A6E] transition"
         >
-          <ArrowLeft className="w-4 h-4" /> Back to dashboard
+          <ArrowLeft className="w-4 h-4" /> Volver al panel de control
         </Link>
 
         {/* Project info */}
@@ -365,13 +385,13 @@ export function PymeProjectDetail({ project }: Props) {
               onClick={togglePublish}
               className={`flex items-center gap-2 text-xs font-medium px-3 py-1.5 rounded-lg transition ${
                 isPublished
-                  ? "bg-green-50 text-green-600 hover:bg-red-50 hover:text-red-500"
-                  : "bg-[#F0F7FF] text-[#0D5FA6] hover:bg-green-50 hover:text-green-600"
+                  ? "bg-[#F0F7FF] text-[#0D5FA6] hover:bg-green-50 hover:text-green-600"
+                  : " bg-green-50 text-green-600 hover:bg-red-50 hover:text-red-500"
               }`}
             >
               {isPublished
-                ? <><EyeOff className="w-3.5 h-3.5" /> Unpublish</>
-                : <><Eye className="w-3.5 h-3.5" /> Publish</>}
+                ? <><EyeOff className="w-3.5 h-3.5" /> Despublicar</>
+                : <><Eye className="w-3.5 h-3.5" /> Publicar</>}
             </button>
           </div>
 
@@ -391,11 +411,11 @@ export function PymeProjectDetail({ project }: Props) {
             </div>
             <div className="text-center">
               <p className="text-lg font-bold text-amber-500">{pending}</p>
-              <p className="text-[10px] text-[#93B8D4] uppercase tracking-wide">Pending</p>
+              <p className="text-[10px] text-[#93B8D4] uppercase tracking-wide">Pendiente</p>
             </div>
             <div className="text-center">
               <p className="text-lg font-bold text-green-500">{accepted}</p>
-              <p className="text-[10px] text-[#93B8D4] uppercase tracking-wide">Accepted</p>
+              <p className="text-[10px] text-[#93B8D4] uppercase tracking-wide">Aceptado</p>
             </div>
           </div>
         </div>
@@ -403,7 +423,7 @@ export function PymeProjectDetail({ project }: Props) {
         {/* Applications */}
         <div className="bg-white rounded-2xl border border-[#BAD8F7] overflow-hidden">
           <div className="px-6 py-4 border-b border-[#E8F3FD] flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-[#0D3A6E]">Applications</h2>
+            <h2 className="text-sm font-semibold text-[#0D3A6E]">Aplicantes</h2>
             <span className="text-xs text-[#93B8D4]">{applications.length} total</span>
           </div>
 
@@ -412,8 +432,8 @@ export function PymeProjectDetail({ project }: Props) {
               <div className="w-14 h-14 rounded-2xl bg-[#F0F7FF] flex items-center justify-center mb-2">
                 <User className="w-7 h-7 text-[#BAD8F7]" />
               </div>
-              <p className="text-sm font-medium text-[#0D3A6E]">No applications yet</p>
-              <p className="text-xs text-[#93B8D4]">Publish your project so students can find it</p>
+              <p className="text-sm font-medium text-[#0D3A6E]">No hay aplicaciones aún</p>
+              <p className="text-xs text-[#93B8D4]">Publica tu proyecto para que los estudiantes puedan encontrarlo</p>
             </div>
           ) : (
             <div>

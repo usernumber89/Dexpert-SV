@@ -60,11 +60,11 @@ export function Hero() {
               transition={{ duration: 0.6, delay: 0.1 }}
               className="text-4xl sm:text-5xl lg:text-[3.25rem] font-extrabold leading-[1.08] text-[#0D3A6E] tracking-tight"
             >
-              Experience is built,
+              La experiencia se contruye,
               <br />
               <span className="relative inline-block mt-1 text-[#38A3F1]">
                 <TypeAnimation
-                  sequence={["and we provide", 1500, "and we're the", 1500]}
+                  sequence={["y nosotros proveemos", 1500, "y nosotros somos", 1500]}
                   wrapper="span"
                   speed={50}
                   repeat={Infinity}
@@ -72,7 +72,7 @@ export function Hero() {
               </span>
               <br />
               <span className="bg-gradient-to-r from-[#174E8C] via-[#38A3F1] to-[#00C4F5] bg-clip-text text-transparent bg-[length:200%] animate-[shimmer_3s_linear_infinite]">
-                the bricks.
+                los ladrillos.
               </span>
             </motion.h1>
 
@@ -83,9 +83,7 @@ export function Hero() {
               transition={{ duration: 0.6, delay: 0.2 }}
               className="text-base md:text-lg text-[#5B8DB8] leading-relaxed max-w-lg lg:max-w-none"
             >
-              Discover real projects from businesses across El Salvador. Build your
-              portfolio, gain real experience, and take your first step into the
-              professional world.
+            Descubre proyectos reales de empresas de todo El Salvador. Crea tu portafolio, adquiere experiencia práctica y da tus primeros pasos en el mundo profesional.
             </motion.p>
 
             {/* Stats — Monotree style 
@@ -124,7 +122,7 @@ export function Hero() {
                 className="group relative inline-flex items-center gap-2 px-7 py-3.5 bg-gradient-to-r from-[#0D3A6E] to-[#1D5A9E] text-white text-sm font-semibold rounded-2xl hover:shadow-xl hover:shadow-[#0D3A6E]/20 transition-all duration-300 overflow-hidden"
               >
                 <span className="relative z-10">
-                  {user ? "Go to dashboard" : "Get started free"}
+                  {user ? "Ir al panel de control" : "Comenzar gratis"}
                 </span>
                 <ArrowRight className="w-4 h-4 relative z-10 group-hover:translate-x-1 transition-transform" />
                 <div className="absolute inset-0 bg-gradient-to-r from-[#174E8C]/60 via-[#38A3F1]/50 to-[#00C4F5]/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
@@ -134,7 +132,7 @@ export function Hero() {
                 href="#how"
                 className="group inline-flex items-center gap-2 px-6 py-3.5 text-sm font-medium text-[#0D3A6E] border border-[#BAD8F7] rounded-2xl hover:border-[#38A3F1] hover:bg-[#F0F7FF] transition-all"
               >
-                How it works
+                ¿Cómo funciona?
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </Link>
             </motion.div>
@@ -166,7 +164,7 @@ export function Hero() {
                     <span className="w-[11px] h-[11px] rounded-full bg-[#ffbd2e]" />
                     <span className="w-[11px] h-[11px] rounded-full bg-[#28c840]" />
                     <span className="flex-1 text-center text-[11px] text-white font-medium" style={{ marginRight: 52 }}>
-                      Your App — Dashboard
+                     Tu Dexpert en acción
                     </span>
                   </div>
 

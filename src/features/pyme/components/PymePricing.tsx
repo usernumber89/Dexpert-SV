@@ -15,7 +15,7 @@ const PLANS = [
   {
     id: "STARTER",
     name: "Starter",
-    tagline: "Perfect to try Dexpert with your first real projects.",
+    tagline: "Perfecto para probar Dexpert con tus primeros proyectos reales.",
     price: 9.99,
     credits: 3,
     perCredit: "3.33",
@@ -23,20 +23,20 @@ const PLANS = [
     iconBg: "bg-white",
     iconColor: "text-[#38A3F1]",
     badge: null,
-    cta: "Get started",
+    cta: "Comenzar",
     features: [
-      "3 project credits",
-      "Student applications",
-      "Standard visibility",
-      "Basic AI brief writer",
-      "Email support",
+      "3 créditos de proyecto",
+      "Solicitudes de estudiantes",
+      "Visibilidad estándar",
+      "Escritor de briefs AI básico",
+      "Soporte por correo electrónico",
     ],
     highlighted: false,
   },
   {
     id: "GROWTH",
     name: "Growth",
-    tagline: "For businesses that need consistent talent across multiple projects.",
+    tagline: "Para PYMES que necesitan talento consistente a lo largo de múltiples proyectos.",
     price: 24.99,
     credits: 10,
     perCredit: "2.50",
@@ -44,20 +44,20 @@ const PLANS = [
     iconBg: "bg-[#0D3A6E]",
     iconColor: "text-white",
     
-    cta: "Get Growth",
+    cta: "Obtener Growth",
     features: [
-      "10 project credits",
-      "Everything in Starter",
-      "AI brief writer (full)",
-      "Recommended candidates",
-      "Priority support",
+      "10 créditos de proyecto",
+      "Todo en Starter",
+      "Escritor de briefs AI (completo)",
+      "Candidatos recomendados",
+      "Soporte prioritario",
     ],
     highlighted: true,
   },
   {
     id: "PRO",
     name: "Pro",
-    tagline: "Maximum reach for growing businesses with constant hiring needs.",
+    tagline: "Para PYMES en crecimiento con necesidades constantes de contratación.",
     price: 49.99,
     credits: 25,
     perCredit: "2.00",
@@ -65,13 +65,13 @@ const PLANS = [
     iconBg: "bg-white",
     iconColor: "text-[#38A3F1]",
     
-    cta: "Go Pro",
+    cta: "Obtener Pro",
     features: [
-      "25 project credits",
-      "Everything in Growth",
-      "Featured listings",
-      "Top candidates only",
-      "Dedicated account manager",
+      "25 créditos de proyecto",
+      "Todo en Growth",
+      "Listados destacados",
+      "Sólo los mejores candidatos",
+      "Gerente de cuenta dedicado",
     ],
     highlighted: false,
   },
@@ -92,7 +92,7 @@ export function PymePricing({ creditsAvailable, creditsUsed }: Props) {
       if (!res.ok) throw new Error(data.error);
       window.location.href = data.url;
     } catch {
-      toast.error("Error starting checkout. Try again.");
+      toast.error("Error iniciando el proceso de pago. Por favor, inténtalo de nuevo.");
       setLoading(null);
     }
   };
@@ -106,17 +106,17 @@ export function PymePricing({ creditsAvailable, creditsUsed }: Props) {
           href="/pyme/dashboard"
           className="inline-flex items-center gap-2 text-sm text-[#5B8DB8] hover:text-[#0D3A6E] transition"
         >
-          <ArrowLeft className="w-4 h-4" /> Back to dashboard
+          <ArrowLeft className="w-4 h-4" /> Volver al dashboard
         </Link>
 
         {/* Header */}
         <div className="text-center space-y-3">
           
-          <h1 className="text-2xl font-bold text-[#0D3A6E]">Buy credits, publish projects</h1>
+          <h1 className="text-2xl font-bold text-[#0D3A6E]">Compra créditos, publica proyectos</h1>
           <p className="text-sm text-[#5B8DB8]  mx-auto leading-relaxed">
-           <span className="font-semibold text-[#38A3F1]">No subscriptions. </span>
+           <span className="font-semibold text-[#38A3F1]">Sin suscripciones. </span>
             
-          Buy a credit pack and use them whenever you need.
+          Compra un paquete de créditos y úsalos cuando los necesites.
           </p>
 
           {/* Current balance */}
@@ -129,18 +129,18 @@ export function PymePricing({ creditsAvailable, creditsUsed }: Props) {
               <div className="flex items-center gap-1.5">
                 <div className="w-2 h-2 rounded-full bg-[#38A3F1]" />
                 <span className="text-sm font-bold text-[#0D3A6E]">{creditsAvailable}</span>
-                <span className="text-xs text-[#93B8D4]">credits available</span>
+                <span className="text-xs text-[#93B8D4]">créditos disponibles</span>
               </div>
               <div className="w-px h-4 bg-[#E8F3FD]" />
               <div className="flex items-center gap-1.5">
                 <Infinity className="w-3.5 h-3.5 text-[#93B8D4]" />
-                <span className="text-xs text-[#93B8D4]">never expire</span>
+                <span className="text-xs text-[#93B8D4]">nunca expiran</span>
               </div>
               {creditsUsed > 0 && (
                 <>
                   <div className="w-px h-4 bg-[#E8F3FD]" />
                   <div className="flex items-center gap-1.5">
-                    <span className="text-xs text-[#93B8D4]">{creditsUsed} used</span>
+                    <span className="text-xs text-[#93B8D4]">{creditsUsed} usados</span>
                   </div>
                 </>
               )}
@@ -186,8 +186,8 @@ export function PymePricing({ creditsAvailable, creditsUsed }: Props) {
                     <div className="flex items-end gap-1">
                       <span className="text-4xl font-extrabold text-[#0D3A6E]">${plan.price}</span>
                     </div>
-                    <p className="text-sm font-semibold text-[#38A3F1] mt-1">{plan.credits} project credits</p>
-                    <p className="text-xs text-[#93B8D4]">${plan.perCredit} per project • Credits never expire</p>
+                    <p className="text-sm font-semibold text-[#38A3F1] mt-1">{plan.credits} créditos de proyecto</p>
+                    <p className="text-xs text-[#93B8D4]">${plan.perCredit} por proyecto • Los créditos nunca expiran</p>
                   </div>
 
                   {/* CTA */}
@@ -208,7 +208,7 @@ export function PymePricing({ creditsAvailable, creditsUsed }: Props) {
                   {/* Security */}
                   <div className="flex items-center justify-center gap-1.5 text-[10px] text-[#93B8D4]">
                     <ShieldCheck className="w-3 h-3" />
-                    Secure checkout • SSL encrypted
+                    Pago seguro • SSL encriptado
                   </div>
 
                   {/* Features */}
@@ -233,10 +233,10 @@ export function PymePricing({ creditsAvailable, creditsUsed }: Props) {
         {/* Trust row */}
         <div className="flex flex-wrap justify-center gap-6 text-xs text-[#93B8D4] pb-4">
           {[
-            "One-time payment, no subscriptions",
-            "Credits never expire",
-            "SSL encrypted checkout",
-            "Instant access after payment",
+            "Pago único, sin suscripciones",
+            "Los créditos nunca expiran",
+            "Pago seguro • SSL encriptado",
+            "Acceso instantáneo después del pago",
           ].map(t => (
             <div key={t} className="flex items-center gap-1.5">
               <Check className="w-3.5 h-3.5 text-[#38A3F1]" />
