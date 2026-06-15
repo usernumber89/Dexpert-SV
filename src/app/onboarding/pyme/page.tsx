@@ -16,6 +16,7 @@ import {
   Briefcase,
   Phone
 } from "lucide-react";
+import {LightbulbIcon} from "@phosphor-icons/react"
 
 export default function PymeOnboardingPage() {
   const router = useRouter();
@@ -51,13 +52,13 @@ export default function PymeOnboardingPage() {
     });
 
     if (error) {
-      toast.error("Error saving profile");
+      toast.error("Error guardando tu perfil");
       console.error(error);
       setLoading(false);
       return;
     }
 
-    toast.success("Business profile created! Welcome! 🚀");
+    toast.success("¡Perfil de negocio creado exitosamente!");
     router.push("/pyme/dashboard");
   };
 
@@ -81,14 +82,14 @@ export default function PymeOnboardingPage() {
                 <Briefcase className="w-4 h-4 text-white" />
               </div>
               <p className="text-xs font-medium uppercase tracking-widest text-[#0D5FA6]">
-                Step 2 of 2 • Business
+                Paso 2 de 2 • PYME
               </p>
             </div>
             <h1 className="text-2xl font-bold text-[#0D3A6E] mb-2">
-              Set up your business profile
+              Configura tu perfil de empresa
             </h1>
             <p className="text-sm text-[#5B8DB8]">
-              Tell students about your company and start posting projects
+              Háblales a los estudiantes sobre tu empresa y comienza a publicar proyectos.
             </p>
           </div>
 
@@ -97,7 +98,7 @@ export default function PymeOnboardingPage() {
               {/* Business Name */}
               <div>
                 <label className="text-xs font-semibold text-[#0D3A6E] mb-1.5 block">
-                  Business name <span className="text-red-400">*</span>
+                  Nombre del Negocio <span className="text-red-400">*</span>
                 </label>
                 <div className="relative">
                   <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#93B8D4]" />
@@ -114,7 +115,7 @@ export default function PymeOnboardingPage() {
               {/* Contact Person */}
               <div>
                 <label className="text-xs font-semibold text-[#0D3A6E] mb-1.5 block">
-                  Contact person <span className="text-red-400">*</span>
+                  Persona de contacto <span className="text-red-400">*</span>
                 </label>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#93B8D4]" />
@@ -131,14 +132,14 @@ export default function PymeOnboardingPage() {
               {/* Industry */}
               <div>
                 <label className="text-xs font-semibold text-[#0D3A6E] mb-1.5 block">
-                  Industry
+                  Industria / Giro
                 </label>
                 <div className="relative">
                   <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#93B8D4]" />
                   <input
                     value={form.industry}
                     onChange={e => setForm(prev => ({ ...prev, industry: e.target.value }))}
-                    placeholder="Agriculture, Technology, Retail..."
+                    placeholder="Agricultura, Tecnología, Minorista..."
                     className="w-full text-sm pl-10 pr-3 py-2.5 rounded-xl border border-[#BAD8F7] bg-white/50 text-[#0D3A6E] placeholder:text-[#93B8D4] focus:outline-none focus:border-[#38A3F1] focus:ring-2 focus:ring-[#38A3F1]/20 transition-all"
                   />
                 </div>
@@ -147,7 +148,7 @@ export default function PymeOnboardingPage() {
               {/* Phone */}
               <div>
                 <label className="text-xs font-semibold text-[#0D3A6E] mb-1.5 block">
-                  Phone
+                  Teléfono
                 </label>
                 <div className="relative">
                   <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#93B8D4]" />
@@ -163,14 +164,14 @@ export default function PymeOnboardingPage() {
               {/* Website */}
               <div>
                 <label className="text-xs font-semibold text-[#0D3A6E] mb-1.5 block">
-                  Website
+                  Página web
                 </label>
                 <div className="relative">
                   <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#93B8D4]" />
                   <input
                     value={form.website}
                     onChange={e => setForm(prev => ({ ...prev, website: e.target.value }))}
-                    placeholder="www.mibusiness.com"
+                    placeholder="www.minegociosv.com"
                     className="w-full text-sm pl-10 pr-3 py-2.5 rounded-xl border border-[#BAD8F7] bg-white/50 text-[#0D3A6E] placeholder:text-[#93B8D4] focus:outline-none focus:border-[#38A3F1] focus:ring-2 focus:ring-[#38A3F1]/20 transition-all"
                   />
                 </div>
@@ -179,7 +180,7 @@ export default function PymeOnboardingPage() {
               {/* Location */}
               <div>
                 <label className="text-xs font-semibold text-[#0D3A6E] mb-1.5 block">
-                  Location
+                  Ubicación
                 </label>
                 <div className="relative">
                   <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#93B8D4]" />
@@ -196,21 +197,21 @@ export default function PymeOnboardingPage() {
             {/* Description */}
             <div>
               <label className="text-xs font-semibold text-[#0D3A6E] mb-1.5 block">
-                What does your business do? <span className="text-red-400">*</span>
+                ¿A qué se dedica su empresa? <span className="text-red-400">*</span>
               </label>
               <div className="relative">
                 <FileText className="absolute left-3 top-3 w-4 h-4 text-[#93B8D4]" />
                 <textarea
                   value={form.description}
                   onChange={e => setForm(prev => ({ ...prev, description: e.target.value }))}
-                  placeholder="We are a poultry farm specializing in..."
+                  placeholder="Somos una granja avícola especializada en..."
                   required
                   rows={3}
                   className="w-full text-sm pl-10 pr-3 py-2.5 rounded-xl border border-[#BAD8F7] bg-white/50 text-[#0D3A6E] placeholder:text-[#93B8D4] focus:outline-none focus:border-[#38A3F1] focus:ring-2 focus:ring-[#38A3F1]/20 transition-all resize-none"
                 />
               </div>
               <p className="text-[10px] text-[#93B8D4] mt-1">
-                A clear description helps students understand your business needs
+                Una descripción clara ayuda a los estudiantes a comprender las necesidades de su negocio.
               </p>
             </div>
 
@@ -218,14 +219,14 @@ export default function PymeOnboardingPage() {
             <div className="bg-gradient-to-r from-[#F0F7FF] to-[#E8F3FD] rounded-xl p-4 border border-[#BAD8F7]">
               <div className="flex items-start gap-3">
                 <div className="w-8 h-8 bg-[#F59E0B] rounded-lg flex items-center justify-center flex-shrink-0">
-                  <Sparkles className="w-4 h-4 text-white" />
+                  <LightbulbIcon className="w-4 h-4 text-white" />
                 </div>
                 <div>
                   <p className="text-xs font-semibold text-[#0D3A6E] mb-1">
-                    💡 Complete profiles get better matches
+                   Los perfiles completos obtienen mejores talentos.
                   </p>
                   <p className="text-[10px] text-[#5B8DB8]">
-                    Businesses with complete profiles receive 2x more quality applications
+                    Las empresas con perfiles completos reciben el doble de solicitudes de calidad.
                   </p>
                 </div>
               </div>
@@ -240,11 +241,11 @@ export default function PymeOnboardingPage() {
                 {loading ? (
                   <>
                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    Creating profile...
+                    Creando perfil...
                   </>
                 ) : (
                   <>
-                    Complete profile
+                      Perfil completo
                     <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                   </>
                 )}

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import { GraduationCap, Building2 } from "lucide-react";
+import { DexpertLogo } from "@/components/DexpertLogo";
 
 export default function SelectRolePage() {
   const router = useRouter();
@@ -40,17 +41,17 @@ export default function SelectRolePage() {
     <div className="min-h-screen bg-[#F0F7FF] flex items-center justify-center p-6">
       <div className="w-full max-w-md">
         <div className="text-center mb-10">
-          <div className="w-10 h-10 bg-[#0D3A6E] rounded-xl flex items-center justify-center mx-auto mb-4">
-            <span className="text-white font-bold text-lg">D</span>
+          <div className="w-10 h-10 flex items-center justify-center mx-auto mb-4">
+            <DexpertLogo />
           </div>
-          <h1 className="text-xl font-semibold text-[#0D3A6E]">Welcome to Dexpert</h1>
-          <p className="text-sm text-[#5B8DB8] mt-1">How will you use the platform?</p>
+          <h1 className="text-xl font-semibold text-[#0D3A6E]">Bienvenido a Dexpert</h1>
+          <p className="text-sm text-[#5B8DB8] mt-1">¿Cómo usarás nuesta plataforma?</p>
         </div>
 
         <div className="grid grid-cols-2 gap-3 mb-6">
           {[
-            { key: "STUDENT" as const, label: "Student", desc: "Find projects and gain experience", icon: GraduationCap },
-            { key: "PYME" as const, label: "Business", desc: "Post projects and find talent", icon: Building2 },
+            { key: "STUDENT" as const, label: "Estudiante", desc: "Buscar proyectos y ganar experiencia", icon: GraduationCap },
+            { key: "PYME" as const, label: "PYME", desc: "Publicar proyectos y encontrar talento", icon: Building2 },
           ].map(({ key, label, desc, icon: Icon }) => (
             <button
               key={key}
@@ -81,7 +82,7 @@ export default function SelectRolePage() {
           disabled={!selected || loading}
           className="w-full bg-[#38A3F1] text-white text-sm font-medium py-3 rounded-xl hover:bg-[#0D5FA6] transition disabled:opacity-40 disabled:cursor-not-allowed"
         >
-          {loading ? "Setting up your account..." : "Continue"}
+          {loading ? "Configurando tu cuenta..." : "Continuar"}
         </button>
       </div>
     </div>

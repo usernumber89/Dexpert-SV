@@ -6,7 +6,10 @@ import { redirect } from "next/navigation";
 
 export const metadata: Metadata = {
   title: "Pyme | Dexpert",
-  description: "Pyme dashboard for managing projects and skills",
+  description: "Dashboard de la empresa para gestionar proyectos y habilidades",
+  icons: {
+    icon: "/icono.svg",
+  },
 };
 
 export default async function PymeLayout({

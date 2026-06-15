@@ -115,7 +115,13 @@ export function Navbar() {
                     {userData.name.split(" ")[0]}
                   </span>
                   <span className="text-[10px] text-[#93B8D4] capitalize">
-                    {role?.toLowerCase()}
+                    
+
+                    {role === "PYME"
+    ? "Empresa"
+    : role === "STUDENT"
+    ? "Estudiante"
+    : ""}
                   </span>
                 </div>
                 <ChevronDown
@@ -149,7 +155,7 @@ export function Navbar() {
                         className="flex items-center gap-3 px-4 py-2.5 text-sm text-[#5B8DB8] hover:bg-[#F0F7FF] hover:text-[#0D3A6E] transition-colors"
                       >
                         <LayoutDashboard className="w-4 h-4" />
-                        Dashboard
+                        Panel de control
                       </Link>
 
                       <Link
@@ -158,7 +164,7 @@ export function Navbar() {
                         className="flex items-center gap-3 px-4 py-2.5 text-sm text-[#5B8DB8] hover:bg-[#F0F7FF] hover:text-[#0D3A6E] transition-colors"
                       >
                         <User className="w-4 h-4" />
-                        My Profile
+                        Mi perfil
                       </Link>
 
                       <Link
@@ -167,7 +173,7 @@ export function Navbar() {
                         className="flex items-center gap-3 px-4 py-2.5 text-sm text-[#5B8DB8] hover:bg-[#F0F7FF] hover:text-[#0D3A6E] transition-colors"
                       >
                         <Settings className="w-4 h-4" />
-                        Settings
+                        Configuración
                       </Link>
                     </div>
 
@@ -177,7 +183,7 @@ export function Navbar() {
                         className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-red-400 hover:bg-red-50 transition-colors"
                       >
                         <LogOut className="w-4 h-4" />
-                        Sign out
+                        Cerrar sesión
                       </button>
                     </div>
                   </motion.div>
@@ -190,13 +196,13 @@ export function Navbar() {
                 href="/sign-in"
                 className="text-sm font-medium text-[#5B8DB8] hover:text-[#0D3A6E] transition-colors"
               >
-                Sign in
+                Iniciar sesión
               </Link>
               <Link
                 href="/sign-up"
                 className="text-sm font-medium bg-gradient-to-r from-[#0D3A6E] to-[#1D5A9E] text-white px-5 py-2 rounded-lg hover:shadow-lg hover:shadow-[#38A3F1]/25 transition-all"
               >
-                Get started
+                Comenzar
               </Link>
             </>
           )}
@@ -242,19 +248,20 @@ export function Navbar() {
                   )}
                   <div className="flex-1">
                     <p className="text-sm font-semibold text-[#0D3A6E]">{userData.name}</p>
-                    <p className="text-xs text-[#93B8D4] capitalize">{role?.toLowerCase()}</p>
+
+                    <p className="text-xs text-[#93B8D4] capitalize">{role === "PYME" ? "Empresa" : role === "STUDENT" ? "Estudiante" : ""}</p>
                   </div>
                 </div>
               )}
 
               <Link href="#about" className="text-sm text-[#5B8DB8] hover:text-[#0D3A6E] py-1" onClick={() => setOpen(false)}>
-                About
+                Sobre nosotros
               </Link>
               <Link href="#how" className="text-sm text-[#5B8DB8] hover:text-[#0D3A6E] py-1" onClick={() => setOpen(false)}>
-                How it works
+                ¿Cómo funciona?
               </Link>
               <Link href="#plans" className="text-sm text-[#5B8DB8] hover:text-[#0D3A6E] py-1" onClick={() => setOpen(false)}>
-                Plans
+                Planes
               </Link>
               <Link href="#faq" className="text-sm text-[#5B8DB8] hover:text-[#0D3A6E] py-1" onClick={() => setOpen(false)}>
                 FAQ
@@ -264,26 +271,26 @@ export function Navbar() {
                 <>
                   <div className="border-t border-[#E8F3FD] my-2" />
                   <Link href={dashboardHref} className="flex items-center gap-2 text-sm font-medium text-[#0D3A6E] py-1" onClick={() => setOpen(false)}>
-                    <LayoutDashboard className="w-4 h-4" /> Dashboard
+                    <LayoutDashboard className="w-4 h-4" /> Panel de control
                   </Link>
                   <Link href={profileHref} className="flex items-center gap-2 text-sm font-medium text-[#0D3A6E] py-1" onClick={() => setOpen(false)}>
-                    <User className="w-4 h-4" /> My Profile
+                    <User className="w-4 h-4" /> Mi perfil
                   </Link>
                   <Link href={role === "PYME" ? "/pyme/settings" : "/student/settings"} className="flex items-center gap-2 text-sm font-medium text-[#0D3A6E] py-1" onClick={() => setOpen(false)}>
-                    <Settings className="w-4 h-4" /> Settings
+                    <Settings className="w-4 h-4" /> Configuración
                   </Link>
                   <button onClick={handleSignOut} className="flex items-center gap-2 text-sm font-medium text-red-400 py-1 text-left">
-                    <LogOut className="w-4 h-4" /> Sign out
+                    <LogOut className="w-4 h-4" /> Cerrar sesión
                   </button>
                 </>
               ) : (
                 <>
                   <div className="border-t border-[#E8F3FD] my-2" />
                   <Link href="/sign-in" className="text-sm font-medium text-[#0D3A6E] py-1" onClick={() => setOpen(false)}>
-                    Sign in
+                    Iniciar sesión
                   </Link>
                   <Link href="/sign-up" className="text-sm font-medium bg-gradient-to-r from-[#0D3A6E] to-[#1D5A9E] text-white px-4 py-2.5 rounded-lg text-center" onClick={() => setOpen(false)}>
-                    Get started
+                    Comenzar
                   </Link>
                 </>
               )}

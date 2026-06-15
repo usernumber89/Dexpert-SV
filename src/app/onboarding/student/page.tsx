@@ -16,6 +16,7 @@ import {
   MapPin,
   Globe
 } from "lucide-react";
+import {LightbulbIcon} from "@phosphor-icons/react"
 
 export default function StudentOnboardingPage() {
   const router = useRouter();
@@ -85,14 +86,14 @@ export default function StudentOnboardingPage() {
                 <GraduationCap className="w-4 h-4 text-white" />
               </div>
               <p className="text-xs font-medium uppercase tracking-widest text-[#38A3F1]">
-                Step 2 of 2 • Student
+                Paso 2 de 2: Perfil del estudiante
               </p>
             </div>
             <h1 className="text-2xl font-bold text-[#0D3A6E] mb-2">
-              Complete your profile
+              Completa tu perfil para empezar
             </h1>
             <p className="text-sm text-[#5B8DB8]">
-              This helps businesses find the perfect match for their projects
+              Esto ayuda a las empresas a encontrar la coincidencia perfecta para sus proyectos
             </p>
           </div>
 
@@ -101,7 +102,7 @@ export default function StudentOnboardingPage() {
               {/* Full Name */}
               <div>
                 <label className="text-xs font-semibold text-[#0D3A6E] mb-1.5 block">
-                  Full name <span className="text-red-400">*</span>
+                  Nombre completo <span className="text-red-400">*</span>
                 </label>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#93B8D4]" />
@@ -136,7 +137,7 @@ export default function StudentOnboardingPage() {
               {/* University */}
               <div>
                 <label className="text-xs font-semibold text-[#0D3A6E] mb-1.5 block">
-                  University/Institution
+                  Universidad/Institución
                 </label>
                 <div className="relative">
                   <BookOpen className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#93B8D4]" />
@@ -152,14 +153,14 @@ export default function StudentOnboardingPage() {
               {/* Major */}
               <div>
                 <label className="text-xs font-semibold text-[#0D3A6E] mb-1.5 block">
-                  Major/Field of Study
+                  Carrera/Area de Estudio
                 </label>
                 <div className="relative">
                   <GraduationCap className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#93B8D4]" />
                   <input
                     value={form.major}
                     onChange={e => setForm(prev => ({ ...prev, major: e.target.value }))}
-                    placeholder="Computer Science"
+                    placeholder="Ciencias de la computación"
                     className="w-full text-sm pl-10 pr-3 py-2.5 rounded-xl border border-[#BAD8F7] bg-white/50 text-[#0D3A6E] placeholder:text-[#93B8D4] focus:outline-none focus:border-[#38A3F1] focus:ring-2 focus:ring-[#38A3F1]/20 transition-all"
                   />
                 </div>
@@ -168,7 +169,7 @@ export default function StudentOnboardingPage() {
               {/* Location */}
               <div>
                 <label className="text-xs font-semibold text-[#0D3A6E] mb-1.5 block">
-                  Location
+                  Ubicación
                 </label>
                 <div className="relative">
                   <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#93B8D4]" />
@@ -184,7 +185,7 @@ export default function StudentOnboardingPage() {
               {/* LinkedIn */}
               <div>
                 <label className="text-xs font-semibold text-[#0D3A6E] mb-1.5 block">
-                  LinkedIn Profile
+                  Perfil de LinkedIn
                 </label>
                 <div className="relative">
                   <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#93B8D4]" />
@@ -201,20 +202,20 @@ export default function StudentOnboardingPage() {
             {/* Skills */}
             <div>
               <label className="text-xs font-semibold text-[#0D3A6E] mb-1.5 block">
-                Skills
+                Habilidades principales <span className="text-red-400">*</span>
               </label>
               <div className="relative">
                 <Code className="absolute left-3 top-3 w-4 h-4 text-[#93B8D4]" />
                 <textarea
                   value={form.skills}
                   onChange={e => setForm(prev => ({ ...prev, skills: e.target.value }))}
-                  placeholder="React, Python, Marketing, Design... (separate with commas)"
+                  placeholder="React, Python, Marketing, Diseño... (separado por comas)"
                   rows={2}
                   className="w-full text-sm pl-10 pr-3 py-2.5 rounded-xl border border-[#BAD8F7] bg-white/50 text-[#0D3A6E] placeholder:text-[#93B8D4] focus:outline-none focus:border-[#38A3F1] focus:ring-2 focus:ring-[#38A3F1]/20 transition-all resize-none"
                 />
               </div>
               <p className="text-[10px] text-[#93B8D4] mt-1">
-                Add your top skills to get matched with relevant projects
+                Agrega tus habilidades principales para ser emparejado con proyectos relevantes
               </p>
             </div>
 
@@ -222,14 +223,14 @@ export default function StudentOnboardingPage() {
             <div className="bg-gradient-to-r from-[#F0F7FF] to-[#E8F3FD] rounded-xl p-4 border border-[#BAD8F7]">
               <div className="flex items-start gap-3">
                 <div className="w-8 h-8 bg-[#38A3F1] rounded-lg flex items-center justify-center flex-shrink-0">
-                  <Sparkles className="w-4 h-4 text-white" />
+                  <LightbulbIcon className="w-4 h-4 text-white" />
                 </div>
                 <div>
                   <p className="text-xs font-semibold text-[#0D3A6E] mb-1">
-                    💡 Complete profile = Better matches
+                    Perfil completo = Mejores resultados
                   </p>
                   <p className="text-[10px] text-[#5B8DB8]">
-                    Students with complete profiles get 3x more project invitations
+                    Los estudiantes con perfiles completos reciben 3 veces más invitaciones a proyectos.
                   </p>
                 </div>
               </div>

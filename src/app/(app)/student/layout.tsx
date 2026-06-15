@@ -5,8 +5,11 @@ import { redirect } from "next/navigation";
 
 
 export const metadata: Metadata = {
-  title: "Student | Dexpert",
-  description: "Student dashboard for managing projects and skills",
+  title: "Estudiante | Dexpert",
+  description: "Dashboard del estudiante para gestionar proyectos y habilidades",
+  icons: {
+    icon: "/icono.svg",
+  },
 };
 
 export default async function StudentLayout({

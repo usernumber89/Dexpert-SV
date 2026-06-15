@@ -13,6 +13,7 @@ import {
   Award,
   Heart, HandHelping, Goal, Telescope, CircleDollarSign, CheckCheck
 } from "lucide-react";
+import {CheckCircleIcon} from "@phosphor-icons/react"
 
 const HIGHLIGHTS = [
   {
@@ -35,31 +36,31 @@ const HIGHLIGHTS = [
 const STATS = [
   { 
     value: "working on it", 
-    label: "Active Users", 
+    label: "Usuarios registrados", 
     icon: Users,
     color: "#38A3F1",
-    trend: "Growing rapidly"
+    trend: "Creando rápidamente una comunidad vibrante"
   },
   { 
     value: "working on it", 
-    label: "Live Projects", 
+    label: "Proyectos en vivo", 
     icon: Briefcase,
     color: "#18508f",
-    trend: "Real impact"
+    trend: "Impacto real"
   },
   { 
     value: "3", 
-    label: "Business Plans", 
+    label: "Planes disponibles", 
     icon: CircleDollarSign,
     color: "#38A3F1",
-    trend: "Discover the right fit"
+    trend: "Descubre el plan perfecto para ti"
   },
   { 
     value: "🇸🇻", 
     label: "El Salvador", 
     icon: MapPin,
     color: "#18508f",
-    trend: "Expanding soon"
+    trend: "Enfoque local, impacto global"
   },
 ];
 
@@ -183,7 +184,7 @@ export function Aboutus() {
                     transition={{ delay: index * 0.05 }}
                     className="flex items-center gap-2"
                   >
-                    <CheckCheck  className="w-4 h-4 text-[#38A3F1] flex-shrink-0" />
+                    <CheckCircleIcon  className="w-4 h-4 text-[#38A3F1] flex-shrink-0" />
                     <span className="text-sm text-[#0D3A6E]">{feature}</span>
                   </motion.div>
                 ))}

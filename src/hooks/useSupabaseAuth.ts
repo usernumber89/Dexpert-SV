@@ -1,9 +1,12 @@
+// hooks/useSupabaseAuth.ts
 import { useAuthContext } from "@/providers/AuthProvider";
 import { useEffect, useState, useRef } from "react";
 
+// 1. 🛠️ CORREGIDO: Añadimos 'role' al tipo para que TypeScript lo reconozca
 type Profile = {
   full_name?: string | null;
   avatar_url?: string | null;
+  role?: "STUDENT" | "PYME" | null; 
 };
 
 export function useSupabaseAuth() {
@@ -39,22 +42,46 @@ export function useSupabaseAuth() {
 
         if (!mounted) return;
 
-        if (profileRole?.role === "STUDENT") {
+        const currentRole = profileRole?.role;
+
+        if (currentRole === "STUDENT") {
           const { data: student } = await supabase
             .from("students")
             .select("full_name, avatar_url")
             .eq("user_id", user.id)
             .single();
-          if (mounted) setProfile({ full_name: student?.full_name, avatar_url: student?.avatar_url });
-        } else if (profileRole?.role === "PYME") {
+            
+          if (mounted) {
+            // 2. 🛠️ CORREGIDO: Inyectamos el rol de STUDENT en el estado
+            setProfile({ 
+              full_name: student?.full_name, 
+              avatar_url: student?.avatar_url,
+              role: "STUDENT" 
+            });
+          }
+        } else if (currentRole === "PYME") {
           const { data: pyme } = await supabase
             .from("pymes")
             .select("company_name, logo_url")
             .eq("user_id", user.id)
             .single();
-          if (mounted) setProfile({ full_name: pyme?.company_name, avatar_url: pyme?.logo_url });
+            
+          if (mounted) {
+            // 3. 🛠️ CORREGIDO: Inyectamos el rol de PYME en el estado
+            setProfile({ 
+              full_name: pyme?.company_name, 
+              avatar_url: pyme?.logo_url,
+              role: "PYME" 
+            });
+          }
         } else {
-          if (mounted) setProfile({ full_name: user.user_metadata?.full_name ?? user.email, avatar_url: null });
+          if (mounted) {
+            setProfile({ 
+              full_name: user.user_metadata?.full_name ?? user.email, 
+              avatar_url: null,
+              role: null 
+            });
+          }
         }
       } catch (error) {
         console.error("Error loading profile:", error);
