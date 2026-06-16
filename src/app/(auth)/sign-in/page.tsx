@@ -104,7 +104,7 @@ export default function SignInPage() {
               whileHover={{ scale: 1.05 }}
               className="flex items-center justify-center mx-auto mb-5 "
             >
-              <DexpertLogo/>
+              <DexpertLogo variant="dark"/>
             </motion.div>
             
             <h1 className="text-xl font-bold text-[#0D3A6E] mb-2">

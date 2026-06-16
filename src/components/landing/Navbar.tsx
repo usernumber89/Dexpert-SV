@@ -68,7 +68,7 @@ export function Navbar() {
             whileHover={{ scale: 1.05 }}
             className="  rounded-lg flex items-center justify-center "
           >
-            <DexpertLogo height={50} />
+           <img src="/Logo.png" className="w-50"></img>
           </motion.div>
           
         </Link>

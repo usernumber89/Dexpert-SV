@@ -157,10 +157,10 @@ export function AppSidebar() {
       >
         <Link href="/" className="flex items-center justify-center" onClick={handleLinkClick}>
           {isCollapsed ? (
-            <BriefcaseIcon size={32} className="text-[#0D3A6E] transition-all" />
+            <img src="/icono.png" className=" w-50 transition-all" />
           ) : (
             <div className="mx-auto transition-all">
-              <DexpertLogo />
+              <img src="/Logo.png" className="w-40"></img>
             </div>
           )}
         </Link>

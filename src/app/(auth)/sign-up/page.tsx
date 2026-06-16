@@ -229,9 +229,9 @@ export default function SignUpPage() {
           <div className="text-center mb-6">
             <motion.div 
               whileHover={{ scale: 1.05, rotate: 1 }}
-              className="w-14 h-14  flex items-center justify-center mx-auto mb-5  "
+              className=" flex items-center justify-center mx-auto mb-5  "
             >
-              <DexpertLogo />
+              <DexpertLogo  variant="dark"/>
             </motion.div>
             
             <AnimatePresence mode="wait">

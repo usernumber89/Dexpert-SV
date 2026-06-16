@@ -60,9 +60,17 @@ export function Footer() {
           
           {/* Brand Column */}
           <div className="md:col-span-1">
-            <div className="flex items-center gap-2 mb-4">
+            <div className="flex h-10 items-center gap-2 mb-4">
             
-              <DexpertLogo variant="dark"/>
+               <Link href="/" className="flex items-center gap-2 group">
+          <motion.div
+            whileHover={{ scale: 1.05 }}
+            className="  rounded-lg flex items-center justify-center "
+          >
+           <img src="/dark.png" className="w-50"></img>
+          </motion.div>
+          
+        </Link>
             </div>
             
             <p className="text-sm text-[#BAD8F7] leading-relaxed mb-6">
