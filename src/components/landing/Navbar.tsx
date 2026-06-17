@@ -68,7 +68,8 @@ export function Navbar() {
             whileHover={{ scale: 1.05 }}
             className="  rounded-lg flex items-center justify-center "
           >
-           <img src="/Logo.png" className="w-50"></img>
+           <img src="/X.svg
+           " className="w-50"></img>
           </motion.div>
           
         </Link>
@@ -159,7 +160,7 @@ export function Navbar() {
                       </Link>
 
                       <Link
-                        href={profileHref}
+                        href={role === "PYME" ? "/pyme/profile" : "/student/profile"}
                         onClick={() => setDropdownOpen(false)}
                         className="flex items-center gap-3 px-4 py-2.5 text-sm text-[#5B8DB8] hover:bg-[#F0F7FF] hover:text-[#0D3A6E] transition-colors"
                       >

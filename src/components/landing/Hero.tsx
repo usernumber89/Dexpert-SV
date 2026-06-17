@@ -6,6 +6,8 @@ import { useUserRole } from "@/hooks/useUserRole";
 import { TypeAnimation } from "react-type-animation";
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
+
+import { baumans, signika, outfit } from "@/lib/fonts";
 import { useAuthContext } from "@/providers/AuthProvider";
 
 const STATS = [
@@ -26,7 +28,7 @@ export function Hero() {
     : "/student/dashboard";
 };
   return (
-    <section className="relative min-h-screen flex items-center justify-center px-6 md:px-12 overflow-hidden bg-white">
+    <section className="relative min-h-screen flex items-center justify-center px-6 md:px-12 overflow-hidden bg-white ">
 
       {/* ── Background ── */}
       <div className="absolute inset-0 pointer-events-none">
@@ -58,7 +60,7 @@ export function Hero() {
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.1 }}
-              className="text-4xl sm:text-5xl lg:text-[3.25rem] font-extrabold leading-[1.08] text-[#0D3A6E] tracking-tight"
+              className={`${outfit.className}  text-4xl sm:text-5xl lg:text-[3.25rem] leading-[1.08] text-[#0D3A6E] tracking-tight`}
             >
               La experiencia se contruye,
               <br />
@@ -159,7 +161,7 @@ export function Hero() {
                 <div className="bg-[#38A3F1] rounded-[14px] overflow-hidden">
 
                   {/* Title bar */}
-                  <div className="flex items-center gap-1.5 px-4 py-2.5 bg-[#0D3A6E] border-b border-[#333]">
+                  <div className="flex items-center gap-1.5 px-4 py-2.5 bg-[#39b6ff]  ">
                     <span className="w-[11px] h-[11px] rounded-full bg-[#ff5f57]" />
                     <span className="w-[11px] h-[11px] rounded-full bg-[#ffbd2e]" />
                     <span className="w-[11px] h-[11px] rounded-full bg-[#28c840]" />
@@ -171,10 +173,13 @@ export function Hero() {
                   {/* Content — swap src with any image you want */}
                   <div className="aspect-[16/10] overflow-hidden bg-[#12131a]">
                     <img
-                      src="/animation.jpeg"
-                      alt="App preview"
-                      className="w-full h-full object-cover object-top"
-                    />
+  src="/animation.jpeg"
+  alt="App preview"
+  className="pointer-events-none select-none w-full h-full object-cover object-top"
+  draggable="false"
+  onContextMenu={(e) => e.preventDefault()}
+  onDragStart={(e) => e.preventDefault()}
+/>
                   </div>
                 </div>
 

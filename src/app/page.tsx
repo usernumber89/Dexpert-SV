@@ -8,6 +8,7 @@ import { Faq } from "@/components/landing/Faq";
 import { CallToAction } from "@/components/landing/CallToAction";
 import { Footer } from "@/components/landing/Footer";
 
+
 export default function Home() {
   return (
     <div className="min-h-screen bg-white">

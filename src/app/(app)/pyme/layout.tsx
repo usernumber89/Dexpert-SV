@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   title: "Pyme | Dexpert",
   description: "Dashboard de la empresa para gestionar proyectos y habilidades",
   icons: {
-    icon: "/icono.svg",
+    icon: "/1.svg",
   },
 };
 

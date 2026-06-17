@@ -17,6 +17,7 @@ import { CreateProjectModal } from "./CreateProjectModal";
 import Image from "next/image";
 import {CreditsWidget} from "./CreditsWidget"
 import {BriefcaseIcon }  from "@phosphor-icons/react";
+import { closeProjectAndGenerateCertificates } from "@/app/actions/projects"; // Ajusta la ruta a tu archivo de acciones
 
 type Student = {
   id: string;
@@ -109,23 +110,31 @@ export function PymeDashboard({ user, pyme, projects,credits }: Props) {
     },
   ];
 
-  const closeProject = async (id: string) => {
-    setIsLoading(true);
-    const supabase = createClient();
-    const { error } = await supabase
-      .from("projects")
-      .update({ status: "closed" })
-      .eq("id", id);
+  // 📄 Modifica solo la función closeProject dentro de PymeDashboard.tsx
+const closeProject = async (id: string) => {
+  if (!confirm("¿Estás seguro de cerrar este proyecto? Se generarán automáticamente los certificados para los alumnos aceptados.")) return;
 
-    if (error) {
-      toast.error("Error cerrando proyecto");
+  setIsLoading(true);
+  
+  try {
+    // Aquí enviamos el project.id de forma segura
+    const result = await closeProjectAndGenerateCertificates(id);
+
+    if (result.success) {
+      // ➔ SOLUCIÓN AL ERROR DE TIPO: Usamos un string directo para el toast
+      toast.success("Proyecto finalizado y certificados generados con éxito.");
+      router.refresh(); 
     } else {
-      toast.success("Proyecto cerrado exitosamente");
-      router.refresh();
+      toast.error(result.error || "Error cerrando el proyecto");
     }
+  } catch (error) {
+    toast.error("Ocurrió un error inesperado al conectar con el servidor.");
+    console.error(error);
+  } finally {
     setIsLoading(false);
     setMenuOpen(null);
-  };
+  }
+};
 
   const deleteProject = async (id: string) => {
     if (!confirm("¿Estás seguro de que quieres eliminar este proyecto? Esta acción no se puede deshacer.")) return;

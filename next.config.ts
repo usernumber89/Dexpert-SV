@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  images:{
+  images: {
     remotePatterns: [
       {
         protocol: "https",
@@ -11,6 +11,8 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  // 🚀 Evita que el empaquetador de Next.js rompa las rutas internas de las fuentes de PDFKit
+  serverExternalPackages: ["pdfkit"],
 };
 
 export default nextConfig;

@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     "empleo",
   ],
   icons: {
-    icon: "/icono.svg",
+    icon: "/1.svg",
   },
 };
 

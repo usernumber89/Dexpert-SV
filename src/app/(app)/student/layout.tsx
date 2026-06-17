@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   title: "Estudiante | Dexpert",
   description: "Dashboard del estudiante para gestionar proyectos y habilidades",
   icons: {
-    icon: "/icono.svg",
+    icon: "/1.svg",
   },
 };
 

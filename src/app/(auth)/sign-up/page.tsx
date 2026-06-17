@@ -231,7 +231,7 @@ export default function SignUpPage() {
               whileHover={{ scale: 1.05, rotate: 1 }}
               className=" flex items-center justify-center mx-auto mb-5  "
             >
-              <DexpertLogo  variant="dark"/>
+             <img src="/dex.png" className="w-50"/>
             </motion.div>
             
             <AnimatePresence mode="wait">

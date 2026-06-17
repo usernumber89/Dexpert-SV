@@ -1,5 +1,6 @@
 @import "tailwindcss";
 
+
 @layer base {
   :root {
     /* Fondos */
@@ -37,5 +38,11 @@
     color: var(--text-primary);
     font-family: 'Inter', system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
+    
+
   }
+  
+  
+
+  
 }

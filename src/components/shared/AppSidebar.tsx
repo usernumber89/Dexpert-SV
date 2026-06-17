@@ -157,10 +157,10 @@ export function AppSidebar() {
       >
         <Link href="/" className="flex items-center justify-center" onClick={handleLinkClick}>
           {isCollapsed ? (
-            <img src="/icono.png" className=" w-50 transition-all" />
+            <img src="/1.svg" className=" w-50 transition-all" />
           ) : (
             <div className="mx-auto transition-all">
-              <img src="/Logo.png" className="w-40"></img>
+              <img src="/dex.png" className="w-50"/>
             </div>
           )}
         </Link>

@@ -67,7 +67,7 @@ export function Footer() {
             whileHover={{ scale: 1.05 }}
             className="  rounded-lg flex items-center justify-center "
           >
-           <img src="/dark.png" className="w-50"></img>
+           <img src="/X2.png" className="w-50"></img>
           </motion.div>
           
         </Link>
