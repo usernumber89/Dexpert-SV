@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server"; 
-import { Award, ExternalLink, Calendar, Building, AlertCircle } from "lucide-react";
+import { Award, ExternalLink, Calendar, Building, AlertCircle, ChevronRight, CheckCircle, FileText } from "lucide-react";
 import Link from "next/link";
 
 interface MappedCertificate {
@@ -14,7 +14,7 @@ interface MappedCertificate {
 export default async function StudentCertificatesPage() {
   const supabase = await createClient();
 
-  // 1. Consulta corregida con la columna exacta: company_name
+  // 1. Consulta limpia y eficiente
   const { data: certificates, error } = await supabase
     .from("certificates")
     .select(`
@@ -39,15 +39,11 @@ export default async function StudentCertificatesPage() {
   if (error) {
     console.error("❌ Error cargando certificados:", {
       mensaje: error.message,
-      detalles: error.details,
-      sugerencia: error.hint,
       codigo: error.code
     });
-  }console.log("🔍 === DEBUG DEXPERT CERTIFICADOS ===");
-  console.log("¿Qué está devolviendo Supabase?:", JSON.stringify(certificates, null, 2));
-  console.log("======================================");
+  }
 
-  // 2. Mapeo y normalización de datos usando cert.applications -> projects -> pymes
+  // 2. Mapeo seguro con Normalización Automática
   const mappedCertificates: MappedCertificate[] = certificates?.map((cert: any) => {
     const application = Array.isArray(cert.applications) ? cert.applications[0] : cert.applications;
     const project = Array.isArray(application?.projects) ? application?.projects[0] : application?.projects;
@@ -64,96 +60,114 @@ export default async function StudentCertificatesPage() {
           })
         : "Fecha no disponible",
       projectTitle: project?.title || "Proyecto sin título",
-      pymeName: pyme?.company_name || "Empresa desconocida", // 👈 Extraído correctamente aquí
+      pymeName: pyme?.company_name || "Empresa aliada", 
       projectDescription: project?.description || "Sin descripción disponible."
     };
   }) || [];
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-8">
-      {/* Encabezado */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between border-b border-gray-200 pb-6 mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 tracking-tight flex items-center gap-3">
-            <Award className="h-8 w-8 text-indigo-600" />
-            Mis Certificados
+    <div className="min-h-screen bg-gradient-to-br from-[#F4F9FF] via-white to-[#EEF6FF] pb-16">
+      {/* Encabezado Principal */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-6">
+        <div className="flex flex-col gap-2 border-b border-gray-100 pb-6">
+          <div className="inline-flex items-center gap-1.5 self-start px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 text-[#0D3A6E] border border-blue-100">
+            <Award className="h-3.5 w-3.5 text-[#38b6ff]" />
+            Logros Académicos
+          </div>
+          <h1 className="text-3xl font-extrabold text-[#0D3A6E] tracking-tight flex items-center gap-3 mt-1">
+            Mis Certificados 
           </h1>
-          <p className="text-gray-500 mt-2">
-            Aquí encontrarás las certificaciones oficiales de tus proyectos completados con éxito.
+          <p className="text-sm text-[#5B8DB8] max-w-2xl">
+            Visualiza, descarga y comparte las certificaciones técnicas obtenidas por el desarrollo exitoso de proyectos en la plataforma.
           </p>
         </div>
       </div>
 
-      {/* Alerta de Error */}
-      {error && (
-        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl flex items-start gap-3 text-red-700">
-          <AlertCircle className="h-5 w-5 mt-0.5 flex-shrink-0" />
-          <div>
-            <p className="font-semibold">Hubo un problema al cargar tus documentos</p>
-            <p className="text-sm opacity-90">Por favor, intenta recargar la página o contacta al soporte técnico.</p>
-          </div>
-        </div>
-      )}
-
-      {/* Estado Vacío */}
-      {!error && mappedCertificates.length === 0 && (
-        <div className="text-center py-16 bg-white border border-dashed border-gray-300 rounded-2xl p-8 shadow-sm">
-          <div className="mx-auto w-14 h-14 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center mb-4">
-            <Award className="h-7 w-7" />
-          </div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-1">Aún no tienes certificados disponibles</h3>
-          <p className="text-gray-500 max-w-sm mx-auto text-sm">
-            Tus certificados aparecerán aquí de forma automática una vez que las empresas aliadas marquen tus proyectos postulados como finalizados.
-          </p>
-        </div>
-      )}
-
-      {/* Grid de Tarjetas */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {mappedCertificates.map((cert: MappedCertificate) => (
-          <div 
-            key={cert.id} 
-            className="group relative bg-white border border-gray-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between"
-          >
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Alerta de Error de Supabase */}
+        {error && (
+          <div className="mb-8 p-4 bg-red-50 border border-red-200 rounded-2xl flex items-start gap-3 text-red-800 shadow-sm animate-fade-in">
+            <AlertCircle className="h-5 w-5 mt-0.5 text-red-600 flex-shrink-0" />
             <div>
-              <div className="flex items-center justify-between mb-4">
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                  Completado
-                </span>
-                <span className="text-xs text-gray-400 flex items-center gap-1">
-                  <Calendar className="h-3.5 w-3.5" />
-                  {cert.createdAt}
-                </span>
+              <p className="font-bold text-sm">Hubo un problema de sincronización</p>
+              <p className="text-xs text-red-700/90 mt-0.5">No pudimos enlazar tus archivos con la base de datos. Recarga o ponte en contacto con soporte técnico.</p>
+            </div>
+          </div>
+        )}
+
+        {/* Estado Vacío (Empty State) Estilizado */}
+        {!error && mappedCertificates.length === 0 && (
+          <div className="text-center py-20 bg-white/80 backdrop-blur border border-dashed border-gray-200 rounded-3xl p-8 max-w-lg mx-auto shadow-sm mt-6">
+            <div className="mx-auto w-16 h-16 bg-gradient-to-tr from-blue-50 to-indigo-50 text-[#38b6ff] rounded-2xl flex items-center justify-center mb-5 shadow-inner">
+              <Award className="h-8 w-8" />
+            </div>
+            <h3 className="text-xl font-bold text-gray-900 mb-2">Sin certificados por el momento</h3>
+            <p className="text-gray-500 text-sm leading-relaxed">
+              Tus documentos de acreditación se generarán de forma automática en cuanto la contraparte empresarial declare el proyecto asignado como finalizado.
+            </p>
+          </div>
+        )}
+
+        {/* Grid de Tarjetas Premium */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-2">
+          {mappedCertificates.map((cert: MappedCertificate) => (
+            <div 
+              key={cert.id} 
+              className="group relative rounded-2xl border border-gray-100 bg-white shadow-sm transition-all duration-300 hover:border-[#38A3F1]/30 hover:shadow-xl hover:shadow-[#0D3A6E]/5 flex flex-col justify-between overflow-hidden before:absolute before:top-0 before:left-0 before:w-full before:h-1 before:bg-gradient-to-r before:from-[#38b6ff] before:to-[#0D3A6E]"
+            >
+              {/* Cuerpo Superior de la Tarjeta */}
+              <div className="p-6 space-y-4">
+                <div className="flex items-center justify-between gap-2">
+                  {/* Badge de Estado Centrado y Seguro */}
+                  <span className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-100 flex-shrink-0">
+                    <CheckCircle className="h-3.5 w-3.5 text-emerald-600" /> 
+                    Completado
+                  </span>
+                  
+                  {/* Fecha de Emisión */}
+                  <span className="text-xs font-medium text-[#5B8DB8] flex items-center gap-1.5 bg-slate-50 px-2.5 py-1 rounded-md border border-slate-100">
+                    <Calendar className="h-3.5 w-3.5 text-slate-400" />
+                    {cert.createdAt}
+                  </span>
+                </div>
+
+                {/* Título del Proyecto */}
+                <h3 className="text-base font-bold text-[#0D3A6E] line-clamp-2 leading-snug group-hover:text-[#38A3F1] transition-colors duration-200">
+                  {cert.projectTitle}
+                </h3>
+
+                {/* Organización / PYME Aliada */}
+                <div className="flex items-center gap-2 bg-gray-50/70 p-2.5 rounded-xl border border-gray-100/60">
+                  <div className="w-7 h-7 rounded-lg bg-blue-100/60 text-[#38b6ff] flex items-center justify-center flex-shrink-0">
+                    <Building className="h-4 w-4" />
+                  </div>
+                  <div className="overflow-hidden">
+                    <p className="text-[11px] font-medium text-gray-400  tracking-wider leading-none">Empresa</p>
+                    <p className="text-sm font-bold text-gray-700 truncate mt-0.5">"{cert.pymeName}"</p>
+                  </div>
+                </div>
+
+                {/* Descripción Breve */}
+                <p className="text-sm text-gray-500 line-clamp-2 leading-relaxed pt-1">
+                  {cert.projectDescription}
+                </p>
               </div>
 
-              <h3 className="text-xl font-bold text-gray-900 group-hover:text-indigo-600 transition-colors duration-150 line-clamp-1">
-                {cert.projectTitle}
-              </h3>
-
-              <p className="text-sm font-medium text-gray-600 mt-2 flex items-center gap-1.5">
-                <Building className="h-4 w-4 text-gray-400" />
-                {cert.pymeName}
-              </p>
-
-              <p className="text-sm text-gray-500 mt-3 line-clamp-2">
-                {cert.projectDescription}
-              </p>
+              {/* Footer con Botón de Acción Estilizado */}
+              <div className="px-6 pb-6 pt-3 bg-gradient-to-t from-gray-50/50 to-white rounded-b-2xl">
+                <Link
+                  href={cert.url}
+                  target="_blank"
+                  className="w-full inline-flex items-center justify-center gap-2 text-xs font-bold bg-[#38b6ff] text-[#0D3A6E] hover:bg-[#0D3A6E] hover:text-white px-4 py-3 rounded-xl transition-all duration-300 group/btn border border-[#0D3A6E]/10"
+                >
+                  <FileText className="w-4 h-4 transition-transform text-white group-hover/btn:scale-110" />
+                  <span className="text-white">Visualizar Certificado Oficial</span>
+                  <ChevronRight className="w-3.5 h-3.5 ml-0.5 group-hover/btn:translate-x-0.5 text-white transition-transform" />
+                </Link>
+              </div>
             </div>
-
-            <div className="mt-6 pt-4 border-t border-gray-100">
-              <Link
-                href={cert.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-gray-50 border border-gray-200 text-sm font-medium text-gray-700 rounded-xl hover:bg-indigo-600 hover:text-white hover:border-indigo-600 transition-all duration-200"
-              >
-                Ver Certificado Oficial
-                <ExternalLink className="h-4 w-4" />
-              </Link>
-            </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </div>
   );
