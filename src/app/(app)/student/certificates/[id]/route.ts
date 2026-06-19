@@ -93,7 +93,7 @@ export async function GET(request: NextRequest, { params }: RouteProps) {
       const doc = new PDFDocument({
         size: "LETTER",
         layout: "landscape",
-        margins: { top: 40, bottom: 40, left: 40, right: 40 },
+        margins: { top: 0, bottom: 0, left: 0, right: 0 },
       });
 
       const chunks: Buffer[] = [];
@@ -101,124 +101,147 @@ export async function GET(request: NextRequest, { params }: RouteProps) {
       doc.on("end", () => resolve(Buffer.concat(chunks)));
       doc.on("error", (err) => reject(err));
 
-      const centerX = 396; // Centro horizontal de la página LETTER horizontal
+      const pageWidth = 792;
+      const pageHeight = 612;
+      const marginX = 55;
 
-      // --- DISEÑO DEL CERTIFICADO ---
-      doc.rect(20, 20, 752, 572).lineWidth(4).stroke("#38b6ff");
-      doc.rect(28, 28, 736, 556).lineWidth(1.5).stroke("#1b5597");
+      // ── BACKGROUND ──
+      doc.rect(0, 0, pageWidth, pageHeight).fill("#FCFCFA");
 
-      doc.fillColor("#38b6ff").rect(28, 28, 30, 30).fill();
-      doc.fillColor("#1b5597").rect(734, 28, 30, 30).fill();
-      doc.fillColor("#1b5597").rect(28, 554, 30, 30).fill();
-      doc.fillColor("#38b6ff").rect(734, 554, 30, 30).fill();
+      // ── TOP HEADER BAND ──
+      doc.rect(0, 0, pageWidth, 100).fill("#0A2647");
+      doc.rect(0, 100, pageWidth, 4).fill("#D4A843");
 
-      // ✨ SECCIÓN LOGO: Foto de perfil o fallback vectorial
+      // Logo en header
       if (fotoBuffer) {
-        doc.save();
-        // Creamos un recorte circular perfecto en el centro superior
-        
-        doc.image(fotoBuffer, centerX - 85, 50, { width: 170, height: 50 });
-        doc.restore();
-        doc.moveDown(5.2);
-      } else {
-        // Fallback al logo geométrico por si aún no has subido la foto
-        doc.save();
-        doc.translate(centerX - 25, 55); 
-        doc.path('M 0 0 L 25 0 C 38 0 42 10 42 22 C 42 34 38 44 25 44 L 0 44 Z').fill('#4f46e5');
-        doc.path('M 10 9 L 22 9 C 28 9 31 14 31 22 C 31 30 28 35 22 35 L 10 35 Z').fill('#ffffff');
-        doc.path('M 46 22 L 52 15 L 58 22 L 52 29 Z').fill('#d97706');
-        doc.restore();
-        doc.moveDown(4.2);
+        doc.image(fotoBuffer, marginX, 32, { width: 140, height: 40 });
       }
 
-      // Nombre de la marca
-      
-
-      // Título
-      doc.moveDown(1);
-      doc.fillColor("#1e293b")
-         .fontSize(28)
+      // Marca top-right
+      doc.fillColor("#ffffff")
+         .fontSize(20)
          .font("Helvetica-Bold")
-         .text("CERTIFICADO DE COMPLETACIÓN", { align: "center" });
-
-      // Línea divisoria
-      doc.moveDown(0.4);
-      doc.moveTo(280, doc.y).lineTo(512, doc.y).lineWidth(1.5).stroke("#d97706");
-
-      // Texto Conector 1
-      doc.moveDown(1.5);
-      doc.fillColor("#64748b")
-         .fontSize(14)
-         .font("Helvetica")
-         .text("Por cuanto se reconoce que el (la) estudiante:", { align: "center" });
-
-      // Nombre del Estudiante
-      doc.moveDown(1);
-      doc.fillColor("#0f172a")
-         .fontSize(26)
-         .font("Helvetica-Bold")
-         .text(studentName, { align: "center" });
-
-      // Texto Conector 2
-      doc.moveDown(1.2);
-      doc.fillColor("#475569")
-         .fontSize(14)
-         .font("Helvetica")
-         .text("Ha cumplido con éxito los requerimientos prácticos y el desarrollo técnico del proyecto:", { align: "center", lineGap: 4 });
-
-      // Nombre del Proyecto
-      doc.moveDown(0.8);
-      doc.fillColor("#1b5597")
-         .fontSize(18)
-         .font("Helvetica-Bold")
-         .text(`"${projectTitle}"`, { align: "center" });
-
-      // ✨ SOLUCIÓN AL CENTRADO: Separamos las líneas y forzamos el centrado explícito
-      doc.moveDown(0.8);
-      doc.fillColor("#475569")
-         .fontSize(13)
-         .font("Helvetica")
-         .text("En colaboración estratégica con la organización:", { align: "center" });
-      
-      doc.moveDown(0.2);
-      doc.fillColor("#1e293b")
-         .font("Helvetica-Bold")
-         .text(pymeName, { align: "center" });
-
-      // Fecha
-      doc.moveDown(1.8);
-      doc.fillColor("#64748b")
-         .fontSize(11)
-         .font("Helvetica-Oblique")
-         .text(`El Salvador - ${formattedDate}.`, { align: "center" });
-
-      // --- BLOQUE DE FIRMA ---
-      doc.moveDown(3.5);
-      const signatureY = doc.y;
-      const lineWidth = 220;
-      const startLineX = centerX - (lineWidth / 2);
-
-      // ✨ SECCIÓN FIRMA: Renderiza la imagen si existe justo arriba de la línea
-      if (firmaBuffer) {
-        doc.image(firmaBuffer, centerX - 60, signatureY - 55, { width: 120 });
-      }
-
-      // Línea física para firmar
-      doc.moveTo(startLineX, signatureY)
-         .lineTo(startLineX + lineWidth, signatureY)
-         .lineWidth(1)
-         .stroke("#94a3b8");
-
-      // Texto de la firma
-      doc.fillColor("#1e293b")
-         .fontSize(12)
-         .font("Helvetica-Bold")
-         .text("Rodrigo Campos Alvarenga", startLineX, signatureY + 8, { width: lineWidth, align: "center" });
-
-      doc.fillColor("#64748b")
+         .text("DEXPERT", pageWidth - marginX - 150, 34, { width: 150, align: "right" });
+      doc.fillColor("#D4A843")
          .fontSize(9)
          .font("Helvetica")
-         .text("Director & Fundador - Dexpert", startLineX, signatureY + 22, { width: lineWidth, align: "center" });
+         .text("Donde el potencial no tiene límites!", pageWidth - marginX - 150, 62, { width: 150, align: "right" });
+
+      // ── LEFT GOLD ACCENT LINE ──
+      const goldLineX = 75;
+      doc.rect(goldLineX, 130, 3, 350).fill("#D4A843");
+
+      // ── CONTENT ──
+      const contentX = goldLineX + 22;
+
+      doc.fillColor("#D4A843")
+         .fontSize(10)
+         .font("Helvetica-Bold")
+         .text("CERTIFICADO DE COMPLETACIÓN", contentX, 140);
+
+      doc.rect(contentX, 160, 130, 2).fill("#D4A843");
+
+      doc.fillColor("#0A2647")
+         .fontSize(30)
+         .font("Helvetica-Bold")
+         .text("Reconocimiento", contentX, 180);
+
+      doc.fillColor("#64748B")
+         .fontSize(12)
+         .font("Helvetica")
+         .text("Por cuanto se reconoce que el (la) estudiante:", contentX, 230);
+
+      doc.fillColor("#0F172A")
+         .fontSize(24)
+         .font("Helvetica-Bold")
+         .text(studentName, contentX, 260);
+
+      doc.fillColor("#64748B")
+         .fontSize(12)
+         .font("Helvetica")
+         .text("Ha cumplido con éxito los requerimientos prácticos y el", contentX, 305);
+      doc.text("desarrollo técnico del proyecto:", contentX, doc.y + 2);
+
+      doc.fillColor("#1B5597")
+         .fontSize(16)
+         .font("Helvetica-Bold")
+         .text(`"${projectTitle}"`, contentX, 345);
+
+      doc.fillColor("#64748B")
+         .fontSize(12)
+         .font("Helvetica")
+         .text("En colaboración estratégica con la organización:", contentX, 380);
+
+      doc.fillColor("#0F172A")
+         .fontSize(14)
+         .font("Helvetica-Bold")
+         .text(pymeName, contentX, 405);
+
+      doc.fillColor("#94A3B8")
+         .fontSize(10)
+         .font("Helvetica-Oblique")
+         .text(`El Salvador, ${formattedDate}`, contentX, 440);
+
+      // ── SELLO DECORATIVO ──
+      const sealX = pageWidth - marginX - 60;
+      const sealY = 310;
+      doc.circle(sealX, sealY, 55).lineWidth(1.5).stroke("#D4A843");
+      doc.circle(sealX, sealY, 48).lineWidth(0.5).stroke("#D4A843");
+      doc.save();
+      doc.translate(sealX, sealY);
+      doc.rotate(15);
+      for (let i = 0; i < 12; i++) {
+        doc.rect(-22, -42, 44, 4).fill("#D4A843");
+        doc.rotate(30);
+      }
+      doc.restore();
+      doc.fillColor("#D4A843")
+         .fontSize(8)
+         .font("Helvetica-Bold")
+         .text("VERIFICADO", sealX - 26, sealY - 14, { width: 52, align: "center" });
+      doc.fillColor("#D4A843")
+         .fontSize(8)
+         .font("Helvetica")
+         .text("DEXPERT", sealX - 26, sealY + 2, { width: 52, align: "center" });
+
+      // ── BLOQUE DE FIRMA ──
+      const sigX = contentX;
+      const sigY = 495;
+
+      if (firmaBuffer) {
+        doc.image(firmaBuffer, sigX, sigY - 38, { width: 100 });
+      }
+
+      doc.rect(sigX, sigY, 210, 1).fill("#CBD5E1");
+
+      doc.fillColor("#0F172A")
+         .fontSize(11)
+         .font("Helvetica-Bold")
+         .text("Rodrigo Campos Alvarenga", sigX, sigY + 8);
+
+      doc.fillColor("#64748B")
+         .fontSize(8)
+         .font("Helvetica")
+         .text("Director & Fundador — Dexpert", sigX, sigY + 23);
+
+         const footerY = 580;
+      
+      // Izquierda: ID del certificado
+      doc.fillColor("#94A3B8")
+         .fontSize(8)
+         .font("Helvetica-Bold")
+         .text(`ID DE VERIFICACIÓN: ${certificate.id}`, marginX, footerY, { width: 350, align: "left" });
+      doc.y = 400;
+
+      // Derecha: URL del portal de validación
+      doc.fillColor("#94A3B8")
+         .fontSize(8)
+         .font("Helvetica")
+         .text(`Validar autenticidad en: dexpert-sv.vercel.app/verify/${certificate.id}`, pageWidth - marginX - 300, footerY, { width: 300, align: "right" });
+      doc.y = 400;
+
+      // ── BOTTOM GOLD LINE ──
+      doc.rect(0, pageHeight - 4, pageWidth, 4).fill("#D4A843");
 
       doc.end();
     });

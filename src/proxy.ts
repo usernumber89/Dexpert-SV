@@ -1,7 +1,8 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
-const PUBLIC_ROUTES = ['/sign-in', '/sign-up', '/terminos', '/privacidad']
+// 🛠️ Agregamos '/verify' para capturar de forma dinámica cualquier ID de certificado
+const PUBLIC_ROUTES = ['/sign-in', '/sign-up', '/terminos', '/privacidad', '/verify']
 const AUTH_ROUTES = ['/sign-in', '/sign-up']
 
 export async function proxy(request: NextRequest) {
@@ -30,32 +31,33 @@ export async function proxy(request: NextRequest) {
 
   // 1. Manejo de la raíz '/' por separado para evitar falsos positivos con startsWith
   const isHomePage = pathname === '/'
+  
+  // Al tener '/verify' en PUBLIC_ROUTES, cualquier subruta como '/verify/123-abc' dará true aquí
   const isPublicRoute = PUBLIC_ROUTES.some(r => pathname.startsWith(r)) || 
-                       pathname.startsWith('/api/stripe/webhook') ||
-                       pathname.startsWith('/onboarding')
+                        pathname.startsWith('/api/stripe/webhook') ||
+                        pathname.startsWith('/onboarding')
 
   // 2. Lógica para rutas públicas y Auth
   if (isHomePage || isPublicRoute) {
     if (user && AUTH_ROUTES.some(r => pathname.startsWith(r))) {
-      // Opcional: Solo consultar DB si el rol no está en user.app_metadata
+      // Solo redirige al Dashboard si el usuario logueado intenta entrar a /sign-in o /sign-up
       const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
       if (profile?.role) {
         url.pathname = profile.role === 'STUDENT' ? '/student/dashboard' : '/pyme/dashboard'
         return NextResponse.redirect(url)
       }
     }
+    // Si es una ruta pública común (como /verify/[id]), permite el acceso libre con o sin sesión
     return supabaseResponse
   }
 
   // 3. Protección: Sin sesión
   if (!user) {
     url.pathname = '/sign-in'
-    // Guardar la URL original para redirigir después del login si quieres (opcional)
-    // url.searchParams.set('next', pathname) 
     return NextResponse.redirect(url)
   }
 
-  // 4. Obtener rol (Idealmente saca esto de los metadatos del JWT si puedes)
+  // 4. Obtener rol desde la base de datos
   const { data: profile } = await supabase
     .from('profiles')
     .select('role')
@@ -63,7 +65,6 @@ export async function proxy(request: NextRequest) {
     .single()
 
   if (!profile?.role) {
-    // Evitar bucle: si ya está en onboarding, dejar pasar
     if (pathname.startsWith('/onboarding')) return supabaseResponse
     url.pathname = '/onboarding/select-role'
     return NextResponse.redirect(url)

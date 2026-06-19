@@ -123,7 +123,7 @@ if (applications) {
 }
     } catch (error) {
       console.error("Error loading profile:", error);
-      toast.error("Error loading profile");
+      toast.error("Error al cargar el perfil");
     } finally {
       setLoading(false);
     }
@@ -141,9 +141,9 @@ if (applications) {
       if (error) throw error;
       setProfile({ ...profile, ...editedProfile });
       setIsEditing(false);
-      toast.success("Profile updated!");
+      toast.success("¡Perfil actualizado!");
     } catch {
-      toast.error("Error saving profile");
+      toast.error("Error al guardar el perfil");
     } finally {
       setSaving(false);
     }
@@ -171,9 +171,9 @@ if (applications) {
 
       setProfile({ ...profile, [field]: publicUrl });
       setEditedProfile({ ...editedProfile, [field]: publicUrl });
-      toast.success("Uploaded successfully!");
+      toast.success("¡Subido exitosamente!");
     } catch {
-      toast.error("Upload error");
+      toast.error("Error al subir");
     } finally {
       setUploading(false);
     }
@@ -182,7 +182,7 @@ if (applications) {
   const handleAddSkill = () => {
     if (!skillInput.trim()) return;
     const current = editedProfile.skills ?? profile?.skills ?? [];
-    if (current.includes(skillInput.trim())) { toast.error("Already added"); return; }
+    if (current.includes(skillInput.trim())) { toast.error("Ya agregado"); return; }
     setEditedProfile({ ...editedProfile, skills: [...current, skillInput.trim()] });
     setSkillInput("");
   };
@@ -205,7 +205,7 @@ if (applications) {
           <div className="w-16 h-16 border-4 border-[#BAD8F7] border-t-[#38A3F1] rounded-full animate-spin mx-auto" />
           <div className="absolute inset-0 w-16 h-16 border-4 border-transparent border-t-[#1D9E75] rounded-full animate-pulse opacity-50" />
         </div>
-        <p className="text-[#5B8DB8] mt-4 font-medium">Loading your profile...</p>
+        <p className="text-[#5B8DB8] mt-4 font-medium">Cargando tu perfil...</p>
       </div>
     </div>
   );
@@ -221,15 +221,15 @@ if (applications) {
           <div className="w-20 h-20 bg-red-50 rounded-2xl flex items-center justify-center mx-auto mb-6">
             <AlertCircle className="w-10 h-10 text-red-400" />
           </div>
-          <h2 className="text-2xl font-bold text-[#0D3A6E] mb-3">Profile Not Found</h2>
+          <h2 className="text-2xl font-bold text-[#0D3A6E] mb-3">Perfil no encontrado</h2>
           <p className="text-[#5B8DB8] mb-8 leading-relaxed">
-            Complete your profile to start applying for projects and building your experience.
+            Completa tu perfil para empezar a postularte a proyectos y construir tu experiencia.
           </p>
           <Link 
             href="/onboarding/student" 
             className="inline-flex items-center justify-center gap-2 w-full bg-gradient-to-r from-[#0D3A6E] to-[#1D5A9E] text-white font-semibold py-3.5 rounded-xl hover:shadow-lg hover:shadow-[#38A3F1]/25 transition-all group"
           >
-            Complete Your Profile
+            Completa tu perfil
             <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
           </Link>
         </div>
@@ -285,7 +285,7 @@ if (applications) {
                   onChange={e => { const f = e.target.files?.[0]; if (f) handleUpload(f, "avatars", `avatars/${profile.id}-${Date.now()}`, "avatar_url", setUploadingAvatar); }} />
 
                 <h2 className="text-xl font-bold text-[#0D3A6E] mb-1">{profile.full_name}</h2>
-                <p className="text-sm text-[#5B8DB8]">{profile.university || profile.education || "University not specified"}</p>
+                <p className="text-sm text-[#5B8DB8]">{profile.university || profile.education || "Universidad no especificada"}</p>
                 {profile.major && <p className="text-xs text-[#93B8D4]">{profile.major}</p>}
               </div>
 
@@ -296,45 +296,45 @@ if (applications) {
                     <Briefcase className="w-4 h-4 text-[#38A3F1]" />
                   </div>
                   <p className="text-xl font-bold text-[#0D3A6E]">{stats.total}</p>
-                  <p className="text-[10px] text-[#93B8D4] uppercase tracking-wider">Total</p>
+                   <p className="text-[10px] text-[#93B8D4] uppercase tracking-wider">Totales</p>
                 </div>
                 <div className="bg-white rounded-xl p-3 text-center shadow-sm">
                   <div className="w-8 h-8 bg-[#F0F7FF] rounded-lg flex items-center justify-center mx-auto mb-2">
                     <Clock className="w-4 h-4 text-[#38A3F1]" />
                   </div>
                   <p className="text-xl font-bold text-[#0D3A6E]">{stats.pending}</p>
-                  <p className="text-[10px] text-[#93B8D4] uppercase tracking-wider">Pending</p>
+                  <p className="text-[10px] text-[#93B8D4] uppercase tracking-wider">Pendientes</p>
                 </div>
                 <div className="bg-white rounded-xl p-3 text-center shadow-sm">
                   <div className="w-8 h-8 bg-[#F0F7FF] rounded-lg flex items-center justify-center mx-auto mb-2">
                     <CheckCircle className="w-4 h-4 text-[#1D5A9E]" />
                   </div>
                   <p className="text-xl font-bold text-[#0D3A6E]">{stats.accepted}</p>
-                  <p className="text-[10px] text-[#1D5A9E] uppercase tracking-wider">Accepted</p>
+                  <p className="text-[10px] text-[#1D5A9E] uppercase tracking-wider">Aceptadas</p>
                 </div>
                 <div className="bg-white rounded-xl p-3 text-center shadow-sm">
                   <div className="w-8 h-8 bg-[#F0F7FF] rounded-lg flex items-center justify-center mx-auto mb-2">
                     <X className="w-4 h-4 text-[#1D5A9E]" />
                   </div>
                   <p className="text-xl font-bold text-[#0D3A6E]">{stats.rejected}</p>
-                  <p className="text-[10px] text-[#1D5A9E] uppercase tracking-wider">Rejected</p>
+                  <p className="text-[10px] text-[#1D5A9E] uppercase tracking-wider">Rechazadas</p>
                 </div>
               </div>
 
               {/* Skills */}
               <div className="p-6 pb-2">
-                <h3 className="text-xs font-semibold text-[#0D3A6E] uppercase tracking-wider mb-3">Skills</h3>
+                <h3 className="text-xs font-semibold text-[#0D3A6E] uppercase tracking-wider mb-3">Habilidades</h3>
                 <div className="flex flex-wrap gap-2">
                   {(profile.skills ?? []).map((skill, i) => (
                     <span key={i} className="px-3 py-1 bg-[#F0F7FF] text-[#0D5FA6] text-xs rounded-full font-medium">{skill}</span>
                   ))}
-                  {(!profile.skills?.length) && <p className="text-xs text-[#93B8D4]">No skills added yet</p>}
+                  {(!profile.skills?.length) && <p className="text-xs text-[#93B8D4]">Sin habilidades aún</p>}
                 </div>
               </div>
 
               {/* Contact Info */}
               <div className="p-6 space-y-3">
-                <h3 className="text-xs font-semibold text-[#0D3A6E] uppercase tracking-wider mb-3">Contact</h3>
+                <h3 className="text-xs font-semibold text-[#0D3A6E] uppercase tracking-wider mb-3">Contacto</h3>
                 
                 <div className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-[#F0F7FF] transition-colors group">
                   <div className="w-8 h-8 bg-[#F0F7FF] rounded-lg flex items-center justify-center group-hover:bg-white transition-colors">
@@ -382,7 +382,7 @@ if (applications) {
                     rel="noopener noreferrer"
                     className="flex items-center justify-center gap-2 w-full py-2.5 bg-[#F0F7FF] text-[#38A3F1] text-sm font-medium rounded-xl hover:bg-[#E8F3FD] transition"
                   >
-                    <FileText className="w-4 h-4" /> View Resume
+                    <FileText className="w-4 h-4" /> Ver CV
                   </a>
                 </div>
               )}
@@ -397,7 +397,7 @@ if (applications) {
                     className="w-full flex items-center justify-center gap-2 bg-[#38A3F1] text-white text-sm font-semibold py-3 rounded-xl hover:shadow-lg transition-all"
                   >
                     <Edit className="w-4 h-4" />
-                    Edit Profile
+                    Editar perfil
                   </motion.button>
                 ) : (
                   <div className="flex gap-2">
@@ -409,7 +409,7 @@ if (applications) {
                       className="flex-1 flex items-center justify-center gap-2 bg-[#1D9E75] text-white text-sm font-semibold py-3 rounded-xl hover:bg-[#158A5F] hover:shadow-lg transition-all disabled:opacity-50"
                     >
                       <Save className="w-4 h-4" />
-                      {saving ? "Saving..." : "Save"}
+                      {saving ? "Guardando..." : "Guardar"}
                     </motion.button>
                     <motion.button
                       whileHover={{ scale: 1.02 }}
@@ -418,7 +418,7 @@ if (applications) {
                       className="flex-1 flex items-center justify-center gap-2 bg-gray-100 text-[#5B8DB8] text-sm font-semibold py-3 rounded-xl hover:bg-gray-200 transition-all"
                     >
                       <X className="w-4 h-4" />
-                      Cancel
+                      Cancelar
                     </motion.button>
                   </div>
                 )}
@@ -446,7 +446,7 @@ if (applications) {
                         : "text-[#93B8D4] hover:text-[#0D3A6E] hover:bg-white/50"
                     }`}
                   >
-                    {tab === "profile" ? "Profile" : tab}
+                    {tab === "profile" ? "Perfil" : tab === "applications" ? "Postulaciones" : "Configuración"}
                   </button>
                 ))}
               </div>
@@ -465,16 +465,16 @@ if (applications) {
                         <div className="space-y-5">
                           <div className="grid md:grid-cols-2 gap-4">
                             {[
-                              { key: "full_name", label: "Full name", type: "text", required: true },
-                              { key: "email", label: "Email", type: "email", required: true },
-                              { key: "phone", label: "Phone", type: "tel" },
-                              { key: "location", label: "Location", type: "text" },
-                              { key: "university", label: "University", type: "text" },
-                              { key: "major", label: "Major", type: "text" },
-                              { key: "graduation_year", label: "Graduation year", type: "text" },
+                              { key: "full_name", label: "Nombre completo", type: "text", required: true },
+                              { key: "email", label: "Correo electrónico", type: "email", required: true },
+                              { key: "phone", label: "Teléfono", type: "tel" },
+                              { key: "location", label: "Ubicación", type: "text" },
+                              { key: "university", label: "Universidad", type: "text" },
+                              { key: "major", label: "Carrera", type: "text" },
+                              { key: "graduation_year", label: "Año de graduación", type: "text" },
                               { key: "linkedin", label: "LinkedIn", type: "url" },
                               { key: "github", label: "GitHub", type: "url" },
-                              { key: "portfolio", label: "Portfolio", type: "url" },
+                              { key: "portfolio", label: "Portafolio", type: "url" },
                             ].map(f => (
                               <div key={f.key} className={f.key === "full_name" || f.key === "email" ? "md:col-span-2" : ""}>
                                 <label className="text-xs font-semibold text-[#0D3A6E] mb-1.5 block">
@@ -485,7 +485,7 @@ if (applications) {
                                   value={(editedProfile as any)[f.key] ?? ""}
                                   onChange={e => setEditedProfile({ ...editedProfile, [f.key]: e.target.value })}
                                   className="w-full px-4 py-3 rounded-xl border border-[#BAD8F7] bg-white/50 text-sm focus:outline-none focus:border-[#38A3F1] focus:ring-2 focus:ring-[#38A3F1]/20 transition-all"
-                                  placeholder={`Enter your ${f.label.toLowerCase()}`}
+                                  placeholder={`Ingresa tu ${f.label.toLowerCase()}`}
                                 />
                               </div>
                             ))}
@@ -493,13 +493,13 @@ if (applications) {
 
                           {/* Skills editor */}
                           <div>
-                            <label className="text-xs font-semibold text-[#0D3A6E] mb-1.5 block">Skills</label>
+                            <label className="text-xs font-semibold text-[#0D3A6E] mb-1.5 block">Habilidades</label>
                             <div className="flex gap-2 mb-2">
                               <input 
                                 value={skillInput} 
                                 onChange={e => setSkillInput(e.target.value)}
                                 onKeyDown={e => e.key === "Enter" && (e.preventDefault(), handleAddSkill())}
-                                placeholder="Add a skill..."
+                                placeholder="Agregar habilidad..."
                                 className="flex-1 px-4 py-3 rounded-xl border border-[#BAD8F7] bg-white/50 text-sm focus:outline-none focus:border-[#38A3F1]"
                               />
                               <button 
@@ -507,7 +507,7 @@ if (applications) {
                                 onClick={handleAddSkill}
                                 className="px-4 py-3 bg-[#38A3F1] text-white rounded-xl hover:bg-[#0D5FA6] transition text-sm font-medium"
                               >
-                                Add
+                                Agregar
                               </button>
                             </div>
                             <div className="flex flex-wrap gap-2">
@@ -528,19 +528,19 @@ if (applications) {
 
                           {/* Bio */}
                           <div>
-                            <label className="text-xs font-semibold text-[#0D3A6E] mb-1.5 block">Bio</label>
+                            <label className="text-xs font-semibold text-[#0D3A6E] mb-1.5 block">Biografía</label>
                             <textarea 
                               value={editedProfile.bio ?? ""}
                               onChange={e => setEditedProfile({ ...editedProfile, bio: e.target.value })}
                               rows={4} 
                               className="w-full px-4 py-3 rounded-xl border border-[#BAD8F7] bg-white/50 text-sm focus:outline-none focus:border-[#38A3F1] focus:ring-2 focus:ring-[#38A3F1]/20 transition-all resize-none"
-                              placeholder="Tell us about yourself..."
+                              placeholder="Cuéntanos sobre ti..."
                             />
                           </div>
 
                           {/* Resume upload */}
                           <div>
-                            <label className="text-xs font-semibold text-[#0D3A6E] mb-1.5 block">Resume</label>
+                            <label className="text-xs font-semibold text-[#0D3A6E] mb-1.5 block">CV</label>
                             <button 
                               type="button" 
                               onClick={() => resumeInputRef.current?.click()} 
@@ -550,12 +550,12 @@ if (applications) {
                               {uploadingResume ? (
                                 <>
                                   <div className="w-4 h-4 border-2 border-[#38A3F1] border-t-transparent rounded-full animate-spin" />
-                                  Uploading...
+                                  Subiendo...
                                 </>
                               ) : (
                                 <>
                                   <Upload className="w-4 h-4" />
-                                  {profile.resume_url ? "Replace Resume" : "Upload Resume"}
+                                  {profile.resume_url ? "Reemplazar CV" : "Subir CV"}
                                 </>
                               )}
                             </button>
@@ -569,10 +569,10 @@ if (applications) {
                           <div>
                             <h3 className="text-base font-semibold text-[#0D3A6E] mb-4 flex items-center gap-2">
                               <span className="w-1 h-5 bg-[#38A3F1] rounded-full" />
-                              About Me
+                              Sobre mí
                             </h3>
                             <p className="text-sm text-[#5B8DB8] leading-relaxed">
-                              {profile.bio || "No bio provided yet. Add a description to help businesses get to know you."}
+                              {profile.bio || "Aún sin biografía. Agrega una descripción para que las empresas te conozcan."}
                             </p>
                           </div>
 
@@ -581,24 +581,24 @@ if (applications) {
                             <div className="bg-gradient-to-br from-[#F0F7FF] to-white rounded-xl p-4 border border-[#E8F3FD]">
                               <div className="flex items-center gap-2 mb-2">
                                 <Calendar className="w-4 h-4 text-[#38A3F1]" />
-                                <p className="text-xs text-[#93B8D4] uppercase tracking-wider">Education</p>
+                                <p className="text-xs text-[#93B8D4] uppercase tracking-wider">Educación</p>
                               </div>
                               <p className="text-lg font-semibold text-[#0D3A6E]">
-                                {profile.university || profile.education || "Not specified"}
+                                {profile.university || profile.education || "No especificado"}
                               </p>
                               {profile.major && (
                                 <p className="text-xs text-[#5B8DB8] mt-1">
-                                  {profile.major}{profile.graduation_year ? ` • Class of ${profile.graduation_year}` : ""}
+                                  {profile.major}{profile.graduation_year ? ` • Prom. ${profile.graduation_year}` : ""}
                                 </p>
                               )}
                             </div>
                             <div className="bg-gradient-to-br from-[#F0F7FF] to-white rounded-xl p-4 border border-[#E8F3FD]">
                               <div className="flex items-center gap-2 mb-2">
                                 <MapPin className="w-4 h-4 text-[#38A3F1]" />
-                                <p className="text-xs text-[#93B8D4] uppercase tracking-wider">Location</p>
+                                <p className="text-xs text-[#93B8D4] uppercase tracking-wider">Ubicación</p>
                               </div>
                               <p className="text-lg font-semibold text-[#0D3A6E]">
-                                {profile.location || "Not specified"}
+                                {profile.location || "No especificado"}
                               </p>
                             </div>
                           </div>
@@ -611,9 +611,9 @@ if (applications) {
                                 <Target className="w-5 h-5 text-white" />
                               </div>
                               <div>
-                                <p className="text-white font-semibold mb-1">Complete your profile to stand out</p>
+                                <p className="text-white font-semibold mb-1">Completa tu perfil para destacar</p>
                                 <p className="text-[#E8F3FD] text-xs">
-                                  Students with complete profiles are 5x more likely to get hired
+                                  Los estudiantes con perfiles completos tienen 5x más probabilidades de ser contratados
                                 </p>
                               </div>
                             </div>
@@ -631,30 +631,30 @@ if (applications) {
     exit={{ opacity: 0, x: 10 }}
     transition={{ duration: 0.2 }}
   >
-    <h3 className="text-base font-semibold text-[#0D3A6E] mb-4">My Applications</h3>
+     <h3 className="text-base font-semibold text-[#0D3A6E] mb-4">Mis postulaciones</h3>
 
     {applications.length === 0 ? (
       <div className="text-center py-16">
         <div className="w-20 h-20 bg-[#F0F7FF] rounded-3xl flex items-center justify-center mx-auto mb-4">
           <FileText className="w-10 h-10 text-[#BAD8F7]" />
         </div>
-        <p className="text-sm font-medium text-[#0D3A6E] mb-1">No applications yet</p>
-        <p className="text-xs text-[#93B8D4] mb-6">Browse projects and apply to get started</p>
+        <p className="text-sm font-medium text-[#0D3A6E] mb-1">Sin postulaciones aún</p>
+        <p className="text-xs text-[#93B8D4] mb-6">Explora proyectos y postúlate para empezar</p>
         <Link
           href="/student/projects"
           className="inline-flex items-center gap-2 bg-[#38A3F1] text-white px-6 py-3 rounded-xl hover:bg-[#0D5FA6] transition font-medium text-sm"
         >
-          Browse Projects <ChevronRight className="w-4 h-4" />
+          Explorar proyectos <ChevronRight className="w-4 h-4" />
         </Link>
       </div>
     ) : (
       <div className="space-y-3">
         {applications.map((app) => {
           const statusMap: Record<string, { label: string; bg: string; text: string }> = {
-            PENDING:   { label: "Pending",   bg: "bg-amber-50",  text: "text-amber-600" },
-            ACCEPTED:  { label: "Accepted",  bg: "bg-green-50",  text: "text-green-600" },
-            REJECTED:  { label: "Rejected",  bg: "bg-red-50",    text: "text-red-500" },
-            COMPLETED: { label: "Completed", bg: "bg-[#F0F7FF]", text: "text-[#0D5FA6]" },
+            PENDING:   { label: "Pendiente",   bg: "bg-amber-50",  text: "text-amber-600" },
+            ACCEPTED:  { label: "Aceptado",  bg: "bg-green-50",  text: "text-green-600" },
+            REJECTED:  { label: "Rechazado",  bg: "bg-red-50",    text: "text-red-500" },
+            COMPLETED: { label: "Completado", bg: "bg-[#F0F7FF]", text: "text-[#0D5FA6]" },
           };
           const s = statusMap[app.status] ?? statusMap.PENDING;
 
@@ -669,10 +669,10 @@ if (applications) {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold text-[#0D3A6E] truncate group-hover:text-[#38A3F1] transition-colors">
-                  {app.project?.title ?? "Unknown project"}
+                  {app.project?.title ?? "Proyecto desconocido"}
                 </p>
                 <p className="text-xs text-[#93B8D4]">
-                  {app.project?.pyme?.company_name ?? "Unknown company"}
+                  {app.project?.pyme?.company_name ?? "Empresa desconocida"}
                 </p>
               </div>
               <div className="flex items-center gap-2 flex-shrink-0">
@@ -698,12 +698,12 @@ if (applications) {
                       transition={{ duration: 0.2 }}
                       className="space-y-3"
                     >
-                      <h3 className="text-base font-semibold text-[#0D3A6E] mb-4">Account Settings</h3>
+                      <h3 className="text-base font-semibold text-[#0D3A6E] mb-4">Configuración de cuenta</h3>
                       
                       {[
-                        { icon: Bell, label: "Notifications", desc: "Manage how you receive alerts and updates" },
-                        { icon: Lock, label: "Security", desc: "Update password and security preferences" },
-                        { icon: Shield, label: "Privacy", desc: "Control your profile visibility" },
+                        { icon: Bell, label: "Notificaciones", desc: "Administra cómo recibes alertas y actualizaciones" },
+                        { icon: Lock, label: "Seguridad", desc: "Actualiza contraseña y preferencias de seguridad" },
+                        { icon: Shield, label: "Privacidad", desc: "Controla la visibilidad de tu perfil" },
                       ].map((item, index) => (
                         <motion.div 
                           key={item.label}
@@ -737,8 +737,8 @@ if (applications) {
                               <LogOut className="w-5 h-5 text-red-400" />
                             </div>
                             <div className="text-left">
-                              <p className="text-sm font-semibold text-red-600">Sign Out</p>
-                              <p className="text-xs text-red-400">Log out of your account</p>
+                              <p className="text-sm font-semibold text-red-600">Cerrar sesión</p>
+                              <p className="text-xs text-red-400">Salir de tu cuenta</p>
                             </div>
                           </div>
                           <ChevronRight className="w-4 h-4 text-red-400 group-hover:translate-x-1 transition-transform" />

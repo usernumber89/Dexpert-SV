@@ -1,11 +1,10 @@
 "use client";
 
-import { FolderOpen, Award, Clock, ChevronRight, Sparkles, MapPin, BotMessageSquare } from "lucide-react";
+import { FolderOpen, Award, Clock, ChevronRight, MapPin, BotMessageSquare } from "lucide-react";
 import Link from "next/link";
-import Image from "next/image";
 import { motion } from "framer-motion";
 
-// ── Tipos (igual que antes) ──────────────────────────────────────
+// ── Tipos ────────────────────────────────────────────────────────
 type Pyme = { id: string; company_name?: string; logo_url?: string | null };
 type Project = {
   id: string; title: string; description?: string | null;
@@ -24,13 +23,13 @@ type Props = {
 };
 
 const statusConfig: Record<string, { label: string; bg: string; text: string; dot: string }> = {
-  PENDING:   { label: "Pending",   bg: "bg-amber-50",   text: "text-amber-600",  dot: "bg-amber-400" },
-  ACCEPTED:  { label: "Accepted",  bg: "bg-emerald-50", text: "text-emerald-600", dot: "bg-emerald-500" },
-  REJECTED:  { label: "Rejected",  bg: "bg-red-50",     text: "text-red-500",    dot: "bg-red-400" },
-  COMPLETED: { label: "Completed", bg: "bg-sky-50",     text: "text-sky-600",    dot: "bg-sky-500" },
+  PENDING:   { label: "Pendiente",   bg: "bg-amber-50",   text: "text-amber-600",  dot: "bg-amber-400" },
+  ACCEPTED:  { label: "Aceptado",  bg: "bg-emerald-50", text: "text-emerald-600", dot: "bg-emerald-500" },
+  REJECTED:  { label: "Rechazado",  bg: "bg-red-50",     text: "text-red-500",    dot: "bg-red-400" },
+  COMPLETED: { label: "Completado", bg: "bg-sky-50",     text: "text-sky-600",    dot: "bg-sky-500" },
 };
 
-// ── Tarjeta de proyecto (mismo estilo que ProjectCard) ──────────
+// ── Tarjeta de proyecto ──────────────────────────────────────────
 function DashboardProjectCard({ project }: { project: Project }) {
   const skillsList = Array.isArray(project.skills)
     ? project.skills
@@ -60,7 +59,7 @@ function DashboardProjectCard({ project }: { project: Project }) {
           </div>
         </div>
         <span className="text-[10px] text-[#5B8DB8] bg-[#F0F7FF] px-2 py-1 rounded-full">
-          {project.level ?? "Any level"}
+          {project.level ?? "Cualquier nivel"}
         </span>
       </div>
 
@@ -107,25 +106,38 @@ function DashboardProjectCard({ project }: { project: Project }) {
 
 // ── Componente principal ─────────────────────────────────────────
 export function StudentDashboard({ user, student, applications, projects }: Props) {
+  
+  // ✨ LOGICA DE CONTEO OPTIMIZADA Y DEFENSIVA PARA CERTIFICADOS
   const stats = [
-    { label: "Applications", value: applications.length, icon: FolderOpen },
-    { label: "Accepted", value: applications.filter(a => a.status === "ACCEPTED").length, icon: Clock },
-    { label: "Certificates", value: applications.filter(a => a.certificate).length, icon: Award },
+    { label: "Postulaciones", value: applications.length, icon: FolderOpen },
+    { label: "Aceptadas", value: applications.filter(a => a.status === "ACCEPTED").length, icon: Clock },
+    { 
+      label: "Certificados", 
+      value: applications.filter(a => {
+        // Buscamos de forma segura si Supabase lo devolvió en singular o en plural
+        const certData = (a as any).certificate || (a as any).certificates;
+        
+        if (!certData) return false;
+        
+        // Si Supabase lo devolvió como un Array nativo, verificamos que tenga elementos
+        if (Array.isArray(certData)) {
+          return certData.length > 0;
+        }
+        
+        // Si viene como objeto directo, validamos que exista
+        return true;
+      }).length, 
+      icon: Award 
+    },
   ];
-
-  const getInitials = (name: string) =>
-    name.split(" ").map(n => n[0]).slice(0, 2).join("").toUpperCase();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#F4F9FF] via-white to-[#EEF6FF]">
       <div className="max-w-7xl mx-auto px-6 py-8 space-y-8">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-[#5B8DB8] mb-1">Welcome back</p>
-            <h1 className="text-2xl font-bold text-[#0D3A6E] md:text-3xl">{user.name}</h1>
-          </div>
-          
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wider text-[#5B8DB8] mb-1">Bienvenido</p>
+          <h1 className="text-2xl font-bold text-[#0D3A6E] md:text-3xl">{user.name}</h1>
         </div>
 
         {/* Stats */}
@@ -153,14 +165,14 @@ export function StudentDashboard({ user, student, applications, projects }: Prop
                 <BotMessageSquare className="w-7 h-7 text-[#F59E0B]" />
               </div>
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-[#F59E0B] mb-1">AI Product Manager</p>
-                <p className="text-white text-lg font-semibold mb-1">Get feedback on your current project</p>
-                <p className="text-[#BAD8F7] text-sm">Our AI reviews your work and suggests next steps</p>
+                <p className="text-xs font-semibold uppercase tracking-wider text-[#F59E0B] mb-1">Product Manager IA</p>
+                <p className="text-white text-lg font-semibold mb-1">Recibe feedback sobre tu proyecto actual</p>
+                <p className="text-[#BAD8F7] text-sm">Nuestra IA revisa tu trabajo y sugiere los siguientes pasos</p>
               </div>
             </div>
             <Link href="/student/ai"
               className="inline-flex items-center justify-center bg-white text-[#0D3A6E] font-semibold text-sm px-6 py-3 rounded-xl hover:bg-gray-100 transition-colors whitespace-nowrap">
-              Open AI
+              Abrir IA
             </Link>
           </div>
         </div>
@@ -168,9 +180,9 @@ export function StudentDashboard({ user, student, applications, projects }: Prop
         {/* Recent Applications */}
         <div className="bg-white rounded-2xl border border-[#E8F3FD] shadow-sm overflow-hidden">
           <div className="flex items-center justify-between px-6 py-5 border-b border-[#E8F3FD]">
-            <h2 className="text-base font-semibold text-[#0D3A6E]">Recent applications</h2>
+            <h2 className="text-base font-semibold text-[#0D3A6E]">Postulaciones recientes</h2>
             <Link href="/student/projects" className="text-sm text-[#38A3F1] hover:text-[#0D5FA6] font-medium flex items-center gap-1">
-              View all <ChevronRight className="w-4 h-4" />
+              Ver todas <ChevronRight className="w-4 h-4" />
             </Link>
           </div>
 
@@ -179,9 +191,9 @@ export function StudentDashboard({ user, student, applications, projects }: Prop
               <div className="w-14 h-14 rounded-2xl bg-[#F0F7FF] flex items-center justify-center">
                 <FolderOpen className="w-7 h-7 text-[#BAD8F7]" />
               </div>
-              <p className="text-sm text-[#5B8DB8]">No applications yet</p>
+              <p className="text-sm text-[#5B8DB8]">Sin postulaciones aún</p>
               <Link href="/student/projects" className="text-xs font-medium text-[#38A3F1] hover:underline">
-                Browse projects
+                Explorar proyectos
               </Link>
             </div>
           ) : (
@@ -191,8 +203,8 @@ export function StudentDashboard({ user, student, applications, projects }: Prop
                 return (
                   <div key={app.id} className="flex items-center gap-4 px-6 py-4 hover:bg-[#F9FBFF] transition-colors">
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-[#0D3A6E] truncate">{app.project?.title ?? "Untitled Project"}</p>
-                      <p className="text-xs text-[#5B8DB8] mt-0.5">{app.project?.pyme?.company_name ?? "Company"} · Remote</p>
+                      <p className="text-sm font-semibold text-[#0D3A6E] truncate">{app.project?.title ?? "Proyecto sin título"}</p>
+                      <p className="text-xs text-[#5B8DB8] mt-0.5">{app.project?.pyme?.company_name ?? "Empresa"} · Remoto</p>
                     </div>
                     <span className={`inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1 rounded-full ${status.bg} ${status.text}`}>
                       <span className={`w-2 h-2 rounded-full ${status.dot}`} />{status.label}
@@ -204,12 +216,12 @@ export function StudentDashboard({ user, student, applications, projects }: Prop
           )}
         </div>
 
-        {/* Available Projects – tarjetas unificadas */}
+        {/* Available Projects */}
         <div>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-base font-semibold text-[#0D3A6E]">Available projects</h2>
+            <h2 className="text-base font-semibold text-[#0D3A6E]">Proyectos disponibles</h2>
             <Link href="/student/projects" className="text-sm text-[#38A3F1] hover:text-[#0D5FA6] font-medium flex items-center gap-1">
-              See all <ChevronRight className="w-4 h-4" />
+              Ver todas <ChevronRight className="w-4 h-4" />
             </Link>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

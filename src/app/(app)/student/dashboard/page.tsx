@@ -15,9 +15,17 @@ export default async function StudentDashboardPage() {
 
   if (!student) redirect("/onboarding/student");
 
+  // 🛠️ CONSULTA CORREGIDA: Agregamos la relación de certificados al select
   const { data: applications } = await supabase
     .from("applications")
-    .select(`*, project:projects(*, pyme:pymes(*))`)
+    .select(`
+      *,
+      project:projects(
+        *,
+        pyme:pymes(*)
+      ),
+      certificates(*)
+    `)
     .eq("student_id", student.id)
     .order("created_at", { ascending: false })
     .limit(5);
