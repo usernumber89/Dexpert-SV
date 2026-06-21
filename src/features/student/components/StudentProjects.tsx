@@ -47,6 +47,7 @@ export function StudentProjects({ projects, appliedProjectIds, studentSkills }: 
 
   const filtered = useMemo(() => {
     return projects
+      .filter(p => p.status !== "closed")
       .map(p => ({
         ...p,
         matchPercentage: calculateMatch(p.skills, studentSkills),
@@ -76,14 +77,14 @@ export function StudentProjects({ projects, appliedProjectIds, studentSkills }: 
       <div className="max-w-7xl mx-auto px-6 py-8 space-y-8">
         {/* Header */}
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wider text-[#5B8DB8] mb-2">
-            Explore Opportunities
+          <p className="text-xs font-semibold uppercase tracking-wider text-brand-mid mb-2">
+            Explora oportunidades
           </p>
-          <h1 className="text-2xl font-bold text-[#0D3A6E] md:text-3xl">
-            Available Projects
+          <h1 className="text-2xl font-bold text-ink-primary md:text-3xl">
+            Proyectos Disponibles
           </h1>
-          <p className="text-sm text-[#5B8DB8] mt-2">
-            Find projects that match your skills and interests
+          <p className="text-sm text-ink-secondary mt-2">
+            Encuentra proyectos que coincidan con tus habilidades e intereses
           </p>
         </div>
 

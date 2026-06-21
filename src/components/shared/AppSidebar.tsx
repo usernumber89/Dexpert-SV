@@ -14,13 +14,14 @@ import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 import {
   LayoutDashboard, User, FolderOpen, Award, Bot,
-  HelpCircle, Users, LogOut, Banknote, PanelLeft, GraduationCap
+  HelpCircle, Users, LogOut, Banknote, PanelLeft, GraduationCap, Rocket
 } from 'lucide-react';
 import { DexpertLogo } from "@/components/DexpertLogo";
 import { BriefcaseIcon } from "@phosphor-icons/react";
 
 const studentRoutes = [
   { title: 'Panel de Control', url: '/student/dashboard', icon: LayoutDashboard },
+  { title: 'Proyectos en Marcha', url: '/student/in-progress', icon: Rocket },
   { title: 'Proyectos', url: '/student/projects', icon: FolderOpen },
   { title: 'Perfil', url: '/student/profile', icon: User },
   { title: 'Certificados', url: '/student/certificates', icon: Award },
@@ -30,6 +31,7 @@ const studentRoutes = [
 
 const pymeRoutes = [
   { title: 'Panel de Control', url: '/pyme/dashboard', icon: LayoutDashboard },
+  { title: 'Proyectos en Marcha', url: '/pyme/in-progress', icon: Rocket },
   { title: 'Aplicantes / Solicitudes', url: '/pyme/applications', icon: Users },
   { title: "Talento", url: '/pyme/talent', icon: GraduationCap, requiresPremiumPlan: true },
   { title: 'Créditos', url: '/pyme/pricing', icon: Banknote },

@@ -1,6 +1,9 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect, notFound } from "next/navigation";
 import { PymeProjectDetail } from "@/features/pyme/components/PymeProjectDetail";
+// 🛠️ IMPORTS DEL TRACKER
+import { getMilestones } from "@/app/actions/milestones";
+import MilestoneTracker from "@/components/shared/MilestoneTracker";
 
 export default async function PymeProjectDetailPage({
   params,
@@ -10,11 +13,13 @@ export default async function PymeProjectDetailPage({
   const { id } = await params;
   const supabase = await createClient();
 
+  // 1. Verificar autenticación
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) redirect("/sign-in");
 
+  // 2. Traer detalles del proyecto, aplicaciones y perfiles de alumnos
   const { data: project } = await supabase
     .from("projects")
     .select(
@@ -51,7 +56,7 @@ export default async function PymeProjectDetailPage({
 
   if (!project) notFound();
 
-  // Transformar los datos del proyecto individual
+  // 3. Transformar los datos del proyecto individual (Métricas del estudiante)
   if (project.applications) {
     project.applications = project.applications.map((app: any) => {
       const studentData = app.students;
@@ -70,5 +75,34 @@ export default async function PymeProjectDetailPage({
     });
   }
 
-  return <PymeProjectDetail project={project} />;
+  // 4. 🛠️ LÓGICA DE CONTROL: Verificar si el proyecto ya tiene un estudiante asignado
+  const hasAcceptedStudent = project.applications?.some(
+    (app: any) => app.status === "ACCEPTED" || app.status === "COMPLETED"
+  );
+
+  // 5. 🛠️ Traer los hitos solo si hay un desarrollo activo
+  let milestonesData = [];
+  if (hasAcceptedStudent) {
+    const { milestones } = await getMilestones(id);
+    milestonesData = milestones || [];
+  }
+
+  return (
+    <>
+      <PymeProjectDetail project={project} />
+      
+      {/* 🛠️ Renderizado condicional del Tracker para la PYME */}
+      {hasAcceptedStudent && (
+        <div className="bg-surface-raised px-4 pb-12">
+          <div className="max-w-3xl mx-auto pt-8">
+            <MilestoneTracker
+              projectId={id}
+              initialMilestones={milestonesData}
+              role="PYME"
+            />
+          </div>
+        </div>
+      )}
+    </>
+  );
 }

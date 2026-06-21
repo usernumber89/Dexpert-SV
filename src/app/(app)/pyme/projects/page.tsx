@@ -77,7 +77,7 @@ export default function PymeProjectsPage() {
   const [menuOpen, setMenuOpen] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "draft" | "closed">("all");
+  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "draft">("active");
   const [viewMode, setViewMode] = useState<"grid" | "list">("list");
 
   // Cargar datos
@@ -130,8 +130,9 @@ export default function PymeProjectsPage() {
         .order("created_at", { ascending: false });
 
       if (projectsData) {
-        setProjects(projectsData);
-        setFilteredProjects(projectsData);
+        const active = projectsData.filter((p: { status: string }) => p.status !== "closed");
+        setProjects(active);
+        setFilteredProjects(active);
       }
     } catch (error) {
       console.error("Error loading data:", error);
@@ -157,7 +158,6 @@ export default function PymeProjectsPage() {
       filtered = filtered.filter(p => {
         if (statusFilter === "active") return p.status === "active" && p.is_published;
         if (statusFilter === "draft") return !p.is_published;
-        if (statusFilter === "closed") return p.status === "closed";
         return true;
       });
     }
@@ -169,7 +169,6 @@ export default function PymeProjectsPage() {
     total: projects.length,
     active: projects.filter(p => p.status === "active" && p.is_published).length,
     draft: projects.filter(p => !p.is_published).length,
-    closed: projects.filter(p => p.status === "closed").length,
     totalApplications: projects.reduce((acc, p) => acc + (p.applications?.length || 0), 0),
   };
 
@@ -258,59 +257,48 @@ export default function PymeProjectsPage() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-xl border border-[#BAD8F7] p-4"
+            className="bg-white rounded-xl border border-brand-mid/20 p-4 hover:shadow-md transition-shadow"
           >
-            <Briefcase className="w-4 h-4 text-[#38A3F1] mb-2" />
-            <p className="text-2xl font-bold text-[#0D3A6E]">{stats.total}</p>
-            <p className="text-xs text-[#5B8DB8]">Total Projects</p>
+            <Briefcase className="w-4 h-4 text-brand-mid mb-2" />
+            <p className="text-2xl font-bold text-ink-primary">{stats.total}</p>
+            <p className="text-xs text-ink-secondary">Totales</p>
           </motion.div>
 
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="bg-white rounded-xl border border-[#BAD8F7] p-4"
+            className="bg-white rounded-xl border border-emerald-200 p-4 hover:shadow-md transition-shadow"
           >
-            <CheckCircle className="w-4 h-4 text-green-500 mb-2" />
-            <p className="text-2xl font-bold text-[#0D3A6E]">{stats.active}</p>
-            <p className="text-xs text-[#5B8DB8]">Active</p>
+            <CheckCircle className="w-4 h-4 text-emerald-500 mb-2" />
+            <p className="text-2xl font-bold text-ink-primary">{stats.active}</p>
+            <p className="text-xs text-ink-secondary">Activos</p>
           </motion.div>
 
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="bg-white rounded-xl border border-[#BAD8F7] p-4"
+            className="bg-white rounded-xl border border-amber-200 p-4 hover:shadow-md transition-shadow"
           >
-            <Clock className="w-4 h-4 text-yellow-500 mb-2" />
-            <p className="text-2xl font-bold text-[#0D3A6E]">{stats.draft}</p>
-            <p className="text-xs text-[#5B8DB8]">Drafts</p>
+            <Clock className="w-4 h-4 text-amber-500 mb-2" />
+            <p className="text-2xl font-bold text-ink-primary">{stats.draft}</p>
+            <p className="text-xs text-ink-secondary">Borradores</p>
           </motion.div>
 
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            className="bg-white rounded-xl border border-[#BAD8F7] p-4"
+            className="bg-white rounded-xl border border-purple-200 p-4 hover:shadow-md transition-shadow"
           >
-            <XCircle className="w-4 h-4 text-red-500 mb-2" />
-            <p className="text-2xl font-bold text-[#0D3A6E]">{stats.closed}</p>
-            <p className="text-xs text-[#5B8DB8]">Closed</p>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-            className="bg-white rounded-xl border border-[#BAD8F7] p-4"
-          >
-            <Users className="w-4 h-4 text-[#F59E0B] mb-2" />
-            <p className="text-2xl font-bold text-[#0D3A6E]">{stats.totalApplications}</p>
-            <p className="text-xs text-[#5B8DB8]">Applications</p>
+            <Users className="w-4 h-4 text-purple-500 mb-2" />
+            <p className="text-2xl font-bold text-ink-primary">{stats.totalApplications}</p>
+            <p className="text-xs text-ink-secondary">Aplicantes</p>
           </motion.div>
         </div>
 
@@ -362,10 +350,9 @@ export default function PymeProjectsPage() {
                 onChange={(e) => setStatusFilter(e.target.value as any)}
                 className="px-4 py-2.5 rounded-lg border border-[#BAD8F7] text-sm text-[#0D3A6E] focus:outline-none focus:border-[#38A3F1]"
               >
-                <option value="all">All Projects</option>
-                <option value="active">Active</option>
-                <option value="draft">Drafts</option>
-                <option value="closed">Closed</option>
+                <option value="all">Todos</option>
+                <option value="active">Activos</option>
+                <option value="draft">Borradores</option>
               </select>
 
               <div className="flex gap-1 p-1 bg-[#F0F7FF] rounded-lg">
@@ -428,7 +415,11 @@ export default function PymeProjectsPage() {
                     className="flex items-center gap-4 px-6 py-4 hover:bg-[#F0F7FF]/30 transition-colors group"
                   >
                     {/* Icon */}
-                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#F0F7FF] to-[#E8F3FD] border border-[#BAD8F7] flex items-center justify-center flex-shrink-0">
+                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                      !project.is_published
+                        ? "bg-amber-50 border border-amber-200"
+                        : "bg-emerald-50 border border-emerald-200"
+                    }`}>
                       {project.image_url ? (
                         <Image
                           src={project.image_url}
@@ -438,7 +429,9 @@ export default function PymeProjectsPage() {
                           className="rounded-xl object-cover"
                         />
                       ) : (
-                        <span className="text-lg font-bold text-[#0D3A6E]">
+                        <span className={`text-lg font-bold ${
+                          !project.is_published ? "text-amber-600" : "text-emerald-600"
+                        }`}>
                           {project.title[0].toUpperCase()}
                         </span>
                       )}
@@ -484,13 +477,16 @@ export default function PymeProjectsPage() {
 
                       {/* Skills */}
                       <div className="flex flex-wrap gap-1 mt-2">
-                        {project.skills_required?.slice(0, 3).map((skill, i) => (
-                          <span key={i} className="text-[10px] bg-[#F0F7FF] text-[#0D5FA6] px-2 py-0.5 rounded-full">
-                            {skill}
-                          </span>
-                        ))}
+                        {project.skills_required?.slice(0, 3).map((skill, i) => {
+                          const hues = ["bg-brand-light/40 border-brand-border text-brand-title", "bg-emerald-50 border-emerald-100 text-emerald-700", "bg-amber-50 border-amber-100 text-amber-700"];
+                          return (
+                            <span key={i} className={`text-[10px] ${hues[i % hues.length]} px-2 py-0.5 rounded-full border font-medium`}>
+                              {skill}
+                            </span>
+                          );
+                        })}
                         {project.skills_required?.length > 3 && (
-                          <span className="text-[10px] text-[#93B8D4] px-1">
+                          <span className="text-[10px] text-ink-muted px-1">
                             +{project.skills_required.length - 3}
                           </span>
                         )}
@@ -571,8 +567,14 @@ export default function PymeProjectsPage() {
                     className="bg-white rounded-xl border border-[#BAD8F7] p-5 hover:shadow-lg transition-shadow group"
                   >
                     <div className="flex items-start justify-between mb-3">
-                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#F0F7FF] to-[#E8F3FD] border border-[#BAD8F7] flex items-center justify-center">
-                        <Briefcase className="w-6 h-6 text-[#38A3F1]" />
+                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+                        !project.is_published
+                          ? "bg-amber-50 border border-amber-200"
+                          : "bg-emerald-50 border border-emerald-200"
+                      }`}>
+                        <Briefcase className={`w-6 h-6 ${
+                          !project.is_published ? "text-amber-500" : "text-emerald-600"
+                        }`} />
                       </div>
                       <span className={`inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full border ${statusBadge.color}`}>
                         <StatusIcon className="w-3 h-3" />

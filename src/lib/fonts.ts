@@ -16,4 +16,5 @@ export const signika = Signika({
 export const outfit = Outfit({
     subsets: ["latin"],
     weight: "400",
+    
 })

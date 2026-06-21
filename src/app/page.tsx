@@ -7,7 +7,8 @@ import { Testimony } from "@/components/landing/Testimony";
 import { Faq } from "@/components/landing/Faq";
 import { CallToAction } from "@/components/landing/CallToAction";
 import { Footer } from "@/components/landing/Footer";
-
+import ActiveProjectsHub from "@/components/shared/ActiveProjectsHub";
+import { MilestonesShowcase } from "@/components/landing/MilestonesShowcase";
 
 export default function Home() {
   return (
@@ -16,6 +17,9 @@ export default function Home() {
       <Hero />
       <Aboutus />
       <Guide />
+      
+      <MilestonesShowcase/>
+      
       <Plans />
       <Testimony />
       <Faq />

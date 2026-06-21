@@ -8,7 +8,7 @@ import {
   Search, Filter, Grid, List, Ticket
 } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
@@ -62,10 +62,12 @@ export function PymeDashboard({ user, pyme, projects,credits }: Props) {
   const [menuOpen, setMenuOpen] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState<"Todos" | "Activos" | "Borradores" | "Cerrados">("Todos");
+  const [statusFilter, setStatusFilter] = useState<"Todos" | "Activos" | "Borradores">("Activos");
   const [viewMode, setViewMode] = useState<"grid" | "list">("list");
 
-  const filteredProjects = projects.filter(project => {
+  const visibleProjects = useMemo(() => projects.filter(p => p.status !== "closed"), [projects]);
+
+  const filteredProjects = visibleProjects.filter(project => {
     const matchesSearch = project.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          project.description?.toLowerCase().includes(searchTerm.toLowerCase());
     
@@ -74,7 +76,6 @@ export function PymeDashboard({ user, pyme, projects,credits }: Props) {
     if (statusFilter === "Todos") return true;
     if (statusFilter === "Activos") return project.status === "active" && project.is_published;
     if (statusFilter === "Borradores") return !project.is_published;
-    if (statusFilter === "Cerrados") return project.status === "closed";
     
     return true;
   });
@@ -82,31 +83,35 @@ export function PymeDashboard({ user, pyme, projects,credits }: Props) {
   const stats = [
     { 
       label: "Proyectos totales", 
-      value: projects.length, 
+      value: visibleProjects.length, 
       icon: FolderOpen,
-      color: "text-[#38A3F1]",
-      bgColor: "bg-[#38A3F1]/10"
+      color: "text-brand-mid",
+      bgColor: "bg-brand-mid/10",
+      borderColor: "border-brand-mid/20"
     },
     { 
       label: "Activos", 
-      value: projects.filter(p => p.status === "activo" && p.is_published).length, 
+      value: visibleProjects.filter(p => p.status === "active" && p.is_published).length, 
       icon: TrendingUp,
-      color: "text-[#1D5A9E]",
-      bgColor: "bg-[#38A3F1]/10"
+      color: "text-emerald-600",
+      bgColor: "bg-emerald-50",
+      borderColor: "border-emerald-200"
     },
     { 
       label: "Borradores", 
-      value: projects.filter(p => !p.is_published).length, 
+      value: visibleProjects.filter(p => !p.is_published).length, 
       icon: Clock,
-      color: "text-[#38A3F1]",
-      bgColor: "bg-[#38A3F1]/10"
+      color: "text-amber-600",
+      bgColor: "bg-amber-50",
+      borderColor: "border-amber-200"
     },
     { 
       label: "Aplicantes", 
-      value: projects.reduce((acc, p) => acc + (p.applications?.length || 0), 0), 
+      value: visibleProjects.reduce((acc, p) => acc + (p.applications?.length || 0), 0), 
       icon: Users,
-      color: "text-[#1D5A9E]",
-      bgColor: "bg-[#38A3F1]/10"
+      color: "text-purple-600",
+      bgColor: "bg-purple-50",
+      borderColor: "border-purple-200"
     },
   ];
 
@@ -215,9 +220,9 @@ const closeProject = async (id: string) => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
                 whileHover={{ y: -2 }}
-                className="bg-white rounded-xl border border-[#BAD8F7] p-4 hover:shadow-lg transition-all group"
+                className={`bg-white rounded-xl border ${stat.borderColor} p-4 hover:shadow-lg transition-all group`}
               >
-                <div className={`w-7 h-7 ${stat.bgColor} rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform`}>
+                <div className={`w-7 h-7 ${stat.bgColor} rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform ring-1 ${stat.borderColor}`}>
                   <Icon className={`w-5 h-5 ${stat.color}`} />
                 </div>
                 <p className="text-2xl font-bold text-[#0D3A6E]">{stat.value}</p>
@@ -294,10 +299,9 @@ const closeProject = async (id: string) => {
                 onChange={(e) => setStatusFilter(e.target.value as any)}
                 className="px-4 py-2.5 rounded-lg border border-[#BAD8F7] text-sm text-[#0D3A6E] bg-white focus:outline-none focus:border-[#38A3F1] cursor-pointer"
               >
-                <option value="Todos">Todos los proyectos</option>
+                <option value="Todos">Todos</option>
                 <option value="Activos">Activos</option>
                 <option value="Borradores">Borradores</option>
-                <option value="Cerrados">Cerrados</option>
               </select>
 
               <div className="flex gap-1 p-1 bg-[#F0F7FF] rounded-lg">
@@ -381,8 +385,20 @@ const closeProject = async (id: string) => {
                   >
                     {/* Project Icon */}
                     <div className="relative">
-                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#F0F7FF] to-[#E8F3FD] border border-[#BAD8F7] flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
-                        <BriefcaseIcon className="w-6 h-6 text-[#38A3F1]" />
+                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform ${
+                        !project.is_published
+                          ? "bg-amber-50 border border-amber-200"
+                          : project.status === "active"
+                            ? "bg-emerald-50 border border-emerald-200"
+                            : "bg-brand-light/40 border border-brand-border"
+                      }`}>
+                        <BriefcaseIcon className={`w-6 h-6 ${
+                          !project.is_published
+                            ? "text-amber-500"
+                            : project.status === "active"
+                              ? "text-emerald-600"
+                              : "text-brand-mid"
+                        }`} />
                       </div>
                     </div>
 
@@ -415,16 +431,19 @@ const closeProject = async (id: string) => {
                         </div>
                         
                         <div className="flex flex-wrap gap-1">
-                          {project.skills.split(",").slice(0, 3).map((skill, i) => (
-                            <span
-                              key={i}
-                              className="text-[10px] bg-[#F0F7FF] text-[#0D5FA6] px-2 py-0.5 rounded-full font-medium"
-                            >
-                              {skill.trim()}
-                            </span>
-                          ))}
+                          {project.skills.split(",").slice(0, 3).map((skill, i) => {
+                            const hues = ["bg-brand-light/40 border-brand-border text-brand-title", "bg-emerald-50 border-emerald-100 text-emerald-700", "bg-amber-50 border-amber-100 text-amber-700"];
+                            return (
+                              <span
+                                key={i}
+                                className={`text-[10px] ${hues[i % hues.length]} px-2 py-0.5 rounded-full font-medium border`}
+                              >
+                                {skill.trim()}
+                              </span>
+                            );
+                          })}
                           {project.skills.split(",").length > 3 && (
-                            <span className="text-[10px] text-[#93B8D4] px-1">
+                            <span className="text-[10px] text-ink-muted px-1">
                               +{project.skills.split(",").length - 3}
                             </span>
                           )}
@@ -510,8 +529,20 @@ const closeProject = async (id: string) => {
                     className="group bg-white rounded-xl border border-[#BAD8F7] p-5 hover:shadow-xl transition-all"
                   >
                     <div className="flex items-start justify-between mb-3">
-                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#F0F7FF] to-[#E8F3FD] border border-[#BAD8F7] flex items-center justify-center">
-                        <BriefcaseIcon className="w-6 h-6 text-[#38A3F1]" />
+                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+                        !project.is_published
+                          ? "bg-amber-50 border border-amber-200"
+                          : project.status === "active"
+                            ? "bg-emerald-50 border border-emerald-200"
+                            : "bg-brand-light/40 border border-brand-border"
+                      }`}>
+                        <BriefcaseIcon className={`w-6 h-6 ${
+                          !project.is_published
+                            ? "text-amber-500"
+                            : project.status === "active"
+                              ? "text-emerald-600"
+                              : "text-brand-mid"
+                        }`} />
                       </div>
                       <span className={`inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full border ${statusBadge.color}`}>
                         <StatusIcon className="w-3 h-3" />
@@ -541,14 +572,17 @@ const closeProject = async (id: string) => {
                     </div>
 
                     <div className="flex flex-wrap gap-1 mb-4">
-                      {project.skills.split(",").slice(0, 3).map((skill, i) => (
-                        <span
-                          key={i}
-                          className="text-[10px] bg-[#F0F7FF] text-[#0D5FA6] px-2 py-0.5 rounded-full font-medium"
-                        >
-                          {skill.trim()}
-                        </span>
-                      ))}
+                      {project.skills.split(",").slice(0, 3).map((skill, i) => {
+                        const hues = ["bg-brand-light/40 border-brand-border text-brand-title", "bg-emerald-50 border-emerald-100 text-emerald-700", "bg-amber-50 border-amber-100 text-amber-700"];
+                        return (
+                          <span
+                            key={i}
+                            className={`text-[10px] ${hues[i % hues.length]} px-2 py-0.5 rounded-full font-medium border`}
+                          >
+                            {skill.trim()}
+                          </span>
+                        );
+                      })}
                     </div>
 
                     <div className="flex items-center justify-between pt-3 border-t border-[#E8F3FD]">
