@@ -17,22 +17,25 @@ export async function closeProjectAndGenerateCertificates(projectId: string) {
   }
 
   try {
-    // 2. Buscar la postulación aceptada para este proyecto
-    // (Ajusta 'accepted' si en tu base de datos usas otro nombre como 'aprobado' o 'seleccionado')
-    const { data: application, error: appError } = await supabase
+    // 2. Buscar las postulaciones aceptadas para este proyecto
+    // 🛠️ CORRECCIÓN: Recibimos 'applications' (en plural)
+    const { data: applications, error: appError } = await supabase
       .from("applications")
       .select("id")
       .eq("project_id", projectId)
-      .eq("status", "ACCEPTED") 
-      .maybeSingle();
+      .eq("status", "ACCEPTED");
 
     if (appError) {
       throw new Error(`Error buscando la postulación: ${appError.message}`);
     }
 
-    if (!application) {
+    // 🛠️ CORRECCIÓN: Validamos correctamente el arreglo
+    if (!applications || applications.length === 0) {
       throw new Error("No se encontró ningún estudiante con postulación 'aceptada' en este proyecto para poder certificarlo.");
     }
+    
+    // 🛠️ CORRECCIÓN: Extraemos el primer alumno aceptado
+    const application = applications[0];
 
     // 3. Actualizar el estado del proyecto a cerrado ('closed')
     const { error: projectUpdateError } = await supabase
@@ -44,7 +47,7 @@ export async function closeProjectAndGenerateCertificates(projectId: string) {
       throw new Error(`Error al cerrar el proyecto: ${projectUpdateError.message}`);
     }
 
-    // 4. Actualizar la postulación del alumno a completada ('completed')
+    // 4. Actualizar la postulación del alumno a completada ('COMPLETED')
     const { error: appUpdateError } = await supabase
       .from("applications")
       .update({ status: "COMPLETED" })
