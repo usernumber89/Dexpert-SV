@@ -34,7 +34,7 @@ export async function proxy(request: NextRequest) {
   
   // Al tener '/verify' en PUBLIC_ROUTES, cualquier subruta como '/verify/123-abc' dará true aquí
   const isPublicRoute = PUBLIC_ROUTES.some(r => pathname.startsWith(r)) || 
-                        pathname.startsWith('/api/stripe/webhook') ||
+                        pathname.startsWith('/api/wompi/webhook') ||
                         pathname.startsWith('/onboarding')
 
   // 2. Lógica para rutas públicas y Auth
