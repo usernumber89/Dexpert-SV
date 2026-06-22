@@ -1,96 +1,76 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import { createClient } from "@/lib/supabase/server";
+import { getWompiToken } from "@/lib/wompi";
 
-const PLAN_CREDITS: Record<string, number> = {
-  starter: 3,
-  growth: 10,
-  pro: 25,
-};
+const PLANS = {
+  starter: { amount: 9.99, credits: 3, name: "Dexpert Starter" },
+  growth: { amount: 24.99, credits: 10, name: "Dexpert Growth" },
+  pro: { amount: 49.99, credits: 25, name: "Dexpert Pro" },
+} as const;
 
 export async function POST(req: Request) {
   try {
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    );
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
 
-    const body = await req.json();
-    
-    // 1. Extraemos los datos según la estructura real de Wompi
-    const { 
-      ResultadoTransaccion, 
-      IdTransaccion, 
-      EnlacePago 
-    } = body;
+    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const identificador = EnlacePago?.IdentificadorEnlaceComercio;
-    const esAprobada = ResultadoTransaccion === "ExitosaAprobada";
+    const { plan } = await req.json();
+    const selectedPlan = PLANS[plan as keyof typeof PLANS];
 
-    console.log("Procesando webhook...", { esAprobada, identificador, IdTransaccion });
+    if (!selectedPlan) return NextResponse.json({ error: "Invalid plan" }, { status: 400 });
 
-    if (!esAprobada) {
-      return NextResponse.json({ success: true, message: "Transacción no aprobada" });
-    }
-
-    if (!identificador) {
-      return NextResponse.json({ error: "Identificador no encontrado" }, { status: 400 });
-    }
-
-    // 2. Parsear el identificador: DEXPERT_plan_pymeId_timestamp
-    const parts = identificador.split("_");
-    const plan = parts[1];     // "pro"
-    const pymeId = parts[2];   // "aacaff..."
-
-    const credits = PLAN_CREDITS[plan];
-
-    if (!credits || !pymeId) {
-      return NextResponse.json({ error: "Formato de ID inválido" }, { status: 400 });
-    }
-
-    // 3. Evitar duplicados
-    const { data: existingPurchase } = await supabase
-      .from("credit_purchases")
-      .select("id")
-      .eq("stripe_id", IdTransaccion)
-      .maybeSingle();
-
-    if (existingPurchase) {
-      return NextResponse.json({ success: true, message: "Ya procesado" });
-    }
-
-    // 4. Obtener pyme
-    const { data: pyme, error: pymeError } = await supabase
+    const { data: pyme } = await supabase
       .from("pymes")
-      .select("credits, user_id")
-      .eq("id", pymeId)
+      .select("id")
+      .eq("user_id", user.id)
       .single();
 
-    if (pymeError || !pyme) {
-      console.error("Error buscando pyme:", pymeError);
-      return NextResponse.json({ error: "Pyme not found" }, { status: 404 });
-    }
+    if (!pyme) return NextResponse.json({ error: "Pyme not found" }, { status: 404 });
 
-    // 5. Actualizar Créditos
-    await supabase
-      .from("pymes")
-      .update({ credits: (pyme.credits ?? 0) + credits })
-      .eq("id", pymeId);
+    const accessToken = await getWompiToken();
+    const comercioId = `DEXPERT_${plan}_${pyme.id}_${Date.now()}`;
 
-    // 6. Registrar Compra
-    await supabase.from("credit_purchases").insert({
-      user_id: pyme.user_id,
-      pyme_id: pymeId,
-      plan: plan.toUpperCase(),
-      stripe_id: IdTransaccion,
-      credits_granted: credits,
+    const payload = {
+      identificadorEnlaceComercio: comercioId,
+      monto: selectedPlan.amount,
+      nombreProducto: selectedPlan.name,
+      configuracion: {
+        urlRedirect: `${process.env.NEXT_PUBLIC_APP_URL}/pyme/dashboard?success=true`,
+        urlWebhook: `${process.env.NEXT_PUBLIC_APP_URL}/api/wompi/webhook`,
+        notificarTransaccionCliente: true,
+      },
+    };
+
+    const response = await fetch("https://api.wompi.sv/EnlacePago", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify(payload),
     });
 
-    console.log(`Éxito total: ${credits} créditos agregados a ${pymeId}`);
+    const data = await response.json();
 
-    return NextResponse.json({ success: true });
+    // Debug robusto: Si algo falla, lo veremos claramente en los logs de Vercel
+    if (!response.ok) {
+      console.error("Error Wompi API:", data);
+      return NextResponse.json(data, { status: response.status });
+    }
+
+    // Extracción segura de la URL (buscamos en varios campos comunes)
+    const paymentUrl = data.urlEnlace || data.url || data.link;
+
+    if (!paymentUrl) {
+      console.error("CRÍTICO: Wompi no devolvió una URL válida. Respuesta completa:", JSON.stringify(data));
+      return NextResponse.json({ error: "No se pudo obtener la URL de pago" }, { status: 500 });
+    }
+
+    return NextResponse.json({ url: paymentUrl });
 
   } catch (error: any) {
-    console.error("Error fatal:", error);
+    console.error("Error en checkout:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

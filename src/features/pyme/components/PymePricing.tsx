@@ -111,14 +111,16 @@ export function PymePricing({ creditsAvailable, creditsUsed }: Props) {
     );
 
     const data = await res.json();
-
+console.log("Respuesta del servidor:", data);
     if (!res.ok) {
       throw new Error(
         data.error ||
           "Error iniciando el pago"
       );
     }
-
+if (!data.url) {
+  throw new Error("El servidor no devolvió una URL de pago válida.");
+}
     toast.dismiss(loadingToast);
 
     toast.success(
