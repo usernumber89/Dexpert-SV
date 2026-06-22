@@ -97,14 +97,22 @@ export function ProjectCard({ project, hasApplied, studentSkills }: Props) {
       <div className="relative z-10 flex flex-col gap-3">
         {/* Empresa + estado / match */}
         <div className="flex items-start justify-between gap-2">
-          <div className="flex items-center gap-3 min-w-0">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#F0F7FF] to-[#E8F3FD] border border-[#BAD8F7] flex items-center justify-center text-sm font-bold text-[#0D3A6E] shadow-sm flex-shrink-0">
-              {project.pyme?.company_name?.[0]?.toUpperCase() ?? "D"}
-            </div>
-            <div className="min-w-0">
-              <p className="text-xs font-semibold text-[#0D3A6E] truncate">
-                {project.pyme?.company_name ?? "Company"}
-              </p>
+            <div className="flex items-center gap-3 min-w-0">
+              {project.pyme?.logo_url ? (
+                <img
+                  src={project.pyme.logo_url}
+                  alt={project.pyme.company_name || "Logo"}
+                  className="w-10 h-10 rounded-xl object-cover border border-[#E8F3FD] flex-shrink-0"
+                />
+              ) : (
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#F0F7FF] to-[#E8F3FD] border border-[#BAD8F7] flex items-center justify-center text-sm font-bold text-[#0D3A6E] shadow-sm flex-shrink-0">
+                  {project.pyme?.company_name?.[0]?.toUpperCase() ?? "D"}
+                </div>
+              )}
+              <div className="min-w-0">
+                <p className="text-xs font-semibold text-[#0D3A6E] truncate">
+                  {project.pyme?.company_name ?? "Company"}
+                </p>
               <div className="flex items-center gap-1 mt-0.5">
                 <MapPin className="w-3 h-3 text-[#93B8D4]" />
                 <p className="text-[10px] text-[#93B8D4]">Remoto</p>

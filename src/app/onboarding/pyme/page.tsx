@@ -1,26 +1,33 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
-import { 
-  Building2, 
-  User, 
-  FileText, 
-  Globe, 
-  MapPin, 
+import {
+  Building2,
+  User,
+  FileText,
+  Globe,
+  MapPin,
   ArrowRight,
   Sparkles,
   Briefcase,
-  Phone
+  Phone,
+  Camera,
+  Loader2,
 } from "lucide-react";
-import {LightbulbIcon} from "@phosphor-icons/react"
+import { LightbulbIcon } from "@phosphor-icons/react";
+import Image from "next/image";
 
 export default function PymeOnboardingPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const photoInputRef = useRef<HTMLInputElement>(null);
   const [form, setForm] = useState({
     name: "",
     contact: "",
@@ -31,13 +38,69 @@ export default function PymeOnboardingPage() {
     industry: "",
   });
 
+  const handlePhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast.error("Por favor, seleccioná un archivo de imagen.");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("La imagen excede el límite de 5MB.");
+      return;
+    }
+
+    setPhotoFile(file);
+    const reader = new FileReader();
+    reader.onload = () => setPhotoPreview(reader.result as string);
+    reader.readAsDataURL(file);
+  };
+
+  const uploadLogo = async (userId: string): Promise<string | null> => {
+    if (!photoFile) return null;
+
+    setUploadingPhoto(true);
+    try {
+      const supabase = createClient();
+      const ext = photoFile.name.split(".").pop();
+      const fileName = `${userId}-${Date.now()}.${ext}`;
+      const filePath = `profiles/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("avatars")
+        .upload(filePath, photoFile, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from("avatars")
+        .getPublicUrl(filePath);
+
+      return publicUrl;
+    } catch (error) {
+      console.error("Error uploading logo:", error);
+      return null;
+    } finally {
+      setUploadingPhoto(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!photoFile) {
+      toast.error("El logo de la empresa es obligatorio. Seleccioná una imagen para continuar.");
+      return;
+    }
+
     setLoading(true);
 
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { router.push("/sign-in"); return; }
+
+    const logoUrl = await uploadLogo(user.id);
 
     const { error } = await supabase.from("pymes").upsert({
       id: user.id,
@@ -48,6 +111,7 @@ export default function PymeOnboardingPage() {
       location: form.location,
       phone: form.phone,
       industry: form.industry,
+      logo_url: logoUrl,
       updated_at: new Date().toISOString(),
     });
 
@@ -64,18 +128,16 @@ export default function PymeOnboardingPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#F0F7FF] via-white to-[#E8F3FD] flex items-center justify-center p-6 relative">
-      {/* Background decoration */}
       <div className="absolute top-20 left-20 w-64 h-64 bg-[#0D3A6E] rounded-full opacity-5 blur-3xl" />
       <div className="absolute bottom-20 right-20 w-64 h-64 bg-[#F59E0B] rounded-full opacity-5 blur-3xl" />
-      
-      <motion.div 
+
+      <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="w-full max-w-2xl"
       >
         <div className="bg-white/90 backdrop-blur-xl rounded-3xl border border-[#BAD8F7] shadow-2xl p-8">
-          
-          {/* Header */}
+
           <div className="mb-8">
             <div className="flex items-center gap-2 mb-4">
               <div className="w-8 h-8 bg-gradient-to-br from-[#0D3A6E] to-[#1D5A9E] rounded-lg flex items-center justify-center">
@@ -86,16 +148,57 @@ export default function PymeOnboardingPage() {
               </p>
             </div>
             <h1 className="text-2xl font-bold text-[#0D3A6E] mb-2">
-              Configura tu perfil de empresa
+              Configurá tu perfil de empresa
             </h1>
             <p className="text-sm text-[#5B8DB8]">
-              Háblales a los estudiantes sobre tu empresa y comienza a publicar proyectos.
+              Hablales a los estudiantes sobre tu empresa y empezá a publicar proyectos.
             </p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
+            {/* Logo Upload */}
+            <div className="flex flex-col items-center gap-3 pb-4 border-b border-[#E8F3FD]">
+              <div className="relative w-24 h-24">
+                {photoPreview ? (
+                  <Image
+                    src={photoPreview}
+                    alt="Company logo preview"
+                    fill
+                    className="rounded-2xl object-cover border-4 border-white shadow-xl"
+                  />
+                ) : (
+                  <div className="w-full h-full rounded-2xl bg-[#F0F7FF] border-4 border-white shadow-xl flex items-center justify-center">
+                    <Building2 className="w-10 h-10 text-[#93B8D4]" />
+                  </div>
+                )}
+                <motion.button
+                  type="button"
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => photoInputRef.current?.click()}
+                  disabled={uploadingPhoto}
+                  className="absolute -bottom-2 -right-2 bg-white p-2 rounded-full shadow-lg border-2 border-[#BAD8F7] hover:border-[#38A3F1] transition-all"
+                >
+                  {uploadingPhoto ? (
+                    <Loader2 className="w-4 h-4 text-[#38A3F1] animate-spin" />
+                  ) : (
+                    <Camera className="w-4 h-4 text-[#38A3F1]" />
+                  )}
+                </motion.button>
+              </div>
+              <input
+                ref={photoInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handlePhotoSelect}
+              />
+              <p className="text-xs text-[#5B8DB8]">
+                {photoPreview ? "Tocá la cámara para cambiar el logo" : "Agregá el logo de tu empresa <span className='text-red-400'>*</span>"}
+              </p>
+            </div>
+
             <div className="grid md:grid-cols-2 gap-4">
-              {/* Business Name */}
               <div>
                 <label className="text-xs font-semibold text-[#0D3A6E] mb-1.5 block">
                   Nombre del Negocio <span className="text-red-400">*</span>
@@ -112,7 +215,6 @@ export default function PymeOnboardingPage() {
                 </div>
               </div>
 
-              {/* Contact Person */}
               <div>
                 <label className="text-xs font-semibold text-[#0D3A6E] mb-1.5 block">
                   Persona de contacto <span className="text-red-400">*</span>
@@ -129,7 +231,6 @@ export default function PymeOnboardingPage() {
                 </div>
               </div>
 
-              {/* Industry */}
               <div>
                 <label className="text-xs font-semibold text-[#0D3A6E] mb-1.5 block">
                   Industria / Giro
@@ -145,7 +246,6 @@ export default function PymeOnboardingPage() {
                 </div>
               </div>
 
-              {/* Phone */}
               <div>
                 <label className="text-xs font-semibold text-[#0D3A6E] mb-1.5 block">
                   Teléfono
@@ -161,7 +261,6 @@ export default function PymeOnboardingPage() {
                 </div>
               </div>
 
-              {/* Website */}
               <div>
                 <label className="text-xs font-semibold text-[#0D3A6E] mb-1.5 block">
                   Página web
@@ -177,7 +276,6 @@ export default function PymeOnboardingPage() {
                 </div>
               </div>
 
-              {/* Location */}
               <div>
                 <label className="text-xs font-semibold text-[#0D3A6E] mb-1.5 block">
                   Ubicación
@@ -194,7 +292,6 @@ export default function PymeOnboardingPage() {
               </div>
             </div>
 
-            {/* Description */}
             <div>
               <label className="text-xs font-semibold text-[#0D3A6E] mb-1.5 block">
                 ¿A qué se dedica su empresa? <span className="text-red-400">*</span>
@@ -215,7 +312,6 @@ export default function PymeOnboardingPage() {
               </p>
             </div>
 
-            {/* AI Tip */}
             <div className="bg-gradient-to-r from-[#F0F7FF] to-[#E8F3FD] rounded-xl p-4 border border-[#BAD8F7]">
               <div className="flex items-start gap-3">
                 <div className="w-8 h-8 bg-[#F59E0B] rounded-lg flex items-center justify-center flex-shrink-0">
@@ -223,7 +319,7 @@ export default function PymeOnboardingPage() {
                 </div>
                 <div>
                   <p className="text-xs font-semibold text-[#0D3A6E] mb-1">
-                   Los perfiles completos obtienen mejores talentos.
+                    Los perfiles completos obtienen mejores talentos.
                   </p>
                   <p className="text-[10px] text-[#5B8DB8]">
                     Las empresas con perfiles completos reciben el doble de solicitudes de calidad.
@@ -234,7 +330,7 @@ export default function PymeOnboardingPage() {
 
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || uploadingPhoto}
               className="relative w-full bg-gradient-to-r from-[#0D3A6E] to-[#1D5A9E] text-white text-sm font-semibold py-3 rounded-xl hover:shadow-lg hover:shadow-[#0D3A6E]/25 transition-all disabled:opacity-50 overflow-hidden group"
             >
               <span className="relative z-10 flex items-center justify-center gap-2">
@@ -245,7 +341,7 @@ export default function PymeOnboardingPage() {
                   </>
                 ) : (
                   <>
-                      Perfil completo
+                    Perfil completo
                     <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                   </>
                 )}

@@ -17,10 +17,11 @@ export type ActiveProject = {
   description: string | null;
   status: string;
   pyme: { company_name: string; logo_url?: string | null } | null;
-  student: { full_name: string; id: string } | null;
+  students: { full_name: string; id: string; avatar_url?: string | null }[];
   milestones: {
     id: string;
     project_id: string;
+    student_id: string;
     title: string;
     description: string | null;
     status: "PENDING" | "IN_PROGRESS" | "IN_REVIEW" | "APPROVED";
@@ -95,6 +96,7 @@ export async function getActiveProjectsWithMilestones(
         .from("milestones")
         .select("*")
         .eq("project_id", project.id)
+        .eq("student_id", student.id)
         .order("due_date", { ascending: true });
 
       const pyme = extractRelation(project.pyme as any);
@@ -107,7 +109,7 @@ export async function getActiveProjectsWithMilestones(
         pyme: pyme
           ? { company_name: pyme.company_name ?? "", logo_url: pyme.logo_url }
           : null,
-        student: null,
+        students: [],
         milestones: milestones ?? [],
         stats: computeStats(milestones ?? []),
       });
@@ -141,21 +143,23 @@ export async function getActiveProjectsWithMilestones(
       .eq("project_id", project.id)
       .order("due_date", { ascending: true });
 
-    const { data: application } = await supabase
+    const { data: applications } = await supabase
       .from("applications")
-      .select("student:students(full_name, id)")
+      .select("student:students(full_name, id, avatar_url)")
       .eq("project_id", project.id)
       .in("status", ["ACCEPTED", "COMPLETED"])
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
+      .order("created_at", { ascending: false });
 
     const projectPyme = extractRelation(project.pyme as any);
-    const studentRel = extractRelation(application?.student as any);
 
-    const student = studentRel
-      ? { full_name: studentRel.full_name ?? "", id: studentRel.id ?? "" }
-      : null;
+    const students = (applications ?? [])
+      .map((a) => {
+        const s = extractRelation(a.student as any);
+        return s
+          ? { full_name: s.full_name ?? "", id: s.id ?? "", avatar_url: s.avatar_url }
+          : null;
+      })
+      .filter(Boolean) as { full_name: string; id: string; avatar_url?: string | null }[];
 
     result.push({
       id: project.id,
@@ -165,7 +169,7 @@ export async function getActiveProjectsWithMilestones(
       pyme: projectPyme
         ? { company_name: projectPyme.company_name ?? "", logo_url: projectPyme.logo_url }
         : null,
-      student,
+      students,
       milestones: milestones ?? [],
       stats: computeStats(milestones ?? []),
     });

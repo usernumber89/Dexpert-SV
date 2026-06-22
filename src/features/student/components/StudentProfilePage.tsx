@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { ProfileGallery } from "@/components/ProfileGallery";
 
 type StudentProfile = {
   id: string;
@@ -50,6 +51,7 @@ type ApplicationWithProject = {
     skills: string;
     pyme: {
       company_name: string | null;
+      logo_url: string | null;
     } | null;
   } | null;
 };
@@ -105,7 +107,7 @@ export default function StudentProfilePage() {
       title,
       description,
       skills,
-      pyme:pymes(company_name)
+      pyme:pymes(company_name, logo_url)
     )
   `)
   .eq("student_id", profileData.id)
@@ -264,7 +266,9 @@ if (applications) {
                     />
                   ) : (
                     <div className="w-full h-full rounded-full bg-[#1D5A9E] border-4 border-white shadow-xl flex items-center justify-center">
-                      <User className="w-12 h-12 text-white" />
+                      <span className="text-3xl font-bold text-white">
+                        {profile.full_name?.charAt(0)?.toUpperCase() || "?"}
+                      </span>
                     </div>
                   )}
                   {isEditing && (
@@ -618,6 +622,19 @@ if (applications) {
                               </div>
                             </div>
                           </div>
+
+                          {/* Profile Gallery */}
+                          <div className="pt-4">
+                            <h3 className="text-base font-semibold text-[#0D3A6E] mb-4 flex items-center gap-2">
+                              <span className="w-1 h-5 bg-[#38A3F1] rounded-full" />
+                              Galería
+                            </h3>
+                            <ProfileGallery
+                              ownerId={profile.id}
+                              type="student"
+                              isOwner={true}
+                            />
+                          </div>
                         </div>
                       )}
                     </motion.div>
@@ -671,9 +688,18 @@ if (applications) {
                 <p className="text-sm font-semibold text-[#0D3A6E] truncate group-hover:text-[#38A3F1] transition-colors">
                   {app.project?.title ?? "Proyecto desconocido"}
                 </p>
-                <p className="text-xs text-[#93B8D4]">
-                  {app.project?.pyme?.company_name ?? "Empresa desconocida"}
-                </p>
+                <div className="flex items-center gap-1.5">
+                  {app.project?.pyme?.logo_url ? (
+                    <img
+                      src={app.project.pyme.logo_url}
+                      alt={app.project.pyme.company_name || "Logo"}
+                      className="w-4 h-4 rounded object-cover flex-shrink-0"
+                    />
+                  ) : null}
+                  <span className="text-xs text-[#93B8D4] truncate">
+                    {app.project?.pyme?.company_name ?? "Empresa desconocida"}
+                  </span>
+                </div>
               </div>
               <div className="flex items-center gap-2 flex-shrink-0">
                 <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${s.bg} ${s.text}`}>

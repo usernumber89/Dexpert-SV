@@ -3,29 +3,41 @@
 import { createClient as createServerClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 
-/**
- * Obtiene todos los hitos de un proyecto ordenados por fecha de entrega.
- */
-export async function getMilestones(projectId: string) {
+export type MilestoneRow = {
+  id: string;
+  project_id: string;
+  student_id: string;
+  title: string;
+  description: string | null;
+  status: "PENDING" | "IN_PROGRESS" | "IN_REVIEW" | "APPROVED";
+  due_date: string | null;
+  deliverable_url: string | null;
+  feedback: string | null;
+  created_at: string | null;
+};
+
+export async function getMilestones(projectId: string, studentId?: string) {
   const supabase = await createServerClient();
 
-  const { data: milestones, error } = await supabase
+  let query = supabase
     .from("milestones")
     .select("*")
-    .eq("project_id", projectId)
-    .order("due_date", { ascending: true });
+    .eq("project_id", projectId);
+
+  if (studentId) {
+    query = query.eq("student_id", studentId);
+  }
+
+  const { data: milestones, error } = await query.order("due_date", { ascending: true });
 
   if (error) {
     console.error("Error al obtener hitos:", error);
     return { success: false, error: error.message };
   }
 
-  return { success: true, milestones };
+  return { success: true, milestones: milestones as MilestoneRow[] };
 }
 
-/**
- * El ESTUDIANTE envía la evidencia de un hito para revisión de la PYME.
- */
 export async function submitMilestoneDeliverable(milestoneId: string, deliverableUrl: string) {
   const supabase = await createServerClient();
 
@@ -57,10 +69,13 @@ export async function submitMilestoneDeliverable(milestoneId: string, deliverabl
   return { success: true, milestone: data };
 }
 
-/**
- * La PYME crea un nuevo hito en el proyecto.
- */
-export async function createMilestone(projectId: string, title: string, description: string, dueDate: string) {
+export async function createMilestone(
+  projectId: string,
+  studentId: string,
+  title: string,
+  description: string,
+  dueDate: string
+) {
   const supabase = await createServerClient();
 
   const { data: { user } } = await supabase.auth.getUser();
@@ -70,10 +85,15 @@ export async function createMilestone(projectId: string, title: string, descript
     return { success: false, error: "El título del hito es obligatorio." };
   }
 
+  if (!studentId) {
+    return { success: false, error: "Debes seleccionar un estudiante." };
+  }
+
   const { data, error } = await supabase
     .from("milestones")
     .insert({
       project_id: projectId,
+      student_id: studentId,
       title: title.trim(),
       description: description.trim() || null,
       due_date: dueDate || null,
@@ -92,9 +112,6 @@ export async function createMilestone(projectId: string, title: string, descript
   return { success: true, milestone: data };
 }
 
-/**
- * La PYME aprueba el hito o solicita cambios.
- */
 export async function reviewMilestone(
   milestoneId: string,
   action: "APPROVE" | "REJECT",

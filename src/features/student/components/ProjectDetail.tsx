@@ -88,9 +88,17 @@ export function ProjectDetail({ project, hasApplied: initialApplied, studentId, 
           <div className="p-6 border-b border-[#E8F3FD]">
             <div className="flex items-start justify-between mb-4 gap-3">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-[#F0F7FF] flex items-center justify-center text-sm font-semibold text-[#0D5FA6] flex-shrink-0">
-                  {project.pyme?.company_name?.[0] ?? "D"}
-                </div>
+                {project.pyme?.logo_url ? (
+                  <img
+                    src={project.pyme.logo_url}
+                    alt={project.pyme.company_name || "Logo"}
+                    className="w-10 h-10 rounded-xl object-cover border border-[#E8F3FD] flex-shrink-0"
+                  />
+                ) : (
+                  <div className="w-10 h-10 rounded-xl bg-[#F0F7FF] flex items-center justify-center text-sm font-semibold text-[#0D5FA6] flex-shrink-0">
+                    {project.pyme?.company_name?.[0] ?? "D"}
+                  </div>
+                )}
                 <div>
                   <p className="text-sm font-medium text-[#0D3A6E]">{project.pyme?.company_name ?? "Company"}</p>
                   <div className="flex items-center gap-1">

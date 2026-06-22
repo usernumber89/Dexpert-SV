@@ -46,10 +46,10 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
     isAcceptedStudent = application?.status === "ACCEPTED" || application?.status === "COMPLETED";
   }
 
-  // 5. Traer los hitos si el estudiante es el dueño del proyecto en desarrollo
-  let milestonesData = [];
-  if (isAcceptedStudent) {
-    const { milestones } = await getMilestones(id);
+  // 5. Traer los hitos del estudiante si está asignado al proyecto
+  let milestonesData: any[] = [];
+  if (isAcceptedStudent && student) {
+    const { milestones } = await getMilestones(id, student.id);
     milestonesData = milestones || [];
   }
 
@@ -70,6 +70,8 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
               projectId={id}
               initialMilestones={milestonesData}
               role="STUDENT"
+              pymeLogoUrl={project.pyme?.logo_url}
+              pymeName={project.pyme?.company_name}
             />
           </div>
         </div>

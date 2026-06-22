@@ -10,6 +10,12 @@ const nextConfig: NextConfig = {
         port: "",
         pathname: "/**"
       },
+      {
+        protocol: "https",
+        hostname: "ehumdymyicwoourytpdj.supabase.co",
+        port: "",
+        pathname: "/storage/v1/object/public/**"
+      },
     ],
   },
   // 🚀 Evita que el empaquetador de Next.js rompa las rutas internas de las fuentes de PDFKit

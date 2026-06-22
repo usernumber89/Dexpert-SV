@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { ProfileGallery } from "@/components/ProfileGallery";
 
 type PymeProfile = {
   id: string;
@@ -218,7 +219,9 @@ if (projectsData) {
                     />
                   ) : (
                     <div className="w-full h-full rounded-2xl bg-[#F0F7FF] border-4 border-white shadow-xl flex items-center justify-center">
-                      <Building2 className="w-12 h-12 text-[#1D5A9E]" />
+                      <span className="text-3xl font-bold text-[#1D5A9E]">
+                        {profile.company_name?.charAt(0)?.toUpperCase() || profile.contact_person?.charAt(0)?.toUpperCase() || "?"}
+                      </span>
                     </div>
                   )}
                   {isEditing && (
@@ -453,6 +456,19 @@ if (projectsData) {
                                 </p>
                               </div>
                             </div>
+                          </div>
+
+                          {/* Profile Gallery */}
+                          <div className="pt-4">
+                            <h3 className="text-base font-semibold text-[#0D3A6E] mb-4 flex items-center gap-2">
+                              <span className="w-1 h-5 bg-[#1D5A9E] rounded-full" />
+                              Galería
+                            </h3>
+                            <ProfileGallery
+                              ownerId={profile.id}
+                              type="pyme"
+                              isOwner={true}
+                            />
                           </div>
                         </div>
                       )}

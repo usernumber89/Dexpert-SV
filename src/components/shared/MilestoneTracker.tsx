@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import {
   Clock,
   AlertCircle,
@@ -16,6 +16,7 @@ import { submitMilestoneDeliverable, reviewMilestone, createMilestone } from "@/
 interface Milestone {
   id: string;
   project_id: string;
+  student_id: string;
   title: string;
   description: string | null;
   status: "PENDING" | "IN_PROGRESS" | "IN_REVIEW" | "APPROVED";
@@ -24,21 +25,38 @@ interface Milestone {
   feedback: string | null;
 }
 
+interface StudentInfo {
+  id: string;
+  full_name: string;
+  avatar_url?: string | null;
+}
+
 interface MilestoneTrackerProps {
   projectId: string;
   initialMilestones: Milestone[];
   role: "STUDENT" | "PYME";
+  pymeLogoUrl?: string | null;
+  pymeName?: string | null;
+  studentAvatarUrl?: string | null;
+  studentName?: string | null;
+  students?: StudentInfo[];
 }
 
 export default function MilestoneTracker({
   projectId,
   initialMilestones,
   role,
+  pymeLogoUrl,
+  pymeName,
+  studentAvatarUrl,
+  studentName,
+  students = [],
 }: MilestoneTrackerProps) {
   const [milestones, setMilestones] = useState<Milestone[]>(initialMilestones);
   const [loadingId, setLoadingId] = useState<string | null>(null);
 
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const [selectedStudentId, setSelectedStudentId] = useState(students[0]?.id || "");
   const [newTitle, setNewTitle] = useState("");
   const [newDescription, setNewDescription] = useState("");
   const [newDueDate, setNewDueDate] = useState("");
@@ -49,6 +67,20 @@ export default function MilestoneTracker({
   const [activeRejectId, setActiveRejectId] = useState<string | null>(null);
   const [feedbackInput, setFeedbackInput] = useState("");
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  const selectedStudent = useMemo(() => {
+    if (role === "STUDENT") return null;
+    return students.find((s) => s.id === selectedStudentId) || students[0] || null;
+  }, [students, selectedStudentId, role]);
+
+  const headerStudentName = role === "PYME" ? (selectedStudent?.full_name || studentName) : studentName;
+  const headerStudentAvatar = role === "PYME" ? (selectedStudent?.avatar_url || studentAvatarUrl) : studentAvatarUrl;
+
+  const filteredMilestones = useMemo(() => {
+    if (role === "STUDENT") return milestones;
+    if (!selectedStudentId) return milestones;
+    return milestones.filter((m) => m.student_id === selectedStudentId);
+  }, [milestones, selectedStudentId, role]);
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return "Sin fecha";
@@ -65,8 +97,13 @@ export default function MilestoneTracker({
       setErrorMsg("El título del hito es obligatorio.");
       return;
     }
+    if (role === "PYME" && !selectedStudentId) {
+      setErrorMsg("Debes seleccionar un estudiante.");
+      return;
+    }
     setCreating(true);
-    const res = await createMilestone(projectId, newTitle, newDescription, newDueDate);
+    const studentId = role === "PYME" ? selectedStudentId : students[0]?.id;
+    const res = await createMilestone(projectId, studentId, newTitle, newDescription, newDueDate);
     if (res.success && res.milestone) {
       setMilestones(prev => [...prev, res.milestone]);
       setShowCreateForm(false);
@@ -177,13 +214,33 @@ export default function MilestoneTracker({
     <div className="w-full bg-surface-base border border-brand-border rounded-2xl">
       <div className="p-5 sm:p-6 md:p-7">
         <div className="mb-5 sm:mb-6 flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <h3 className="text-lg sm:text-xl font-black text-ink-primary tracking-tight">
-              Línea de Tiempo del Proyecto
-            </h3>
-            <p className="text-xs sm:text-sm text-ink-secondary mt-1">
-              Trazabilidad de entregas, revisiones técnicas e hitos alcanzados.
-            </p>
+          <div className="flex items-center gap-3">
+            {role === "STUDENT" && pymeLogoUrl && (
+              <img
+                src={pymeLogoUrl}
+                alt={pymeName || "Empresa"}
+                className="w-9 h-9 rounded-xl object-cover border border-[#E8F3FD] flex-shrink-0"
+              />
+            )}
+            {role === "PYME" && headerStudentAvatar && (
+              <img
+                src={headerStudentAvatar}
+                alt={headerStudentName || "Estudiante"}
+                className="w-9 h-9 rounded-full object-cover border-2 border-[#BAD8F7] flex-shrink-0"
+              />
+            )}
+            <div>
+              <h3 className="text-lg sm:text-xl font-black text-ink-primary tracking-tight">
+                Línea de Tiempo del Proyecto
+              </h3>
+              <p className="text-xs sm:text-sm text-ink-secondary mt-1">
+                {role === "STUDENT" && pymeName
+                  ? `Trabajando con ${pymeName}`
+                  : role === "PYME" && headerStudentName
+                    ? `Trabajando con ${headerStudentName}`
+                    : "Trazabilidad de entregas, revisiones técnicas e hitos alcanzados."}
+              </p>
+            </div>
           </div>
           {role === "PYME" && (
             <button
@@ -216,6 +273,22 @@ export default function MilestoneTracker({
               </button>
             </div>
             <div className="space-y-3">
+              {role === "PYME" && students.length > 1 && (
+                <div>
+                  <label className="block text-[10px] font-black uppercase tracking-wider text-ink-muted mb-1">
+                    Estudiante *
+                  </label>
+                  <select
+                    value={selectedStudentId}
+                    onChange={(e) => setSelectedStudentId(e.target.value)}
+                    className="w-full text-xs sm:text-sm p-2.5 bg-surface-base border border-surface-muted rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-mid/20 focus:border-brand-title text-ink-primary"
+                  >
+                    {students.map((s) => (
+                      <option key={s.id} value={s.id}>{s.full_name}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
               <div>
                 <label className="block text-[10px] font-black uppercase tracking-wider text-ink-muted mb-1">
                   Título del hito *
@@ -273,8 +346,41 @@ export default function MilestoneTracker({
           </div>
         )}
 
+        {role === "PYME" && students.length > 1 && (
+          <div className="mb-5 flex flex-wrap gap-1.5">
+            {students.map((s) => {
+              const isActive = s.id === selectedStudentId;
+              const studentMilestones = milestones.filter(m => m.student_id === s.id);
+              const approvedCount = studentMilestones.filter(m => m.status === "APPROVED").length;
+              const totalCount = studentMilestones.length;
+              return (
+                <button
+                  key={s.id}
+                  onClick={() => { setSelectedStudentId(s.id); setErrorMsg(null); }}
+                  className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full border transition-all"
+                  style={
+                    isActive
+                      ? { background: "#0D3A6E", borderColor: "#0D3A6E", color: "white" }
+                      : { background: "white", borderColor: "#E8F3FD", color: "#5B8DB8" }
+                  }
+                >
+                  {s.avatar_url && (
+                    <img src={s.avatar_url} alt="" className="w-4 h-4 rounded-full object-cover" />
+                  )}
+                  {s.full_name}
+                  {totalCount > 0 && (
+                    <span className={`text-[10px] ${isActive ? "text-white/70" : "text-[#93B8D4]"}`}>
+                      ({approvedCount}/{totalCount})
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        )}
+
         <div className="space-y-0">
-          {milestones.length === 0 ? (
+          {filteredMilestones.length === 0 ? (
             <div className="py-12 flex flex-col items-center gap-2 text-center">
               <div className="w-12 h-12 rounded-2xl bg-surface-raised flex items-center justify-center">
                 <Clock className="w-6 h-6 text-ink-muted" />
@@ -287,16 +393,15 @@ export default function MilestoneTracker({
               </p>
             </div>
           ) : (
-            milestones.map((milestone, idx) => {
+            filteredMilestones.map((milestone, idx) => {
             const isApproved = milestone.status === "APPROVED";
             const isInReview = milestone.status === "IN_REVIEW";
             const isInProgress = milestone.status === "IN_PROGRESS";
             const isPending = milestone.status === "PENDING";
-            const isLast = idx === milestones.length - 1;
+            const isLast = idx === filteredMilestones.length - 1;
 
             return (
               <div key={milestone.id} className="relative flex gap-3 sm:gap-4">
-                {/* Timeline column */}
                 <div className="flex flex-col items-center">
                   <div
                     className={`relative z-10 w-6 h-6 rounded-xl flex items-center justify-center border-2 transition-all shrink-0 ${statusStyles.indicator(milestone.status)}`}
@@ -308,7 +413,6 @@ export default function MilestoneTracker({
                   )}
                 </div>
 
-                {/* Content column */}
                 <div className="flex-1 min-w-0 pb-8 space-y-2">
                   <div className="flex flex-wrap items-start justify-between gap-2">
                     <div className="min-w-0">
@@ -384,7 +488,7 @@ export default function MilestoneTracker({
                           <div className="mt-2 p-3 sm:p-4 bg-surface-raised rounded-2xl border border-surface-muted space-y-3 max-w-lg">
                             <div>
                               <label className="block text-[10px] font-black uppercase tracking-wider text-ink-muted mb-1">
-                                URL del Entregable (GitHub / Figma / Vercel)
+                                URL del Entregable (GitHub / Figma / Otros medios)
                               </label>
                               <input
                                 type="text"

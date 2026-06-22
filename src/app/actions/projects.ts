@@ -29,35 +29,11 @@ export async function closeProjectAndGenerateCertificates(projectId: string) {
       throw new Error(`Error buscando la postulación: ${appError.message}`);
     }
 
-    // 🛠️ CORRECCIÓN: Validamos correctamente el arreglo
     if (!applications || applications.length === 0) {
       throw new Error("No se encontró ningún estudiante con postulación 'aceptada' en este proyecto para poder certificarlo.");
     }
-    
-    // 🛠️ CORRECCIÓN: Extraemos el primer alumno aceptado
-    const application = applications[0];
 
-    // 3. Actualizar el estado del proyecto a cerrado ('closed')
-    const { error: projectUpdateError } = await supabase
-      .from("projects")
-      .update({ status: "closed" })
-      .eq("id", projectId);
-
-    if (projectUpdateError) {
-      throw new Error(`Error al cerrar el proyecto: ${projectUpdateError.message}`);
-    }
-
-    // 4. Actualizar la postulación del alumno a completada ('COMPLETED')
-    const { error: appUpdateError } = await supabase
-      .from("applications")
-      .update({ status: "COMPLETED" })
-      .eq("id", application.id);
-
-    if (appUpdateError) {
-      throw new Error(`Error al actualizar la postulación: ${appUpdateError.message}`);
-    }
-
-    // 5. Inicializar cliente administrador para la inserción del certificado (Bypass RLS)
+    // 3. Inicializar cliente administrador para la inserción del certificado (Bypass RLS)
     if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
       throw new Error("Faltan las variables de entorno administrativas de Supabase.");
     }
@@ -67,23 +43,48 @@ export async function closeProjectAndGenerateCertificates(projectId: string) {
       process.env.SUPABASE_SERVICE_ROLE_KEY
     );
 
-    const certificateUrl = `/student/certificates/${application.id}`;
+    // 4. Cerrar el proyecto
+    const { error: projectUpdateError } = await supabase
+      .from("projects")
+      .update({ status: "closed" })
+      .eq("id", projectId);
 
-    // 6. Insertar el certificado vinculándolo al ID de la postulación real
-    const { data: certificate, error: certError } = await supabaseAdmin
-      .from("certificates")
-      .insert({
-        application_id: application.id,
-        url: certificateUrl,
-      })
-      .select()
-      .single();
-
-    if (certError) {
-      throw new Error(`Error al guardar el certificado en la base de datos: ${certError.message}`);
+    if (projectUpdateError) {
+      throw new Error(`Error al cerrar el proyecto: ${projectUpdateError.message}`);
     }
 
-    return { success: true, certificate };
+    // 5. Procesar cada estudiante aceptado: actualizar postulación y generar certificado
+    const certificates: any[] = [];
+
+    for (const application of applications) {
+      const { error: appUpdateError } = await supabase
+        .from("applications")
+        .update({ status: "COMPLETED" })
+        .eq("id", application.id);
+
+      if (appUpdateError) {
+        throw new Error(`Error al actualizar la postulación ${application.id}: ${appUpdateError.message}`);
+      }
+
+      const certificateUrl = `/student/certificates/${application.id}`;
+
+      const { data: certificate, error: certError } = await supabaseAdmin
+        .from("certificates")
+        .insert({
+          application_id: application.id,
+          url: certificateUrl,
+        })
+        .select()
+        .single();
+
+      if (certError) {
+        throw new Error(`Error al guardar el certificado para la postulación ${application.id}: ${certError.message}`);
+      }
+
+      certificates.push(certificate);
+    }
+
+    return { success: true, certificates };
 
   } catch (error: any) {
     console.error("Error en closeProjectAndGenerateCertificates:", error);

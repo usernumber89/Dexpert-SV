@@ -44,10 +44,18 @@ function DashboardProjectCard({ project }: { project: Project }) {
     >
       {/* Empresa + nivel */}
       <div className="flex items-start justify-between gap-2">
-        <div className="flex items-center gap-3 min-w-0">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#F0F7FF] to-[#E8F3FD] border border-[#BAD8F7] flex items-center justify-center text-sm font-bold text-[#0D3A6E] shadow-sm">
-            {project.pyme?.company_name?.[0]?.toUpperCase() ?? "D"}
-          </div>
+          <div className="flex items-center gap-3 min-w-0">
+          {project.pyme?.logo_url ? (
+            <img
+              src={project.pyme.logo_url}
+              alt={project.pyme.company_name || "Logo"}
+              className="w-10 h-10 rounded-xl object-cover border border-[#BAD8F7] flex-shrink-0"
+            />
+          ) : (
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#F0F7FF] to-[#E8F3FD] border border-[#BAD8F7] flex items-center justify-center text-sm font-bold text-[#0D3A6E] shadow-sm">
+              {project.pyme?.company_name?.[0]?.toUpperCase() ?? "D"}
+            </div>
+          )}
           <div className="min-w-0">
             <p className="text-xs font-semibold text-[#0D3A6E] truncate">
               {project.pyme?.company_name ?? "Empresa"}
@@ -202,9 +210,22 @@ export function StudentDashboard({ user, student, applications, projects }: Prop
                 const status = statusConfig[app.status] ?? statusConfig.PENDING;
                 return (
                   <div key={app.id} className="flex items-center gap-4 px-6 py-4 hover:bg-[#F9FBFF] transition-colors">
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-[#0D3A6E] truncate">{app.project?.title ?? "Proyecto sin título"}</p>
-                      <p className="text-xs text-[#5B8DB8] mt-0.5">{app.project?.pyme?.company_name ?? "Empresa"} · Remoto</p>
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                      {app.project?.pyme?.logo_url ? (
+                        <img
+                          src={app.project.pyme.logo_url}
+                          alt={app.project.pyme.company_name || "Logo"}
+                          className="w-8 h-8 rounded-lg object-cover border border-[#E8F3FD] flex-shrink-0"
+                        />
+                      ) : (
+                        <div className="w-8 h-8 rounded-lg bg-[#F0F7FF] border border-[#E8F3FD] flex items-center justify-center text-xs font-bold text-[#0D3A6E] flex-shrink-0">
+                          {app.project?.pyme?.company_name?.[0]?.toUpperCase() ?? "D"}
+                        </div>
+                      )}
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold text-[#0D3A6E] truncate">{app.project?.title ?? "Proyecto sin título"}</p>
+                        <p className="text-xs text-[#5B8DB8] mt-0.5">{app.project?.pyme?.company_name ?? "Empresa"} · Remoto</p>
+                      </div>
                     </div>
                     <span className={`inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1 rounded-full ${status.bg} ${status.text}`}>
                       <span className={`w-2 h-2 rounded-full ${status.dot}`} />{status.label}

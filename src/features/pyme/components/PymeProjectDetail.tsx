@@ -378,7 +378,25 @@ export function PymeProjectDetail({ project }: Props) {
         <div className="bg-white rounded-2xl border border-[#BAD8F7] p-6">
           <div className="flex items-start justify-between mb-4">
             <div>
-              <h1 className="text-lg font-semibold text-[#0D3A6E] mb-1">{project.title}</h1>
+              <div className="flex items-center gap-3 mb-2">
+                {project.pyme?.logo_url ? (
+                  <img
+                    src={project.pyme.logo_url}
+                    alt={project.pyme.company_name || "Logo"}
+                    className="w-10 h-10 rounded-xl object-cover border border-[#E8F3FD] flex-shrink-0"
+                  />
+                ) : (
+                  <div className="w-10 h-10 rounded-xl bg-[#F0F7FF] border border-[#E8F3FD] flex items-center justify-center flex-shrink-0">
+                    <span className="text-sm font-bold text-[#0D5FA6]">
+                      {project.pyme?.company_name?.charAt(0)?.toUpperCase() || "?"}
+                    </span>
+                  </div>
+                )}
+                <div>
+                  <h1 className="text-lg font-semibold text-[#0D3A6E]">{project.title}</h1>
+                  <p className="text-xs text-[#5B8DB8]">{project.pyme?.company_name || "Tu empresa"}</p>
+                </div>
+              </div>
               <p className="text-sm text-[#5B8DB8] leading-relaxed">{project.description}</p>
             </div>
             <button

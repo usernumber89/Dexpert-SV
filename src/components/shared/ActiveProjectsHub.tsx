@@ -62,16 +62,26 @@ function ActiveProjectCard({
   const [isPending, startTransition] = useTransition();
   const [showCreateForm, setShowCreateForm] = useState(false);
 
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [dueDate, setDueDate] = useState("");
-
   const stats = project.stats || { total: 0, approved: 0, inReview: 0, inProgress: 0, pending: 0, progressPercent: 0 };
   const milestones = project.milestones || [];
   const companyName = project.pyme?.company_name || null;
-  const studentName = project.student?.full_name || null;
-  const displayName = role === "STUDENT" ? companyName : studentName;
+  const students = project.students || [];
+  const firstStudent = students[0] || null;
+
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [dueDate, setDueDate] = useState("");
+  const [milestoneStudentId, setMilestoneStudentId] = useState(firstStudent?.id || "");
+  const displayName = role === "STUDENT" ? companyName : (firstStudent?.full_name || null);
   const initialLetter = getInitial(displayName, "D");
+
+  const subtitleText = role === "STUDENT"
+    ? (displayName ?? "Empresa por confirmar")
+    : students.length === 0
+      ? "Estudiante por asignar"
+      : students.length === 1
+        ? firstStudent!.full_name
+        : `${firstStudent!.full_name} +${students.length - 1} más`;
 
   const statusLabel =
     stats.total === 0 ? "Sin hitos"
@@ -99,14 +109,15 @@ function ActiveProjectCard({
 
   const handleCreateMilestone = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim()) return;
+    if (!title.trim() || !milestoneStudentId) return;
 
     startTransition(async () => {
-      const res = await createMilestone(project.id, title, description, dueDate);
+      const res = await createMilestone(project.id, milestoneStudentId, title, description, dueDate);
       if (res.success) {
         setTitle("");
         setDescription("");
         setDueDate("");
+        setMilestoneStudentId(students[0]?.id || "");
         setShowCreateForm(false);
         router.refresh();
       } else {
@@ -124,24 +135,62 @@ function ActiveProjectCard({
       }}
     >
       <div className="p-5">
-        <div className="flex items-start justify-between gap-3 mb-4">
-          <div className="flex items-center gap-3 min-w-0">
-            <div
-              className="w-10 h-10 rounded-xl flex items-center justify-center text-sm font-semibold shrink-0"
-              style={{ background: "#F0F7FF", color: "#0D5FA6" }}
-            >
-              {initialLetter}
+            <div className="flex items-start justify-between gap-3 mb-4">
+            <div className="flex items-center gap-3 min-w-0">
+              {role === "STUDENT" && project.pyme?.logo_url ? (
+                <img
+                  src={project.pyme.logo_url}
+                  alt={project.pyme.company_name || "Logo"}
+                  className="w-10 h-10 rounded-xl object-cover border border-[#E8F3FD] flex-shrink-0"
+                />
+              ) : role === "PYME" && firstStudent?.avatar_url ? (
+                <div className="relative flex-shrink-0">
+                  <img
+                    src={firstStudent.avatar_url}
+                    alt={firstStudent.full_name || "Estudiante"}
+                    className="w-10 h-10 rounded-full object-cover border-2 border-[#BAD8F7]"
+                  />
+                  {students.length > 1 && (
+                    <span
+                      className="absolute -bottom-1 -right-1 text-[9px] font-bold text-white bg-[#0D5FA6] rounded-full w-4.5 h-4.5 flex items-center justify-center border-2 border-white leading-none"
+                      style={{ width: 18, height: 18, lineHeight: 1 }}
+                    >
+                      +{students.length - 1}
+                    </span>
+                  )}
+                </div>
+              ) : (
+                <div
+                  className="w-10 h-10 rounded-xl flex items-center justify-center text-sm font-semibold shrink-0"
+                  style={{ background: "#F0F7FF", color: "#0D5FA6" }}
+                >
+                  {initialLetter}
+                </div>
+              )}
+              <div className="min-w-0">
+                <h3 className="text-sm font-semibold text-[#0D3A6E] truncate leading-snug">
+                  {project.title}
+                </h3>
+                <p className="text-xs text-[#93B8D4] flex items-center gap-1 mt-0.5 truncate">
+                  {role === "STUDENT" && project.pyme?.logo_url ? (
+                    <img
+                      src={project.pyme.logo_url}
+                      alt=""
+                      className="w-3.5 h-3.5 rounded object-cover flex-shrink-0"
+                    />
+                  ) : role === "PYME" && firstStudent?.avatar_url ? (
+                    <img
+                      src={firstStudent.avatar_url}
+                      alt=""
+                      className="w-3.5 h-3.5 rounded-full object-cover flex-shrink-0"
+                    />
+                  ) : (
+                    <Building2 className="w-3 h-3 shrink-0" />
+                  )}
+                  {subtitleText}
+                </p>
+              </div>
             </div>
-            <div className="min-w-0">
-              <h3 className="text-sm font-semibold text-[#0D3A6E] truncate leading-snug">
-                {project.title}
-              </h3>
-              <p className="text-xs text-[#93B8D4] flex items-center gap-1 mt-0.5 truncate">
-                <Building2 className="w-3 h-3 shrink-0" />
-                {displayName ?? (role === "STUDENT" ? "Empresa por confirmar" : "Estudiante por asignar")}
-              </p>
-            </div>
-          </div>
 
           <span
             className="inline-flex items-center gap-1 text-[10px] font-medium px-2.5 py-1 rounded-full border shrink-0"
@@ -233,6 +282,21 @@ function ActiveProjectCard({
             <form onSubmit={handleCreateMilestone} className="bg-white border border-[#BAD8F7] rounded-xl p-4 space-y-3">
               <p className="text-xs font-semibold text-[#0D3A6E] uppercase tracking-wide">Nuevo hito</p>
 
+              {students.length > 1 && (
+                <div>
+                  <label className="block text-[10px] font-medium text-[#93B8D4] mb-1">Estudiante *</label>
+                  <select
+                    value={milestoneStudentId}
+                    onChange={(e) => setMilestoneStudentId(e.target.value)}
+                    className="w-full text-xs px-3 py-2 bg-white border border-[#E8F3FD] rounded-lg focus:outline-none focus:border-[#38A3F1] text-[#0D3A6E]"
+                  >
+                    {students.map((s) => (
+                      <option key={s.id} value={s.id}>{s.full_name}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div className="sm:col-span-2">
                   <label className="block text-[10px] font-medium text-[#93B8D4] mb-1">Título *</label>
@@ -270,7 +334,7 @@ function ActiveProjectCard({
               <div className="flex justify-end">
                 <button
                   type="submit"
-                  disabled={isPending}
+                  disabled={isPending || !milestoneStudentId}
                   className="text-xs font-medium bg-[#0D3A6E] text-white px-4 py-2 rounded-lg hover:bg-[#0D5FA6] disabled:opacity-50 transition-colors"
                 >
                   {isPending ? "Creando..." : "Crear hito"}
@@ -284,6 +348,11 @@ function ActiveProjectCard({
             projectId={project.id}
             initialMilestones={milestones}
             role={role}
+            pymeLogoUrl={project.pyme?.logo_url}
+            pymeName={project.pyme?.company_name}
+            studentName={firstStudent?.full_name}
+            studentAvatarUrl={firstStudent?.avatar_url}
+            students={students}
           />
         </div>
       )}
@@ -336,7 +405,7 @@ export default function ActiveProjectsHub({
         !searchTerm ||
         p.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         (p.pyme?.company_name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (p.student?.full_name || "").toLowerCase().includes(searchTerm.toLowerCase());
+        p.students.some((s) => s.full_name.toLowerCase().includes(searchTerm.toLowerCase()));
 
       if (!matchSearch) return false;
 

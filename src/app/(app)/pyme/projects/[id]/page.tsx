@@ -80,8 +80,20 @@ export default async function PymeProjectDetailPage({
     (app: any) => app.status === "ACCEPTED" || app.status === "COMPLETED"
   );
 
-  // 5. 🛠️ Traer los hitos solo si hay un desarrollo activo
-  let milestonesData = [];
+  // 5. 🛠️ Obtener todos los estudiantes aceptados
+  const acceptedApps = hasAcceptedStudent
+    ? project.applications?.filter(
+        (app: any) => app.status === "ACCEPTED" || app.status === "COMPLETED"
+      ) || []
+    : [];
+  const acceptedStudents = acceptedApps.map((app: any) => {
+    const s = app.students || app.student || null;
+    return s ? { id: s.id, full_name: s.full_name ?? "", avatar_url: s.avatar_url } : null;
+  }).filter(Boolean);
+  const firstStudent = acceptedStudents[0] || null;
+
+  // 6. 🛠️ Traer los hitos solo si hay un desarrollo activo
+  let milestonesData: any[] = [];
   if (hasAcceptedStudent) {
     const { milestones } = await getMilestones(id);
     milestonesData = milestones || [];
@@ -99,6 +111,9 @@ export default async function PymeProjectDetailPage({
               projectId={id}
               initialMilestones={milestonesData}
               role="PYME"
+              studentAvatarUrl={firstStudent?.avatar_url}
+              studentName={firstStudent?.full_name}
+              students={acceptedStudents}
             />
           </div>
         </div>
