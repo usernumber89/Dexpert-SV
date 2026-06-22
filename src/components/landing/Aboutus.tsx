@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { ArrowRight, CheckCircle2, Goal, Telescope, HandHelping } from "lucide-react";
-
+import { outfit } from "@/lib/fonts";
 const HIGHLIGHTS = [
   {
     icon: Goal,
@@ -43,11 +43,11 @@ export function Aboutus() {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <h2 className="text-3xl md:text-4xl font-bold text-[#0D3A6E] mb-3">
+          <h2 className={` text-3xl md:text-4xl font-bold text-[#0D3A6E] mb-3`}>
             Creemos en <span className="text-[#38A3F1]">lo que puedes ser</span>
           </h2>
           <p className="text-[#5B8DB8] max-w-xl text-sm mx-auto leading-relaxed">
-            Cerrando la brecha entre el talento y las oportunidades reales en El Salvador.
+            Cerramos la brecha entre el talento y las oportunidades reales en El Salvador.
           </p>
         </motion.div>
 

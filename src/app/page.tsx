@@ -9,10 +9,10 @@ import { CallToAction } from "@/components/landing/CallToAction";
 import { Footer } from "@/components/landing/Footer";
 import ActiveProjectsHub from "@/components/shared/ActiveProjectsHub";
 import { MilestonesShowcase } from "@/components/landing/MilestonesShowcase";
-
+import {outfit} from "@/lib/fonts"
 export default function Home() {
   return (
-    <div className="min-h-screen bg-white">
+    <div className={`${outfit.className} min-h-screen bg-white`}>
       <Navbar />
       <Hero />
       <Aboutus />

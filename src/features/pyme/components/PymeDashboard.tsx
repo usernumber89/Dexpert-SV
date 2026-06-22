@@ -62,12 +62,10 @@ export function PymeDashboard({ user, pyme, projects,credits }: Props) {
   const [menuOpen, setMenuOpen] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState<"Todos" | "Activos" | "Borradores">("Activos");
+  const [statusFilter, setStatusFilter] = useState<"Todos" | "Activos" | "Borradores" | "Cerrados">("Todos");
   const [viewMode, setViewMode] = useState<"grid" | "list">("list");
 
-  const visibleProjects = useMemo(() => projects.filter(p => p.status !== "closed"), [projects]);
-
-  const filteredProjects = visibleProjects.filter(project => {
+  const filteredProjects = projects.filter(project => {
     const matchesSearch = project.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          project.description?.toLowerCase().includes(searchTerm.toLowerCase());
     
@@ -76,14 +74,19 @@ export function PymeDashboard({ user, pyme, projects,credits }: Props) {
     if (statusFilter === "Todos") return true;
     if (statusFilter === "Activos") return project.status === "active" && project.is_published;
     if (statusFilter === "Borradores") return !project.is_published;
+    if (statusFilter === "Cerrados") return project.status === "closed";
     
     return true;
   });
 
+  const totalActive = projects.filter(p => p.status === "active" && p.is_published).length;
+  const totalDrafts = projects.filter(p => !p.is_published).length;
+  const totalClosed = projects.filter(p => p.status === "closed").length;
+
   const stats = [
     { 
       label: "Proyectos totales", 
-      value: visibleProjects.length, 
+      value: projects.length, 
       icon: FolderOpen,
       color: "text-brand-mid",
       bgColor: "bg-brand-mid/10",
@@ -91,7 +94,7 @@ export function PymeDashboard({ user, pyme, projects,credits }: Props) {
     },
     { 
       label: "Activos", 
-      value: visibleProjects.filter(p => p.status === "active" && p.is_published).length, 
+      value: totalActive, 
       icon: TrendingUp,
       color: "text-emerald-600",
       bgColor: "bg-emerald-50",
@@ -99,19 +102,19 @@ export function PymeDashboard({ user, pyme, projects,credits }: Props) {
     },
     { 
       label: "Borradores", 
-      value: visibleProjects.filter(p => !p.is_published).length, 
+      value: totalDrafts, 
       icon: Clock,
       color: "text-amber-600",
       bgColor: "bg-amber-50",
       borderColor: "border-amber-200"
     },
     { 
-      label: "Aplicantes", 
-      value: visibleProjects.reduce((acc, p) => acc + (p.applications?.length || 0), 0), 
-      icon: Users,
-      color: "text-purple-600",
-      bgColor: "bg-purple-50",
-      borderColor: "border-purple-200"
+      label: "Cerrados", 
+      value: totalClosed, 
+      icon: CheckCircle,
+      color: "text-gray-600",
+      bgColor: "bg-gray-50",
+      borderColor: "border-gray-200"
     },
   ];
 
@@ -160,22 +163,22 @@ const closeProject = async (id: string) => {
   const getStatusBadge = (project: Project) => {
     if (project.status === "closed") {
       return {
-        label: "Closed",
-        color: "bg-red-50 text-red-600 border-red-200",
-        icon: AlertCircle
+        label: "Cerrado",
+        color: "bg-red-100 text-gray-600 border-gray-200",
+        icon: CheckCircle
       };
     }
     if (!project.is_published) {
       return {
-          label: "Draft",
-          color: "bg-gray-50 text-gray-600 border-gray-200",
+          label: "Borrador",
+          color: "bg-amber-50 text-amber-600 border-amber-200",
         icon: Clock
       };
     }
     return {
       label: "Activo",
-      color: "bg-green-50 text-green-600 border-green-200",
-      icon: CheckCircle
+      color: "bg-emerald-50 text-emerald-600 border-emerald-200",
+      icon: TrendingUp
     };
   };
 
@@ -305,22 +308,13 @@ const closeProject = async (id: string) => {
                 onChange={(e) => setStatusFilter(e.target.value as any)}
                 className="px-4 py-2.5 rounded-lg border border-[#BAD8F7] text-sm text-[#0D3A6E] bg-white focus:outline-none focus:border-[#38A3F1] cursor-pointer"
               >
-                <option value="Todos">Todos</option>
+                 <option value="Todos">Todos</option>
                 <option value="Activos">Activos</option>
                 <option value="Borradores">Borradores</option>
+                <option value="Cerrados">Cerrados</option>
               </select>
 
               <div className="flex gap-1 p-1 bg-[#F0F7FF] rounded-lg">
-                <button
-                  onClick={() => setViewMode("list")}
-                  className={`p-2 rounded transition-colors ${
-                    viewMode === "list" 
-                      ? "bg-white shadow-sm text-[#0D3A6E]" 
-                      : "text-[#93B8D4] hover:text-[#0D3A6E]"
-                  }`}
-                >
-                  <List className="w-4 h-4" />
-                </button>
                 <button
                   onClick={() => setViewMode("grid")}
                   className={`p-2 rounded transition-colors ${
@@ -331,6 +325,17 @@ const closeProject = async (id: string) => {
                 >
                   <Grid className="w-4 h-4" />
                 </button>
+                <button
+                  onClick={() => setViewMode("list")}
+                  className={`p-2 rounded transition-colors ${
+                    viewMode === "list" 
+                      ? "bg-white shadow-sm text-[#0D3A6E]" 
+                      : "text-[#93B8D4] hover:text-[#0D3A6E]"
+                  }`}
+                >
+                  <List className="w-4 h-4" />
+                </button>
+                
               </div>
             </div>
           </div>

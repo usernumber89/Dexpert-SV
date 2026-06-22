@@ -4,6 +4,7 @@ import { Toaster } from "sonner";
 import "./globals.css";
 import {AuthProvider} from "@/providers/AuthProvider";
 import {Briefcase, User} from "lucide-react";
+import { outfit } from "@/lib/fonts";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -28,7 +29,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <body className={outfit.className}>
 
        <AuthProvider>{children}</AuthProvider> 
         <Toaster position="top-right" richColors />

@@ -12,6 +12,7 @@ import {
   CheckCircle2,
   Zap, FileInput, SendToBack, Network
 } from "lucide-react";
+import { outfit } from "@/lib/fonts";
 
 const steps = [
   { 
@@ -78,7 +79,7 @@ export function Guide() {
           className="text-center mb-16"
         >
           
-          <h2 className="text-2xl md:text-2xl lg:text-3xl font-bold text-[#0D3A6E] mb-4">
+          <h2 className={` text-2xl md:text-2xl lg:text-3xl font-bold text-[#0D3A6E] mb-4`} >
             Seis pasos a tu primera{" "}
             <span className="relative">
               <span className="relative z-10 bg-[#38A3F1] bg-clip-text text-transparent">
@@ -121,7 +122,7 @@ export function Guide() {
                         <div className="pr-12">
                           <div className="inline-block text-left max-w-md">
                             <div className="flex items-center gap-3 mb-3 justify-end">
-                              <h3 className="text-xl font-bold text-[#0D3A6E]">{step.title}</h3>
+                              <h3 className={` text-xl font-bold text-[#0D3A6E]`}>{step.title}</h3>
                               <div 
                                 className="w-10 h-10 rounded-xl flex items-center justify-center shadow-lg"
                                 style={{ 
@@ -178,7 +179,7 @@ export function Guide() {
                               >
                                 <Icon className="w-5 h-5" style={{ color: step.color }} />
                               </div>
-                              <h3 className="text-xl font-bold text-[#0D3A6E]">{step.title}</h3>
+                              <h3 className={` text-xl  font-bold text-[#0D3A6E]`}>{step.title}</h3>
                             </div>
                             <p className="text-sm text-[#5B8DB8] leading-relaxed">
                               {step.description}
