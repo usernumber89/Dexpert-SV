@@ -1,14 +1,62 @@
 "use client";
 
-import { Sparkles, Plus, CreditCard, Ticket } from "lucide-react";
+import { useEffect, useState } from "react";
+import { createClient } from "@/lib/supabase/client"; // Ajusta la ruta de tu cliente si es necesario
+import { CreditCard, Ticket } from "lucide-react";
 import Link from "next/link";
 
 type Props = {
-  available: number;
-  used: number;
+  pymeId: string;    // 🌟 1. Añadimos el pymeId para poder filtrar en Supabase
+  available: number; // Este actúa como valor inicial del servidor
+  used: number;      // Este actúa como valor inicial del servidor
 };
 
-export function CreditsWidget({ available, used }: Props) {
+export function CreditsWidget({ pymeId, available: initialAvailable, used: initialUsed }: Props) {
+  // 🌟 2. Convertimos los datos en estados locales mutables
+  const [available, setAvailable] = useState(initialAvailable);
+  const [used, setUsed] = useState(initialUsed);
+  const supabase = createClient();
+
+  // Mantiene sincronizado el estado por si cambias de página normalmente
+  useEffect(() => {
+    setAvailable(initialAvailable);
+    setUsed(initialUsed);
+  }, [initialAvailable, initialUsed]);
+
+  // 🌟 3. Nos suscribimos al canal de Supabase Realtime
+  useEffect(() => {
+    if (!pymeId) return;
+
+    const channel = supabase
+      .channel(`realtime-widget-${pymeId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE", // Solo cuando cambien/sumen créditos
+          schema: "public",
+          table: "pyme_credits",
+          filter: `pyme_id=eq.${pymeId}`, // Escucha SOLO los datos de ESTA pyme
+        },
+        (payload: any) => {
+          // Extraemos los nuevos datos de forma segura para TypeScript
+          const newData = payload.new as { credits_available: number; credits_used: number };
+          
+          console.log("¡Créditos actualizados vía Realtime!", newData);
+          
+          // Actualizamos la pantalla instantáneamente
+          setAvailable(newData.credits_available);
+          setUsed(newData.credits_used);
+        }
+      )
+      .subscribe();
+
+    // Limpieza de la conexión cuando el componente se desmonte
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [pymeId, supabase]);
+
+  // Conservamos tus cálculos originales intactos
   const total = available + used;
   const percentage = total > 0 ? (available / total) * 100 : 0;
 
@@ -37,7 +85,7 @@ export function CreditsWidget({ available, used }: Props) {
       {/* Progress bar */}
       <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden mb-2">
         <div
-          className="h-full bg-[#38A3F1] rounded-full transition-all"
+          className="h-full bg-[#38A3F1] rounded-full transition-all duration-500" // Añadí suavidad a la animación de la barra
           style={{ width: `${percentage}%` }}
         />
       </div>

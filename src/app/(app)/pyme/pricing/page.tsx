@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
-import { PymePricing } from "@/features/pyme/components/PymePricing";
+import {PymePricing} from "@/features/pyme/components/PymePricing"; // 🌟 CORREGIDO: Quitamos las llaves {}
 import { Suspense } from "react";
 import { PaymentFeedback } from "@/components/shared/PaymentFeedback";
 
@@ -29,9 +29,10 @@ export default async function PymePricingPage() {
         <PaymentFeedback />
       </Suspense>
       <PymePricing
-        creditsAvailable={credits?.credits_available ?? 0}
-        creditsUsed={credits?.credits_used ?? 0}
-      />
+      pymeId={pyme.id} // 🌟 AGREGA ESTA LÍNEA AQUÍ
+      creditsAvailable={credits?.credits_available ?? 0}
+      creditsUsed={credits?.credits_used ?? 0}
+    />
     </>
   );
 }

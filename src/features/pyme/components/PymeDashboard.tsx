@@ -233,7 +233,13 @@ const closeProject = async (id: string) => {
         </div>
 
         {/* AI Assistant Banner */}
-        <CreditsWidget available={credits.available} used={credits.used} />
+       {pyme && credits && (
+  <CreditsWidget 
+    pymeId={pyme.id} 
+    available={credits.available} 
+    used={credits.used} 
+  />
+)}
        {/* <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}

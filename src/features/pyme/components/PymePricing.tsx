@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react"; // 🌟 Añadido useEffect
+import { createClient } from "@/lib/supabase/client"; // 🌟 Añadido para escuchar Realtime
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import {
@@ -16,6 +17,7 @@ import {
 import Link from "next/link";
 
 type Props = {
+  pymeId: string; // 🌟 1. Añadimos el pymeId para el filtro en tiempo real
   creditsAvailable: number;
   creditsUsed: number;
 };
@@ -86,60 +88,100 @@ const PLANS = [
   },
 ];
 
-export function PymePricing({ creditsAvailable, creditsUsed }: Props) {
+export function PymePricing({ pymeId, creditsAvailable: initialAvailable, creditsUsed: initialUsed }: Props) {
+  // 🌟 2. Convertimos los créditos recibidos en estados reactivos locales
+  const [available, setAvailable] = useState(initialAvailable);
+  const [used, setUsed] = useState(initialUsed);
   const [loading, setLoading] = useState<string | null>(null);
+  const supabase = createClient();
+
+  // Sincroniza el estado si el servidor cambia los parámetros base
+  useEffect(() => {
+    setAvailable(initialAvailable);
+    setUsed(initialUsed);
+  }, [initialAvailable, initialUsed]);
+
+  // 🌟 3. Nos suscribimos al Realtime de Supabase para esta PYME
+  useEffect(() => {
+    if (!pymeId) return;
+
+    const channel = supabase
+      .channel(`realtime-pricing-${pymeId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "pyme_credits",
+          filter: `pyme_id=eq.${pymeId}`,
+        },
+        (payload: any) => {
+          const newData = payload.new as { credits_available: number; credits_used: number };
+          console.log("¡Créditos actualizados en Pasarela vía Realtime!", newData);
+          
+          // Actualizamos la interfaz al instante al detectar el pago aprobado
+          setAvailable(newData.credits_available);
+          setUsed(newData.credits_used);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [pymeId, supabase]);
 
   const handleCheckout = async (planId: string) => {
-  setLoading(planId);
+    setLoading(planId);
 
-  const loadingToast = toast.loading(
-    "Preparando checkout seguro..."
-  );
-
-  try {
-    const res = await fetch(
-      "/api/wompi/checkout",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          plan: planId.toLowerCase(),
-        }),
-      }
+    const loadingToast = toast.loading(
+      "Preparando checkout seguro..."
     );
 
-    const data = await res.json();
-console.log("Respuesta del servidor:", data);
-    if (!res.ok) {
-      throw new Error(
-        data.error ||
-          "Error iniciando el pago"
+    try {
+      const res = await fetch(
+        "/api/wompi/checkout",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            plan: planId.toLowerCase(),
+          }),
+        }
       );
+
+      const data = await res.json();
+      console.log("Respuesta del servidor:", data);
+      if (!res.ok) {
+        throw new Error(
+          data.error ||
+            "Error iniciando el pago"
+        );
+      }
+      if (!data.url) {
+        throw new Error("El servidor no devolvió una URL de pago válida.");
+      }
+      toast.dismiss(loadingToast);
+
+      toast.success(
+        "Redirigiendo a Wompi..."
+      );
+
+      window.location.href = data.url;
+    } catch (error) {
+      console.error(error);
+
+      toast.dismiss(loadingToast);
+
+      toast.error(
+        "Error iniciando el proceso de pago. Inténtalo nuevamente."
+      );
+
+      setLoading(null);
     }
-if (!data.url) {
-  throw new Error("El servidor no devolvió una URL de pago válida.");
-}
-    toast.dismiss(loadingToast);
-
-    toast.success(
-      "Redirigiendo a Wompi..."
-    );
-
-    window.location.href = data.url;
-  } catch (error) {
-    console.error(error);
-
-    toast.dismiss(loadingToast);
-
-    toast.error(
-      "Error iniciando el proceso de pago. Inténtalo nuevamente."
-    );
-
-    setLoading(null);
-  }
-};
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#F0F7FF] via-white to-[#E8F3FD] px-6 py-10">
@@ -159,12 +201,12 @@ if (!data.url) {
           <h1 className="text-2xl font-bold text-[#0D3A6E]">Compra créditos, publica proyectos</h1>
           <p className="text-sm text-[#5B8DB8]  mx-auto leading-relaxed">
            <span className="font-semibold text-[#38A3F1]">Sin suscripciones. </span>
-            
-          Compra un paquete de créditos y úsalos cuando los necesites.
+           
+          Compra un paquete de créditos and úsalos cuando los necesites.
           </p>
 
-          {/* Current balance */}
-          {(creditsAvailable > 0 || creditsUsed > 0) && (
+          {/* Current balance -> Cambiado a las variables reactivas 'available' y 'used' */}
+          {(available > 0 || used > 0) && (
             <motion.div
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
@@ -172,7 +214,7 @@ if (!data.url) {
             >
               <div className="flex items-center gap-1.5">
                 <div className="w-2 h-2 rounded-full bg-[#38A3F1]" />
-                <span className="text-sm font-bold text-[#0D3A6E]">{creditsAvailable}</span>
+                <span className="text-sm font-bold text-[#0D3A6E]">{available}</span>
                 <span className="text-xs text-[#93B8D4]">créditos disponibles</span>
               </div>
               <div className="w-px h-4 bg-[#E8F3FD]" />
@@ -180,11 +222,11 @@ if (!data.url) {
                 <Infinity className="w-3.5 h-3.5 text-[#93B8D4]" />
                 <span className="text-xs text-[#93B8D4]">nunca expiran</span>
               </div>
-              {creditsUsed > 0 && (
+              {used > 0 && (
                 <>
                   <div className="w-px h-4 bg-[#E8F3FD]" />
                   <div className="flex items-center gap-1.5">
-                    <span className="text-xs text-[#93B8D4]">{creditsUsed} usados</span>
+                    <span className="text-xs text-[#93B8D4]">{used} usados</span>
                   </div>
                 </>
               )}
@@ -210,9 +252,6 @@ if (!data.url) {
                     : "border-[#E8F3FD] hover:border-[#BAD8F7] hover:shadow-xl"
                 }`}
               >
-                {/* Badge */}
-                
-
                 <div className="p-7 space-y-6">
                   {/* Icon + name */}
                   <div className="flex items-start gap-3">
@@ -236,26 +275,26 @@ if (!data.url) {
 
                   {/* CTA */}
                   <button
-  onClick={() => handleCheckout(plan.id)}
-  disabled={!!loading}
-  className={`group relative w-full overflow-hidden py-3.5 rounded-xl text-sm font-bold transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-60 ${
-    plan.highlighted
-      ? "bg-gradient-to-r from-[#0D3A6E] to-[#1D5A9E] text-white hover:shadow-xl hover:shadow-[#0D3A6E]/25"
-      : "bg-[#F0F7FF] text-[#0D3A6E] hover:bg-[#E8F3FD] border border-[#BAD8F7]"
-  }`}
->
-  {isLoadingThis ? (
-    <>
-      <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-      Redirigiendo...
-    </>
-  ) : (
-    <>
-      {plan.cta}
-      <Zap className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-0.5" />
-    </>
-  )}
-</button>
+                    onClick={() => handleCheckout(plan.id)}
+                    disabled={!!loading}
+                    className={`group relative w-full overflow-hidden py-3.5 rounded-xl text-sm font-bold transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-60 ${
+                      plan.highlighted
+                        ? "bg-gradient-to-r from-[#0D3A6E] to-[#1D5A9E] text-white hover:shadow-xl hover:shadow-[#0D3A6E]/25"
+                        : "bg-[#F0F7FF] text-[#0D3A6E] hover:bg-[#E8F3FD] border border-[#BAD8F7]"
+                    }`}
+                  >
+                    {isLoadingThis ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                        Redirigiendo...
+                      </>
+                    ) : (
+                      <>
+                        {plan.cta}
+                        <Zap className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-0.5" />
+                      </>
+                    )}
+                  </button>
 
                   {/* Security */}
                   <div className="flex items-center justify-center gap-1.5 text-[10px] text-[#93B8D4]">
