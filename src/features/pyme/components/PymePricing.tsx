@@ -3,7 +3,16 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
-import { Check, Zap, Star, Trophy, ArrowLeft, ShieldCheck, Infinity, Route , Sprout, Crown} from "lucide-react";
+import {
+  Check,
+  Zap,
+  ArrowLeft,
+  ShieldCheck,
+  Infinity,
+  Route,
+  Sprout,
+  Crown,
+} from "lucide-react";
 import Link from "next/link";
 
 type Props = {
@@ -81,21 +90,54 @@ export function PymePricing({ creditsAvailable, creditsUsed }: Props) {
   const [loading, setLoading] = useState<string | null>(null);
 
   const handleCheckout = async (planId: string) => {
-    setLoading(planId);
-    try {
-      const res = await fetch("/api/stripe/checkout", {
+  setLoading(planId);
+
+  const loadingToast = toast.loading(
+    "Preparando checkout seguro..."
+  );
+
+  try {
+    const res = await fetch(
+      "/api/wompi/checkout",
+      {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plan: planId }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
-      window.location.href = data.url;
-    } catch {
-      toast.error("Error iniciando el proceso de pago. Por favor, inténtalo de nuevo.");
-      setLoading(null);
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          plan: planId.toLowerCase(),
+        }),
+      }
+    );
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(
+        data.error ||
+          "Error iniciando el pago"
+      );
     }
-  };
+
+    toast.dismiss(loadingToast);
+
+    toast.success(
+      "Redirigiendo a Wompi..."
+    );
+
+    window.location.href = data.url;
+  } catch (error) {
+    console.error(error);
+
+    toast.dismiss(loadingToast);
+
+    toast.error(
+      "Error iniciando el proceso de pago. Inténtalo nuevamente."
+    );
+
+    setLoading(null);
+  }
+};
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#F0F7FF] via-white to-[#E8F3FD] px-6 py-10">
@@ -192,18 +234,26 @@ export function PymePricing({ creditsAvailable, creditsUsed }: Props) {
 
                   {/* CTA */}
                   <button
-                    onClick={() => handleCheckout(plan.id)}
-                    disabled={!!loading}
-                    className={`w-full cursor-pointer py-3.5 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2 disabled:opacity-60 ${
-                      plan.highlighted
-                        ? "bg-gradient-to-r from-[#0D3A6E] to-[#1D5A9E] text-white hover:shadow-lg hover:shadow-[#0D3A6E]/25"
-                        : "bg-[#F0F7FF] text-[#0D3A6E] hover:bg-[#E8F3FD] border border-[#BAD8F7]"
-                    }`}
-                  >
-                    {isLoadingThis ? (
-                      <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                    ) : plan.cta}
-                  </button>
+  onClick={() => handleCheckout(plan.id)}
+  disabled={!!loading}
+  className={`group relative w-full overflow-hidden py-3.5 rounded-xl text-sm font-bold transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-60 ${
+    plan.highlighted
+      ? "bg-gradient-to-r from-[#0D3A6E] to-[#1D5A9E] text-white hover:shadow-xl hover:shadow-[#0D3A6E]/25"
+      : "bg-[#F0F7FF] text-[#0D3A6E] hover:bg-[#E8F3FD] border border-[#BAD8F7]"
+  }`}
+>
+  {isLoadingThis ? (
+    <>
+      <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+      Redirigiendo...
+    </>
+  ) : (
+    <>
+      {plan.cta}
+      <Zap className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-0.5" />
+    </>
+  )}
+</button>
 
                   {/* Security */}
                   <div className="flex items-center justify-center gap-1.5 text-[10px] text-[#93B8D4]">
