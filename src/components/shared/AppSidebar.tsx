@@ -14,7 +14,7 @@ import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 import {
   LayoutDashboard, User, FolderOpen, Award, Bot,
-  HelpCircle, Users, LogOut, Banknote, PanelLeft, GraduationCap, Rocket
+  HelpCircle, Users, LogOut, Banknote, PanelLeft, GraduationCap, Rocket, Receipt
 } from 'lucide-react';
 import { DexpertLogo } from "@/components/DexpertLogo";
 import { BriefcaseIcon } from "@phosphor-icons/react";
@@ -35,6 +35,7 @@ const pymeRoutes = [
   { title: 'Aplicantes / Solicitudes', url: '/pyme/applications', icon: Users },
   { title: "Talento", url: '/pyme/talent', icon: GraduationCap, requiresPremiumPlan: true },
   { title: 'Créditos', url: '/pyme/pricing', icon: Banknote },
+  { title: 'Facturas', url: '/pyme/invoices', icon: Receipt },
   { title: 'Perfil', url: '/pyme/profile', icon: User },
   { title: 'Soporte', url: '/pyme/support', icon: HelpCircle },
 ];

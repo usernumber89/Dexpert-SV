@@ -7,6 +7,18 @@ const PLAN_CREDITS: Record<string, number> = {
   pro: 25,
 };
 
+const PLAN_AMOUNTS: Record<string, number> = {
+  starter: 9.99,
+  growth: 24.99,
+  pro: 49.99,
+};
+
+const PLAN_NAMES: Record<string, string> = {
+  starter: "Dexpert Starter",
+  growth: "Dexpert Growth",
+  pro: "Dexpert Pro",
+};
+
 export async function POST(req: Request) {
   try {
     const body = await req.json();
@@ -27,10 +39,10 @@ export async function POST(req: Request) {
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
 
-    // 1. Obtener el user_id de la pyme (ya no pedimos 'credits' aquí)
+    // 1. Obtener pyme con company_name para la factura
     const { data: pyme, error: pymeErr } = await supabase
       .from("pymes")
-      .select("user_id")
+      .select("user_id, company_name")
       .eq("id", pymeId)
       .single();
 
@@ -49,7 +61,6 @@ export async function POST(req: Request) {
       .maybeSingle();
 
     if (creditsData) {
-      // Si ya tiene un registro de créditos, lo actualizamos sumando los nuevos
       await supabase
         .from("pyme_credits")
         .update({ 
@@ -58,7 +69,6 @@ export async function POST(req: Request) {
         })
         .eq("pyme_id", pymeId);
     } else {
-      // Si es su primera compra y no existe en pyme_credits, lo creamos
       await supabase
         .from("pyme_credits")
         .insert({
@@ -76,6 +86,33 @@ export async function POST(req: Request) {
       stripe_id: IdTransaccion,
       credits_granted: creditsToAdd,
     });
+
+    // 4. Generar factura
+    try {
+      const year = new Date().getFullYear();
+      const { count } = await supabase
+        .from("invoices")
+        .select("*", { count: "exact", head: true })
+        .gte("created_at", `${year}-01-01`)
+        .lte("created_at", `${year}-12-31`);
+
+      const invoiceNumber = `FACT-${year}-${String((count || 0) + 1).padStart(6, "0")}`;
+
+      await supabase.from("invoices").insert({
+        pyme_id: pymeId,
+        user_id: pyme.user_id,
+        invoice_number: invoiceNumber,
+        plan: plan.toUpperCase(),
+        plan_name: PLAN_NAMES[plan] || plan,
+        amount: PLAN_AMOUNTS[plan] || 0,
+        transaction_id: IdTransaccion,
+        company_name: pyme.company_name || null,
+      });
+
+      console.log(`Factura generada: ${invoiceNumber} para PYME ${pymeId}`);
+    } catch (invoiceErr) {
+      console.error("Error generando factura (no crítico):", invoiceErr);
+    }
 
     return NextResponse.json({ success: true });
   } catch (error: any) {
