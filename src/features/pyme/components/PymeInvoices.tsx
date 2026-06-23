@@ -33,6 +33,16 @@ type Pyme = {
   location: string | null;
 };
 
+const formatCurrency = (amount: number) =>
+  "$" + amount.toFixed(2);
+
+const formatDate = (dateStr: string) =>
+  new Date(dateStr).toLocaleDateString("es-SV", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+  });
+
 function InvoiceDetailModal({
   invoice,
   pyme,
@@ -42,44 +52,40 @@ function InvoiceDetailModal({
   pyme: Pyme;
   onClose: () => void;
 }) {
-  const date = new Date(invoice.created_at).toLocaleDateString("es-SV", {
-    day: "2-digit",
-    month: "long",
-    year: "numeric",
-  });
+  const date = formatDate(invoice.created_at);
+  const subtotal = invoice.amount / 1.13;
+  const iva = invoice.amount - subtotal;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/40 flex items-start justify-center p-4 pt-8 sm:pt-16 overflow-y-auto print:bg-white print:p-0 print:pt-0 print:inset-auto print:relative print:z-auto">
-      <div className="bg-white rounded-2xl border border-[#BAD8F7] w-full max-w-2xl shadow-xl my-4 print:shadow-none print:border-none print:max-w-none print:m-0 print:w-full">
-
-        {/* Header bar */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-[#BAD8F7] print:hidden">
+    <div className="fixed inset-0 z-50 bg-black/40 flex items-start justify-center p-4 pt-8 sm:pt-16 overflow-y-auto">
+      <div className="bg-white rounded-2xl border border-[#BAD8F7] w-full max-w-2xl shadow-xl my-4">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-[#BAD8F7]">
           <h2 className="text-sm font-semibold text-[#0D3A6E]">Detalle de factura</h2>
           <div className="flex items-center gap-2">
-            <button
-              onClick={() => window.print()}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[#0D5FA6] bg-[#F0F7FF] rounded-lg hover:bg-[#E8F3FD] transition"
+            <a
+              href={`/api/invoices/${invoice.id}/pdf`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[#0D5FA6] bg-[#F0F7FF] rounded-lg hover:bg-[#E8F3FD] transition"
             >
               <Printer className="w-3.5 h-3.5" />
-              Imprimir / PDF
-            </button>
+              Descargar PDF
+            </a>
             <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-[#F0F7FF] transition">
               <X className="w-4 h-4 text-[#5B8DB8]" />
             </button>
           </div>
         </div>
 
-        {/* Invoice body */}
         <div className="p-6 sm:p-8 space-y-6">
-          {/* Dexpert header + invoice number */}
           <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
             <div>
               <div className="flex items-center gap-2 mb-1">
-                <div className="w-8 h-8 rounded-lg bg-[#0D3A6E] flex items-center justify-center">
-                  <FileText className="w-4 h-4 text-white" />
+                <div className="w-8 h-8 rounded-lg  flex items-center justify-center">
+                  <img src="/1.svg"/>
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-[#0D3A6E]">Dexpert SV</h3>
+                  <h3 className="text-base font-bold text-[#0D3A6E]">Dexpert </h3>
                   <p className="text-[11px] text-[#5B8DB8]">Plataforma de talento estudiantil</p>
                 </div>
               </div>
@@ -92,18 +98,13 @@ function InvoiceDetailModal({
 
           <div className="h-px bg-[#BAD8F7]/50" />
 
-          {/* Bill to + meta */}
           <div className="grid sm:grid-cols-2 gap-6">
             <div>
-              <p className="text-[11px] font-medium text-[#93B8D4] uppercase tracking-wider mb-1">
-                Facturado a
-              </p>
+              <p className="text-[11px] font-medium text-[#93B8D4] uppercase tracking-wider mb-1">Facturado a</p>
               <div className="flex items-start gap-2">
                 <Building2 className="w-3.5 h-3.5 text-[#93B8D4] mt-0.5 shrink-0" />
                 <div>
-                  <p className="text-sm font-semibold text-[#0D3A6E]">
-                    {pyme.company_name || "—"}
-                  </p>
+                  <p className="text-sm font-semibold text-[#0D3A6E]">{pyme.company_name || "—"}</p>
                   {pyme.location && (
                     <p className="text-xs text-[#5B8DB8] mt-0.5">{pyme.location}</p>
                   )}
@@ -122,9 +123,7 @@ function InvoiceDetailModal({
                 <Hash className="w-3.5 h-3.5 text-[#93B8D4] mt-0.5 shrink-0" />
                 <div>
                   <p className="text-[11px] text-[#93B8D4]">Transacción</p>
-                  <p className="text-sm text-[#0D3A6E] font-mono text-[11px] break-all">
-                    {invoice.transaction_id || "—"}
-                  </p>
+                  <p className="text-sm text-[#0D3A6E] font-mono text-[11px] break-all">{invoice.transaction_id || "—"}</p>
                 </div>
               </div>
             </div>
@@ -132,7 +131,6 @@ function InvoiceDetailModal({
 
           <div className="h-px bg-[#BAD8F7]/50" />
 
-          {/* Line items */}
           <table className="w-full text-sm">
             <thead>
               <tr className="text-[11px] text-[#93B8D4] uppercase tracking-wider border-b border-[#BAD8F7]/50">
@@ -147,32 +145,30 @@ function InvoiceDetailModal({
                   <p className="text-xs text-[#5B8DB8]">Plan {invoice.plan}</p>
                 </td>
                 <td className="py-3 text-right font-medium text-[#0D3A6E]">
-                  ${invoice.amount.toFixed(2)}
+                  {formatCurrency(invoice.amount)}
                 </td>
               </tr>
             </tbody>
           </table>
 
-          {/* Totals */}
           <div className="flex justify-end">
             <div className="w-full sm:w-64 space-y-1.5">
               <div className="flex justify-between text-sm text-[#5B8DB8]">
                 <span>Subtotal</span>
-                <span>${(invoice.amount / 1.13).toFixed(2)}</span>
+                <span>{formatCurrency(subtotal)}</span>
               </div>
               <div className="flex justify-between text-sm text-[#5B8DB8]">
                 <span>IVA (13 %)</span>
-                <span>${(invoice.amount - invoice.amount / 1.13).toFixed(2)}</span>
+                <span>{formatCurrency(iva)}</span>
               </div>
               <div className="h-px bg-[#BAD8F7]" />
               <div className="flex justify-between text-base font-bold text-[#0D3A6E]">
                 <span>Total</span>
-                <span>${invoice.amount.toFixed(2)}</span>
+                <span>{formatCurrency(invoice.amount)}</span>
               </div>
             </div>
           </div>
 
-          {/* Footer */}
           <div className="text-center text-[10px] text-[#93B8D4] pt-4 border-t border-[#BAD8F7]/50">
             <p>Dexpert SV — Plataforma de talento estudiantil</p>
             <p>Factura generada automáticamente después de tu compra.</p>
