@@ -184,8 +184,8 @@ export function PymePricing({ pymeId, creditsAvailable: initialAvailable, credit
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#F0F7FF] via-white to-[#E8F3FD] px-6 py-10">
-      <div className="max-w-5xl mx-auto space-y-10">
+    <div className="min-h-screen bg-gradient-to-br from-[#F0F7FF] via-white to-[#E8F3FD] px-4 sm:px-6 py-6 sm:py-10">
+      <div className="max-w-5xl mx-auto space-y-6 sm:space-y-10">
 
         {/* Back */}
         <Link
@@ -196,9 +196,9 @@ export function PymePricing({ pymeId, creditsAvailable: initialAvailable, credit
         </Link>
 
         {/* Header */}
-        <div className="text-center space-y-3">
+        <div className="text-center space-y-2 sm:space-y-3">
           
-          <h1 className="text-2xl font-bold text-[#0D3A6E]">Compra créditos, publica proyectos</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-[#0D3A6E]">Compra créditos, publica proyectos</h1>
           <p className="text-sm text-[#5B8DB8]  mx-auto leading-relaxed">
            <span className="font-semibold text-[#38A3F1]">Sin suscripciones. </span>
            
@@ -235,7 +235,7 @@ export function PymePricing({ pymeId, creditsAvailable: initialAvailable, credit
         </div>
 
         {/* Plans */}
-        <div className="grid md:grid-cols-3 gap-6 items-start">
+        <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 items-start">
           {PLANS.map((plan, i) => {
             const Icon = plan.icon;
             const isLoadingThis = loading === plan.id;
@@ -322,7 +322,7 @@ export function PymePricing({ pymeId, creditsAvailable: initialAvailable, credit
         </div>
 
         {/* Trust row */}
-        <div className="flex flex-wrap justify-center gap-6 text-xs text-[#93B8D4] pb-4">
+        <div className="flex flex-wrap justify-center gap-3 sm:gap-6 text-[10px] sm:text-xs text-[#93B8D4] pb-4">
           {[
             "Pago único, sin suscripciones",
             "Los créditos nunca expiran",

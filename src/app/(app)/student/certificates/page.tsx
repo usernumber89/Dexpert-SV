@@ -66,50 +66,50 @@ export default async function StudentCertificatesPage() {
   }) || [];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#F4F9FF] via-white to-[#EEF6FF] pb-16">
+    <div className="min-h-screen bg-gradient-to-br from-[#F4F9FF] via-white to-[#EEF6FF] pb-4 sm:pb-16">
       {/* Encabezado Principal */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-6">
-        <div className="flex flex-col gap-2 border-b border-gray-100 pb-6">
-          <div className="inline-flex items-center gap-1.5 self-start px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 text-[#0D3A6E] border border-blue-100">
-            <Award className="h-3.5 w-3.5 text-[#38b6ff]" />
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 pt-6 sm:pt-10 pb-4 sm:pb-6">
+        <div className="flex flex-col gap-1 sm:gap-2 border-b border-gray-100 pb-4 sm:pb-6">
+          <div className="inline-flex items-center gap-1.5 self-start px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-semibold bg-blue-50 text-[#0D3A6E] border border-blue-100">
+            <Award className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-[#38b6ff]" />
             Logros Académicos
           </div>
-          <h1 className="text-3xl font-extrabold text-[#0D3A6E] tracking-tight flex items-center gap-3 mt-1">
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-[#0D3A6E] tracking-tight flex items-center gap-2 sm:gap-3 mt-0.5 sm:mt-1">
             Mis Certificados 
           </h1>
-          <p className="text-sm text-[#5B8DB8] max-w-2xl">
+          <p className="text-xs sm:text-sm text-[#5B8DB8] max-w-2xl">
             Visualiza, descarga y comparte las certificaciones técnicas obtenidas por el desarrollo exitoso de proyectos en la plataforma.
           </p>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
         {/* Alerta de Error de Supabase */}
         {error && (
-          <div className="mb-8 p-4 bg-red-50 border border-red-200 rounded-2xl flex items-start gap-3 text-red-800 shadow-sm animate-fade-in">
-            <AlertCircle className="h-5 w-5 mt-0.5 text-red-600 flex-shrink-0" />
+          <div className="mb-4 sm:mb-8 p-3 sm:p-4 bg-red-50 border border-red-200 rounded-xl sm:rounded-2xl flex items-start gap-2 sm:gap-3 text-red-800 shadow-sm">
+            <AlertCircle className="h-4 w-4 sm:h-5 sm:w-5 mt-0.5 text-red-600 flex-shrink-0" />
             <div>
-              <p className="font-bold text-sm">Hubo un problema de sincronización</p>
-              <p className="text-xs text-red-700/90 mt-0.5">No pudimos enlazar tus archivos con la base de datos. Recarga o ponte en contacto con soporte técnico.</p>
+              <p className="font-bold text-xs sm:text-sm">Hubo un problema de sincronización</p>
+              <p className="text-[11px] sm:text-xs text-red-700/90 mt-0.5">No pudimos enlazar tus archivos con la base de datos. Recarga o ponte en contacto con soporte técnico.</p>
             </div>
           </div>
         )}
 
         {/* Estado Vacío (Empty State) Estilizado */}
         {!error && mappedCertificates.length === 0 && (
-          <div className="text-center py-20 bg-white/80 backdrop-blur border border-dashed border-gray-200 rounded-3xl p-8 max-w-lg mx-auto shadow-sm mt-6">
-            <div className="mx-auto w-16 h-16 bg-gradient-to-tr from-blue-50 to-indigo-50 text-[#38b6ff] rounded-2xl flex items-center justify-center mb-5 shadow-inner">
-              <Award className="h-8 w-8" />
+          <div className="text-center py-12 sm:py-20 bg-white/80 backdrop-blur border border-dashed border-gray-200 rounded-2xl sm:rounded-3xl p-6 sm:p-8 max-w-lg mx-auto shadow-sm mt-4 sm:mt-6">
+            <div className="mx-auto w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-tr from-blue-50 to-indigo-50 text-[#38b6ff] rounded-xl sm:rounded-2xl flex items-center justify-center mb-3 sm:mb-5 shadow-inner">
+              <Award className="w-6 h-6 sm:w-8 sm:h-8" />
             </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-2">Sin certificados por el momento</h3>
-            <p className="text-gray-500 text-sm leading-relaxed">
+            <h3 className="text-base sm:text-xl font-bold text-gray-900 mb-1 sm:mb-2">Sin certificados por el momento</h3>
+            <p className="text-xs sm:text-sm text-gray-500 leading-relaxed">
               Tus documentos de acreditación se generarán de forma automática en cuanto la contraparte empresarial declare el proyecto asignado como finalizado.
             </p>
           </div>
         )}
 
         {/* Grid de Tarjetas Premium */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 mt-1 sm:mt-2">
           {mappedCertificates.map((cert: MappedCertificate) => (
             <div 
               key={cert.id} 

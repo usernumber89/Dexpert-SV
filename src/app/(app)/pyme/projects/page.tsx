@@ -230,75 +230,75 @@ export default function PymeProjectsPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#F0F7FF] via-white to-[#E8F3FD]">
-      <div className="max-w-7xl mx-auto px-6 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-8">
         
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
+        <div className="mb-6 sm:mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0 mb-3 sm:mb-4">
             <div>
-              <p className="text-xs font-medium uppercase tracking-widest text-[#93B8D4] mb-2">
+              <p className="text-[10px] sm:text-xs font-medium uppercase tracking-widest text-[#93B8D4] mb-1 sm:mb-2">
                 Projects Management
               </p>
-              <h1 className="text-3xl font-bold text-[#0D3A6E]">
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-[#0D3A6E]">
                 {pyme?.company_name || "My Projects"}
               </h1>
             </div>
             <button
               onClick={() => setShowCreate(true)}
-              className="flex items-center gap-2 bg-gradient-to-r from-[#0D3A6E] to-[#1D5A9E] text-white text-sm font-medium px-5 py-2.5 rounded-xl hover:shadow-lg hover:shadow-[#38A3F1]/25 transition-all"
+              className="flex items-center justify-center gap-2 bg-gradient-to-r from-[#0D3A6E] to-[#1D5A9E] text-white text-sm font-medium px-4 sm:px-5 py-2.5 rounded-xl hover:shadow-lg hover:shadow-[#38A3F1]/25 transition-all min-h-[44px] w-full sm:w-auto"
             >
               <Plus className="w-4 h-4" />
               New Project
             </button>
           </div>
-          <p className="text-sm text-[#5B8DB8]">
+          <p className="text-xs sm:text-sm text-[#5B8DB8]">
             Manage and track all your projects in one place
           </p>
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3 mb-4 sm:mb-6">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-xl border border-brand-mid/20 p-4 hover:shadow-md transition-shadow"
+            className="bg-white rounded-lg sm:rounded-xl border border-brand-mid/20 p-3 sm:p-4 hover:shadow-md transition-shadow"
           >
-            <Briefcase className="w-4 h-4 text-brand-mid mb-2" />
-            <p className="text-2xl font-bold text-ink-primary">{stats.total}</p>
-            <p className="text-xs text-ink-secondary">Totales</p>
+            <Briefcase className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-brand-mid mb-1.5 sm:mb-2" />
+            <p className="text-lg sm:text-2xl font-bold text-ink-primary">{stats.total}</p>
+            <p className="text-[10px] sm:text-xs text-ink-secondary">Totales</p>
           </motion.div>
 
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="bg-white rounded-xl border border-emerald-200 p-4 hover:shadow-md transition-shadow"
+            className="bg-white rounded-lg sm:rounded-xl border border-emerald-200 p-3 sm:p-4 hover:shadow-md transition-shadow"
           >
-            <CheckCircle className="w-4 h-4 text-emerald-500 mb-2" />
-            <p className="text-2xl font-bold text-ink-primary">{stats.active}</p>
-            <p className="text-xs text-ink-secondary">Activos</p>
+            <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-500 mb-1.5 sm:mb-2" />
+            <p className="text-lg sm:text-2xl font-bold text-ink-primary">{stats.active}</p>
+            <p className="text-[10px] sm:text-xs text-ink-secondary">Activos</p>
           </motion.div>
 
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="bg-white rounded-xl border border-amber-200 p-4 hover:shadow-md transition-shadow"
+            className="bg-white rounded-lg sm:rounded-xl border border-amber-200 p-3 sm:p-4 hover:shadow-md transition-shadow"
           >
-            <Clock className="w-4 h-4 text-amber-500 mb-2" />
-            <p className="text-2xl font-bold text-ink-primary">{stats.draft}</p>
-            <p className="text-xs text-ink-secondary">Borradores</p>
+            <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-500 mb-1.5 sm:mb-2" />
+            <p className="text-lg sm:text-2xl font-bold text-ink-primary">{stats.draft}</p>
+            <p className="text-[10px] sm:text-xs text-ink-secondary">Borradores</p>
           </motion.div>
 
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            className="bg-white rounded-xl border border-purple-200 p-4 hover:shadow-md transition-shadow"
+            className="bg-white rounded-lg sm:rounded-xl border border-purple-200 p-3 sm:p-4 hover:shadow-md transition-shadow"
           >
-            <Users className="w-4 h-4 text-purple-500 mb-2" />
-            <p className="text-2xl font-bold text-ink-primary">{stats.totalApplications}</p>
-            <p className="text-xs text-ink-secondary">Aplicantes</p>
+            <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-purple-500 mb-1.5 sm:mb-2" />
+            <p className="text-lg sm:text-2xl font-bold text-ink-primary">{stats.totalApplications}</p>
+            <p className="text-[10px] sm:text-xs text-ink-secondary">Aplicantes</p>
           </motion.div>
         </div>
 
@@ -306,24 +306,24 @@ export default function PymeProjectsPage() {
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="bg-gradient-to-r from-[#0D3A6E] to-[#1D5A9E] rounded-xl p-5 mb-6 flex items-center justify-between"
+          className="bg-gradient-to-r from-[#0D3A6E] to-[#1D5A9E] rounded-lg sm:rounded-xl p-4 sm:p-5 mb-4 sm:mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0"
         >
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center">
-              <Sparkles className="w-6 h-6 text-[#F59E0B]" />
+          <div className="flex items-center gap-3 sm:gap-4">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white/10 rounded-lg sm:rounded-xl flex items-center justify-center flex-shrink-0">
+              <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-[#F59E0B]" />
             </div>
-            <div>
-              <p className="text-white font-semibold mb-1">
+            <div className="min-w-0 flex-1">
+              <p className="text-white font-semibold text-sm sm:text-base mb-0.5 sm:mb-1">
                 Create projects faster with AI
               </p>
-              <p className="text-[#BAD8F7] text-sm">
+              <p className="text-[#BAD8F7] text-xs sm:text-sm leading-tight">
                 Describe your project in plain words and let AI write the perfect brief
               </p>
             </div>
           </div>
           <button
             onClick={() => setShowCreate(true)}
-            className="flex items-center gap-2 bg-white text-[#0D3A6E] text-sm font-medium px-5 py-2.5 rounded-xl hover:shadow-lg transition-all"
+            className="flex items-center justify-center gap-2 bg-white text-[#0D3A6E] text-sm font-medium px-4 sm:px-5 py-2.5 rounded-xl hover:shadow-lg transition-all min-h-[44px] w-full sm:w-auto"
           >
             <Sparkles className="w-4 h-4" />
             Try AI Assistant
@@ -331,8 +331,8 @@ export default function PymeProjectsPage() {
         </motion.div>
 
         {/* Search and Filters */}
-        <div className="bg-white rounded-xl border border-[#BAD8F7] p-4 mb-6">
-          <div className="flex flex-col md:flex-row gap-4">
+        <div className="bg-white rounded-lg sm:rounded-xl border border-[#BAD8F7] p-3 sm:p-4 mb-4 sm:mb-6">
+          <div className="flex flex-col md:flex-row gap-3 sm:gap-4">
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#93B8D4]" />
               <input
@@ -340,7 +340,7 @@ export default function PymeProjectsPage() {
                 placeholder="Search projects..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-[#BAD8F7] text-sm focus:outline-none focus:border-[#38A3F1] focus:ring-2 focus:ring-[#38A3F1]/20"
+                className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-[#BAD8F7] text-xs sm:text-sm focus:outline-none focus:border-[#38A3F1] focus:ring-2 focus:ring-[#38A3F1]/20 min-h-[44px]"
               />
             </div>
             
@@ -348,7 +348,7 @@ export default function PymeProjectsPage() {
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value as any)}
-                className="px-4 py-2.5 rounded-lg border border-[#BAD8F7] text-sm text-[#0D3A6E] focus:outline-none focus:border-[#38A3F1]"
+                className="flex-1 sm:flex-none px-3 sm:px-4 py-2.5 rounded-lg border border-[#BAD8F7] text-xs sm:text-sm text-[#0D3A6E] focus:outline-none focus:border-[#38A3F1] min-h-[44px]"
               >
                 <option value="all">Todos</option>
                 <option value="active">Activos</option>
@@ -412,7 +412,7 @@ export default function PymeProjectsPage() {
                     key={project.id}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    className="flex items-center gap-4 px-6 py-4 hover:bg-[#F0F7FF]/30 transition-colors group"
+                    className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 px-3 sm:px-6 py-3 sm:py-4 hover:bg-[#F0F7FF]/30 transition-colors group"
                   >
                     {/* Icon */}
                     <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${

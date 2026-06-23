@@ -75,17 +75,17 @@ export function ProjectDetail({ project, hasApplied: initialApplied, studentId, 
   };
 
   return (
-    <div className="min-h-screen bg-[#F0F7FF] p-6">
+    <div className="min-h-screen bg-[#F0F7FF] p-3 sm:p-6">
       <div className="max-w-2xl mx-auto">
 
-        <Link href="/student/projects" className="flex items-center gap-2 text-sm text-[#5B8DB8] hover:text-[#0D3A6E] mb-6 transition">
-          <ArrowLeft className="w-4 h-4" /> Back to projects
+        <Link href="/student/projects" className="inline-flex items-center gap-2 text-xs sm:text-sm text-[#5B8DB8] hover:text-[#0D3A6E] mb-4 sm:mb-6 transition min-h-[44px]">
+          <ArrowLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> Volver a proyectos
         </Link>
 
-        <div className="bg-white rounded-2xl border border-[#BAD8F7] overflow-hidden">
+        <div className="bg-white rounded-xl sm:rounded-2xl border border-[#BAD8F7] overflow-hidden">
 
           {/* Header */}
-          <div className="p-6 border-b border-[#E8F3FD]">
+          <div className="p-4 sm:p-6 border-b border-[#E8F3FD]">
             <div className="flex items-start justify-between mb-4 gap-3">
               <div className="flex items-center gap-3">
                 {project.pyme?.logo_url ? (
@@ -126,7 +126,7 @@ export function ProjectDetail({ project, hasApplied: initialApplied, studentId, 
               )}
             </div>
 
-            <h1 className="text-xl font-semibold text-[#0D3A6E] mb-3">{project.title}</h1>
+            <h1 className="text-base sm:text-xl font-semibold text-[#0D3A6E] mb-2 sm:mb-3">{project.title}</h1>
 
             <div className="flex flex-wrap gap-2">
               {project.level && (
@@ -143,7 +143,7 @@ export function ProjectDetail({ project, hasApplied: initialApplied, studentId, 
           </div>
 
           {/* Body */}
-          <div className="p-6 space-y-6">
+          <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
             <div>
               <p className="text-xs font-medium uppercase tracking-widest text-[#93B8D4] mb-2">Description</p>
               <p className="text-sm text-[#5B8DB8] leading-relaxed">{project.description ?? "No description provided"}</p>
@@ -190,7 +190,7 @@ export function ProjectDetail({ project, hasApplied: initialApplied, studentId, 
           </div>
 
           {/* Footer */}
-          <div className="p-6 border-t border-[#E8F3FD]">
+          <div className="p-4 sm:p-6 border-t border-[#E8F3FD]">
             {hasApplied ? (
               <div className="flex items-center gap-2 text-sm font-medium text-[#1D9E75]">
                 <CheckCircle className="w-4 h-4" />

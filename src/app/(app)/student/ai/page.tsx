@@ -21,8 +21,8 @@ export default async function SimulatorPage() {
   };
 
   return (
-    <main className="container mx-auto py-8">
-      <h1 className="text-3xl font-bold text-center mb-8">Simulador Laboral: Manejo de Clientes</h1>
+    <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-8">
+      <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-center mb-4 sm:mb-8 text-[#0D3A6E]">Simulador Laboral: Manejo de Clientes</h1>
       <SimulatorChat scenarioId="cliente_dificil" onComplete={handleComplete} />
     </main>
   );

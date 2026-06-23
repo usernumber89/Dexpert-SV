@@ -184,19 +184,19 @@ const closeProject = async (id: string) => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#F0F7FF] via-white to-[#E8F3FD]">
-      <div className="max-w-7xl mx-auto px-6 py-8 space-y-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-8 space-y-4 sm:space-y-6">
         
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex items-center justify-between"
+          className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0"
         >
           <div>
-            <p className="text-xs font-medium uppercase tracking-widest text-[#93B8D4] mb-2">
+            <p className="text-[10px] sm:text-xs font-medium uppercase tracking-widest text-[#93B8D4] mb-1 sm:mb-2">
               Dashboard de PYME
             </p>
             
-            <p className="text-sm text-[#5B8DB8] mt-1">
+            <p className="text-xs sm:text-sm text-[#5B8DB8] mt-0.5 sm:mt-1">
               Gestiona tus proyectos y encuentra estudiantes talentosos para tu empresa.{" "}
             </p>
           </div>
@@ -205,7 +205,7 @@ const closeProject = async (id: string) => {
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => setShowCreate(true)}
-            className="flex items-center gap-2 bg-gradient-to-r from-[#0D3A6E] to-[#1D5A9E] text-white text-sm font-medium px-5 py-2.5 rounded-xl hover:shadow-lg hover:shadow-[#38A3F1]/25 transition-all"
+            className="flex items-center justify-center gap-2 bg-gradient-to-r from-[#0D3A6E] to-[#1D5A9E] text-white text-sm font-medium px-4 sm:px-5 py-2.5 rounded-xl hover:shadow-lg hover:shadow-[#38A3F1]/25 transition-all min-h-[44px] w-full sm:w-auto"
           >
             <Plus className="w-4 h-4" />
             Nuevo proyecto
@@ -213,7 +213,7 @@ const closeProject = async (id: string) => {
         </motion.div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 w-full h-30">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3">
           {stats.map((stat, index) => {
             const Icon = stat.icon;
             return (
@@ -223,13 +223,13 @@ const closeProject = async (id: string) => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
                 whileHover={{ y: -2 }}
-                className={`bg-white rounded-xl border ${stat.borderColor} p-4 hover:shadow-lg transition-all group`}
+                className={`bg-white rounded-lg sm:rounded-xl border ${stat.borderColor} p-3 sm:p-4 hover:shadow-lg transition-all group`}
               >
-                <div className={`w-7 h-7 ${stat.bgColor} rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform ring-1 ${stat.borderColor}`}>
-                  <Icon className={`w-5 h-5 ${stat.color}`} />
+                <div className={`w-6 h-6 sm:w-7 sm:h-7 ${stat.bgColor} rounded-lg sm:rounded-xl flex items-center justify-center mb-2 sm:mb-3 group-hover:scale-110 transition-transform ring-1 ${stat.borderColor}`}>
+                  <Icon className={`w-4 h-4 sm:w-5 sm:h-5 ${stat.color}`} />
                 </div>
-                <p className="text-2xl font-bold text-[#0D3A6E]">{stat.value}</p>
-                <p className="text-xs text-[#5B8DB8] mt-1">{stat.label}</p>
+                <p className="text-lg sm:text-2xl font-bold text-[#0D3A6E]">{stat.value}</p>
+                <p className="text-[10px] sm:text-xs text-[#5B8DB8] mt-0.5 sm:mt-1">{stat.label}</p>
               </motion.div>
             );
           })}
@@ -289,8 +289,8 @@ const closeProject = async (id: string) => {
         </motion.div>*/}
 
         {/* Search and Filters */}
-        <div className="bg-white rounded-xl border border-[#BAD8F7] p-4">
-          <div className="flex flex-col md:flex-row gap-4">
+        <div className="bg-white rounded-lg sm:rounded-xl border border-[#BAD8F7] p-3 sm:p-4">
+          <div className="flex flex-col md:flex-row gap-3 sm:gap-4">
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#93B8D4]" />
               <input
@@ -298,7 +298,7 @@ const closeProject = async (id: string) => {
                 placeholder="Buscar proyectos..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-[#BAD8F7] text-sm focus:outline-none focus:border-[#38A3F1] focus:ring-2 focus:ring-[#38A3F1]/20"
+                className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-[#BAD8F7] text-xs sm:text-sm focus:outline-none focus:border-[#38A3F1] focus:ring-2 focus:ring-[#38A3F1]/20 min-h-[44px]"
               />
             </div>
             
@@ -306,7 +306,7 @@ const closeProject = async (id: string) => {
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value as any)}
-                className="px-4 py-2.5 rounded-lg border border-[#BAD8F7] text-sm text-[#0D3A6E] bg-white focus:outline-none focus:border-[#38A3F1] cursor-pointer"
+                className="flex-1 sm:flex-none px-3 sm:px-4 py-2.5 rounded-lg border border-[#BAD8F7] text-xs sm:text-sm text-[#0D3A6E] bg-white focus:outline-none focus:border-[#38A3F1] cursor-pointer min-h-[44px]"
               >
                  <option value="Todos">Todos</option>
                 <option value="Activos">Activos</option>
@@ -342,11 +342,11 @@ const closeProject = async (id: string) => {
         </div>
 
         {/* Projects Section */}
-        <div className="bg-white rounded-xl border border-[#BAD8F7] overflow-hidden">
-          <div className="flex items-center justify-between px-6 py-4 border-b border-[#E8F3FD] bg-gradient-to-r from-[#F0F7FF]/50 to-transparent">
+        <div className="bg-white rounded-lg sm:rounded-xl border border-[#BAD8F7] overflow-hidden">
+          <div className="flex items-center justify-between px-3 sm:px-6 py-3 sm:py-4 border-b border-[#E8F3FD] bg-gradient-to-r from-[#F0F7FF]/50 to-transparent">
             <div>
-              <h2 className="text-sm font-semibold text-[#0D3A6E]">Mis Proyectos</h2>
-              <p className="text-xs text-[#93B8D4] mt-0.5">
+              <h2 className="text-xs sm:text-sm font-semibold text-[#0D3A6E]">Mis Proyectos</h2>
+              <p className="text-[10px] sm:text-xs text-[#93B8D4] mt-0.5">
                 {filteredProjects.length} {filteredProjects.length === 1 ? "proyecto" : "proyectos"} encontrados
               </p>
             </div>
@@ -392,7 +392,7 @@ const closeProject = async (id: string) => {
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: index * 0.05 }}
-                    className="group flex items-center gap-4 px-6 py-4 hover:bg-[#F0F7FF]/30 transition-all"
+                    className="group flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 px-3 sm:px-6 py-3 sm:py-4 hover:bg-[#F0F7FF]/30 transition-all"
                   >
                     {/* Project Icon */}
                     <div className="relative">

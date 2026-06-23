@@ -121,45 +121,45 @@ export default function TalentSearchPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#F0F7FF] via-white to-[#E8F3FD]">
-      <div className="max-w-7xl mx-auto px-6 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-8">
         
         {/* Header */}
-        <div className="mb-8">
-          <p className="text-xs font-medium uppercase tracking-widest text-[#93B8D4] mb-2">
+        <div className="mb-6 sm:mb-8">
+          <p className="text-[10px] sm:text-xs font-medium uppercase tracking-widest text-[#93B8D4] mb-1 sm:mb-2">
             Directorio de Talento
           </p>
-          <h1 className="text-3xl font-bold text-[#0D3A6E] mb-2">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-[#0D3A6E] mb-1 sm:mb-2">
             Encuentra al estudiante ideal
           </h1>
-          <p className="text-sm text-[#5B8DB8]">
+          <p className="text-xs sm:text-sm text-[#5B8DB8]">
             Explora perfiles, filtra por habilidades técnicas y conecta con talento junior para tus proyectos.
           </p>
         </div>
 
         {/* Search and Filters Banner */}
-        <div className="bg-white rounded-2xl border border-[#BAD8F7] p-5 mb-8 shadow-sm">
-          <div className="flex flex-col md:flex-row gap-4">
+        <div className="bg-white rounded-xl sm:rounded-2xl border border-[#BAD8F7] p-3 sm:p-5 mb-4 sm:mb-8 shadow-sm">
+          <div className="flex flex-col md:flex-row gap-3 sm:gap-4">
             {/* Search Input */}
             <div className="flex-1 relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#93B8D4]" />
+              <Search className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-[#93B8D4]" />
               <input
                 type="text"
                 placeholder="Buscar por nombre, carrera, universidad o habilidad..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-12 pr-4 py-3 rounded-xl border border-[#BAD8F7] text-sm text-[#0D3A6E] focus:outline-none focus:border-[#38A3F1] focus:ring-4 focus:ring-[#38A3F1]/10 transition-all bg-[#F8FBFF]"
+                className="w-full pl-9 sm:pl-12 pr-4 py-2.5 sm:py-3 rounded-lg sm:rounded-xl border border-[#BAD8F7] text-xs sm:text-sm text-[#0D3A6E] focus:outline-none focus:border-[#38A3F1] focus:ring-4 focus:ring-[#38A3F1]/10 transition-all bg-[#F8FBFF] min-h-[44px]"
               />
             </div>
             
             {/* Skills Filter */}
             <div className="md:w-64 relative">
-              <div className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center gap-2 pointer-events-none">
-                <Filter className="w-4 h-4 text-[#93B8D4]" />
+              <div className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 flex items-center gap-2 pointer-events-none">
+                <Filter className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#93B8D4]" />
               </div>
               <select
                 value={selectedSkill}
                 onChange={(e) => setSelectedSkill(e.target.value)}
-                className="w-full pl-10 pr-10 py-3 rounded-xl border border-[#BAD8F7] text-sm text-[#0D3A6E] focus:outline-none focus:border-[#38A3F1] focus:ring-4 focus:ring-[#38A3F1]/10 appearance-none bg-[#F8FBFF] transition-all cursor-pointer"
+                className="w-full pl-8 sm:pl-10 pr-8 sm:pr-10 py-2.5 sm:py-3 rounded-lg sm:rounded-xl border border-[#BAD8F7] text-xs sm:text-sm text-[#0D3A6E] focus:outline-none focus:border-[#38A3F1] focus:ring-4 focus:ring-[#38A3F1]/10 appearance-none bg-[#F8FBFF] transition-all cursor-pointer min-h-[44px]"
               >
                 <option value="all">Todas las habilidades</option>
                 {availableSkills.map(skill => (
@@ -171,27 +171,27 @@ export default function TalentSearchPage() {
         </div>
 
         {/* Results Info */}
-        <div className="mb-6 flex items-center justify-between">
-          <p className="text-sm font-medium text-[#5B8DB8]">
+        <div className="mb-4 sm:mb-6 flex items-center justify-between">
+          <p className="text-xs sm:text-sm font-medium text-[#5B8DB8]">
             Mostrando <span className="text-[#0D3A6E] font-bold">{filteredStudents.length}</span> estudiantes
           </p>
         </div>
 
         {/* Students Grid */}
         {filteredStudents.length === 0 ? (
-          <div className="bg-white rounded-2xl border border-[#BAD8F7] py-20 text-center">
-            <Users className="w-16 h-16 text-[#BAD8F7] mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-[#0D3A6E] mb-2">No se encontraron estudiantes</h3>
-            <p className="text-sm text-[#5B8DB8]">Intenta ajustar tus términos de búsqueda o filtros.</p>
+          <div className="bg-white rounded-xl sm:rounded-2xl border border-[#BAD8F7] py-12 sm:py-20 text-center">
+            <Users className="w-12 h-12 sm:w-16 sm:h-16 text-[#BAD8F7] mx-auto mb-3 sm:mb-4" />
+            <h3 className="text-base sm:text-lg font-semibold text-[#0D3A6E] mb-1 sm:mb-2">No se encontraron estudiantes</h3>
+            <p className="text-xs sm:text-sm text-[#5B8DB8]">Intenta ajustar tus términos de búsqueda o filtros.</p>
             <button 
               onClick={() => { setSearchTerm(""); setSelectedSkill("all"); }}
-              className="mt-6 text-sm font-medium text-[#38A3F1] hover:text-[#0D5FA6] transition-colors"
+              className="mt-4 sm:mt-6 text-xs sm:text-sm font-medium text-[#38A3F1] hover:text-[#0D5FA6] transition-colors min-h-[44px]"
             >
               Limpiar filtros
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             <AnimatePresence>
               {filteredStudents.map((student) => (
                 <motion.div

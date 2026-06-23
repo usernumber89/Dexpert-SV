@@ -141,54 +141,54 @@ export function StudentDashboard({ user, student, applications, projects }: Prop
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#F4F9FF] via-white to-[#EEF6FF]">
-      <div className="max-w-7xl mx-auto px-6 py-8 space-y-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-8 space-y-6 sm:space-y-8">
         {/* Header */}
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wider text-[#5B8DB8] mb-1">Bienvenido</p>
-          <h1 className="text-2xl font-bold text-[#0D3A6E] md:text-3xl">{user.name}</h1>
+          <p className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-[#5B8DB8] mb-1">Bienvenido</p>
+          <h1 className="text-xl sm:text-2xl font-bold text-[#0D3A6E] md:text-3xl">{user.name}</h1>
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-3 gap-2 sm:gap-4">
           {stats.map(s => (
             <div key={s.label}
-              className="bg-white rounded-2xl border border-[#E8F3FD] p-5 shadow-sm hover:shadow-md transition-shadow flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-[#F0F7FF] flex items-center justify-center flex-shrink-0">
-                <s.icon className="w-6 h-6 text-[#38A3F1]" />
+              className="bg-white rounded-xl sm:rounded-2xl border border-[#E8F3FD] p-3 sm:p-5 shadow-sm hover:shadow-md transition-shadow flex flex-col sm:flex-row items-center gap-2 sm:gap-4 text-center sm:text-left">
+              <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl bg-[#F0F7FF] flex items-center justify-center flex-shrink-0">
+                <s.icon className="w-4 h-4 sm:w-6 sm:h-6 text-[#38A3F1]" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-[#0D3A6E]">{s.value}</p>
-                <p className="text-sm text-[#5B8DB8]">{s.label}</p>
+                <p className="text-lg sm:text-2xl font-bold text-[#0D3A6E]">{s.value}</p>
+                <p className="text-[10px] sm:text-sm text-[#5B8DB8]">{s.label}</p>
               </div>
             </div>
           ))}
         </div>
 
         {/* AI Banner */}
-        <div className="relative overflow-hidden bg-gradient-to-r from-[#0D3A6E] to-[#1A4A7A] rounded-2xl p-6 shadow-xl">
+        <div className="relative overflow-hidden bg-gradient-to-r from-[#0D3A6E] to-[#1A4A7A] rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-xl">
           <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full blur-2xl" />
-          <div className="relative flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div className="flex items-center gap-4">
-              <div className="w-14 h-14 bg-white/15 backdrop-blur-sm rounded-2xl flex items-center justify-center flex-shrink-0">
-                <BotMessageSquare className="w-7 h-7 text-[#F59E0B]" />
+          <div className="relative flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+            <div className="flex items-center gap-3 sm:gap-4">
+              <div className="w-10 h-10 sm:w-14 sm:h-14 bg-white/15 backdrop-blur-sm rounded-xl sm:rounded-2xl flex items-center justify-center flex-shrink-0">
+                <BotMessageSquare className="w-5 h-5 sm:w-7 sm:h-7 text-[#F59E0B]" />
               </div>
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-[#F59E0B] mb-1">Product Manager IA</p>
-                <p className="text-white text-lg font-semibold mb-1">Recibe feedback sobre tu proyecto actual</p>
-                <p className="text-[#BAD8F7] text-sm">Nuestra IA revisa tu trabajo y sugiere los siguientes pasos</p>
+              <div className="min-w-0 flex-1">
+                <p className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-[#F59E0B] mb-0.5 sm:mb-1">Product Manager IA</p>
+                <p className="text-white text-sm sm:text-lg font-semibold mb-0.5 sm:mb-1">Recibe feedback sobre tu proyecto</p>
+                <p className="text-[#BAD8F7] text-xs sm:text-sm leading-tight">Nuestra IA revisa tu trabajo y sugiere los siguientes pasos</p>
               </div>
             </div>
             <Link href="/student/ai"
-              className="inline-flex items-center justify-center bg-white text-[#0D3A6E] font-semibold text-sm px-6 py-3 rounded-xl hover:bg-gray-100 transition-colors whitespace-nowrap">
+              className="inline-flex items-center justify-center bg-white text-[#0D3A6E] font-semibold text-sm px-5 sm:px-6 py-2.5 sm:py-3 rounded-xl hover:bg-gray-100 transition-colors whitespace-nowrap min-h-[44px]">
               Abrir IA
             </Link>
           </div>
         </div>
 
         {/* Recent Applications */}
-        <div className="bg-white rounded-2xl border border-[#E8F3FD] shadow-sm overflow-hidden">
-          <div className="flex items-center justify-between px-6 py-5 border-b border-[#E8F3FD]">
-            <h2 className="text-base font-semibold text-[#0D3A6E]">Postulaciones recientes</h2>
+        <div className="bg-white rounded-xl sm:rounded-2xl border border-[#E8F3FD] shadow-sm overflow-hidden">
+          <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-5 border-b border-[#E8F3FD]">
+            <h2 className="text-sm sm:text-base font-semibold text-[#0D3A6E]">Postulaciones recientes</h2>
             <Link href="/student/projects" className="text-sm text-[#38A3F1] hover:text-[#0D5FA6] font-medium flex items-center gap-1">
               Ver todas <ChevronRight className="w-4 h-4" />
             </Link>
@@ -209,26 +209,26 @@ export function StudentDashboard({ user, student, applications, projects }: Prop
               {applications.map(app => {
                 const status = statusConfig[app.status] ?? statusConfig.PENDING;
                 return (
-                  <div key={app.id} className="flex items-center gap-4 px-6 py-4 hover:bg-[#F9FBFF] transition-colors">
-                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                  <div key={app.id} className="flex items-center gap-2 sm:gap-4 px-4 sm:px-6 py-3 sm:py-4 hover:bg-[#F9FBFF] transition-colors">
+                    <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
                       {app.project?.pyme?.logo_url ? (
                         <img
                           src={app.project.pyme.logo_url}
                           alt={app.project.pyme.company_name || "Logo"}
-                          className="w-8 h-8 rounded-lg object-cover border border-[#E8F3FD] flex-shrink-0"
+                          className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg object-cover border border-[#E8F3FD] flex-shrink-0"
                         />
                       ) : (
-                        <div className="w-8 h-8 rounded-lg bg-[#F0F7FF] border border-[#E8F3FD] flex items-center justify-center text-xs font-bold text-[#0D3A6E] flex-shrink-0">
+                        <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-[#F0F7FF] border border-[#E8F3FD] flex items-center justify-center text-xs font-bold text-[#0D3A6E] flex-shrink-0">
                           {app.project?.pyme?.company_name?.[0]?.toUpperCase() ?? "D"}
                         </div>
                       )}
                       <div className="min-w-0">
-                        <p className="text-sm font-semibold text-[#0D3A6E] truncate">{app.project?.title ?? "Proyecto sin título"}</p>
-                        <p className="text-xs text-[#5B8DB8] mt-0.5">{app.project?.pyme?.company_name ?? "Empresa"} · Remoto</p>
+                        <p className="text-xs sm:text-sm font-semibold text-[#0D3A6E] truncate">{app.project?.title ?? "Proyecto sin título"}</p>
+                        <p className="text-[10px] sm:text-xs text-[#5B8DB8] mt-0.5">{app.project?.pyme?.company_name ?? "Empresa"} · Remoto</p>
                       </div>
                     </div>
-                    <span className={`inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1 rounded-full ${status.bg} ${status.text}`}>
-                      <span className={`w-2 h-2 rounded-full ${status.dot}`} />{status.label}
+                    <span className={`inline-flex items-center gap-1.5 text-[10px] sm:text-xs font-medium px-2 sm:px-3 py-1 rounded-full whitespace-nowrap ${status.bg} ${status.text}`}>
+                      <span className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full ${status.dot}`} />{status.label}
                     </span>
                   </div>
                 );
@@ -239,13 +239,13 @@ export function StudentDashboard({ user, student, applications, projects }: Prop
 
         {/* Available Projects */}
         <div>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-base font-semibold text-[#0D3A6E]">Proyectos disponibles</h2>
-            <Link href="/student/projects" className="text-sm text-[#38A3F1] hover:text-[#0D5FA6] font-medium flex items-center gap-1">
-              Ver todas <ChevronRight className="w-4 h-4" />
+          <div className="flex items-center justify-between mb-3 sm:mb-4">
+            <h2 className="text-sm sm:text-base font-semibold text-[#0D3A6E]">Proyectos disponibles</h2>
+            <Link href="/student/projects" className="text-xs sm:text-sm text-[#38A3F1] hover:text-[#0D5FA6] font-medium flex items-center gap-1">
+              Ver todas <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4" />
             </Link>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {projects.map(project => (
               <DashboardProjectCard key={project.id} project={project} />
             ))}

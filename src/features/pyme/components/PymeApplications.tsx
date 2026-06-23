@@ -448,18 +448,18 @@
 
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#F0F7FF] via-white to-[#E8F3FD]">
-        <div className={`transition-all duration-300 ${selectedApp ? "mr-[400px]" : ""}`}>
-          <div className="max-w-4xl mx-auto px-6 py-8 space-y-6">
+        <div className={`transition-all duration-300 ${selectedApp ? "" : ""}`}>
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4 sm:py-8 space-y-4 sm:space-y-6">
 
             {/* Header */}
             <div>
-              <p className="text-xs font-semibold uppercase tracking-widest text-[#93B8D4] mb-1">Aplicantes / Solicitudes</p>
-              <h1 className="text-2xl font-bold text-[#0D3A6E]">Gestión de Aplicantes / Solicitudes</h1>
-              <p className="text-sm text-[#5B8DB8] mt-1">Revisa y gestiona todas las solicitudes entrantes</p>
+              <p className="text-[10px] sm:text-xs font-semibold uppercase tracking-widest text-[#93B8D4] mb-1">Aplicantes / Solicitudes</p>
+              <h1 className="text-xl sm:text-2xl font-bold text-[#0D3A6E]">Gestión de Aplicantes / Solicitudes</h1>
+              <p className="text-xs sm:text-sm text-[#5B8DB8] mt-1">Revisa y gestiona todas las solicitudes entrantes</p>
             </div>
 
             {/* Metrics */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3">
               {[
                 { label: "Total",    value: metrics.total,    icon: Users,       color: "text-[#38A3F1]", bg: "bg-[#F0F7FF]" },
                 { label: "Pendiente",  value: metrics.pending,  icon: Clock,       color: "text-[#1D5A9E]", bg: "bg-[#F0F7FF]" },
@@ -533,22 +533,22 @@
                   value={search}
                   onChange={e => setSearch(e.target.value)}
                   placeholder="Buscar por proyecto o nombre del estudiante..."
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-[#BAD8F7] text-sm bg-white focus:outline-none focus:border-[#38A3F1] focus:ring-2 focus:ring-[#38A3F1]/10 transition"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-lg sm:rounded-xl border border-[#BAD8F7] text-xs sm:text-sm bg-white focus:outline-none focus:border-[#38A3F1] focus:ring-2 focus:ring-[#38A3F1]/10 transition min-h-[44px]"
                 />
               </div>
-              <div className="flex gap-1.5 bg-white border border-[#BAD8F7] rounded-xl p-1">
+              <div className="flex gap-1 bg-white border border-[#BAD8F7] rounded-lg sm:rounded-xl p-1 overflow-x-auto">
                 {statusFilters.map(f => (
                   <button
                     key={f.key}
                     onClick={() => setFilterStatus(f.key)}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                    className={`flex items-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-lg text-[10px] sm:text-xs font-semibold transition-all whitespace-nowrap ${
                       filterStatus === f.key
                         ? "bg-[#0D3A6E] text-white shadow-sm"
                         : "text-[#93B8D4] hover:text-[#0D3A6E] hover:bg-[#F0F7FF]"
                     }`}
                   >
                     {f.label}
-                    <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${
+                    <span className={`text-[10px] px-1 py-0.5 rounded-full ${
                       filterStatus === f.key ? "bg-white/20 text-white" : "bg-[#F0F7FF] text-[#5B8DB8]"
                     }`}>
                       {f.count}
