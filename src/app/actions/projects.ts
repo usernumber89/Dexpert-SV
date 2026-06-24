@@ -3,22 +3,15 @@
 import { createClient as createServerClient } from "@/lib/supabase/server";
 import { createClient } from "@supabase/supabase-js";
 
-/**
- * Cierra un proyecto por su ID, marca la postulación del alumno como completada
- * y genera su certificado digital de forma administrativa.
- */
-export async function closeProjectAndGenerateCertificates(projectId: string) {
+export async function completeProject(projectId: string) {
   const supabase = await createServerClient();
 
-  // 1. Verificar autenticación
   const { data: { user }, error: authError } = await supabase.auth.getUser();
   if (authError || !user) {
     return { success: false, error: "No autorizado. Por favor, inicia sesión." };
   }
 
   try {
-    // 2. Buscar las postulaciones aceptadas para este proyecto
-    // 🛠️ CORRECCIÓN: Recibimos 'applications' (en plural)
     const { data: applications, error: appError } = await supabase
       .from("applications")
       .select("id")
@@ -30,10 +23,9 @@ export async function closeProjectAndGenerateCertificates(projectId: string) {
     }
 
     if (!applications || applications.length === 0) {
-      throw new Error("No se encontró ningún estudiante con postulación 'aceptada' en este proyecto para poder certificarlo.");
+      throw new Error("No se encontró ningún estudiante con postulación 'aceptada' en este proyecto.");
     }
 
-    // 3. Inicializar cliente administrador para la inserción del certificado (Bypass RLS)
     if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
       throw new Error("Faltan las variables de entorno administrativas de Supabase.");
     }
@@ -43,17 +35,15 @@ export async function closeProjectAndGenerateCertificates(projectId: string) {
       process.env.SUPABASE_SERVICE_ROLE_KEY
     );
 
-    // 4. Cerrar el proyecto
     const { error: projectUpdateError } = await supabase
       .from("projects")
-      .update({ status: "closed" })
+      .update({ status: "completed" })
       .eq("id", projectId);
 
     if (projectUpdateError) {
-      throw new Error(`Error al cerrar el proyecto: ${projectUpdateError.message}`);
+      throw new Error(`Error al completar el proyecto: ${projectUpdateError.message}`);
     }
 
-    // 5. Procesar cada estudiante aceptado: actualizar postulación y generar certificado
     const certificates: any[] = [];
 
     for (const application of applications) {
@@ -87,10 +77,30 @@ export async function closeProjectAndGenerateCertificates(projectId: string) {
     return { success: true, certificates };
 
   } catch (error: any) {
-    console.error("Error en closeProjectAndGenerateCertificates:", error);
+    console.error("Error en completeProject:", error);
     return { 
       success: false, 
-      error: error.message || "Ocurrió un error inesperado al procesar el cierre." 
+      error: error.message || "Ocurrió un error inesperado al procesar la acción." 
     };
   }
+}
+
+export async function deleteProject(projectId: string) {
+  const supabase = await createServerClient();
+
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) {
+    return { success: false, error: "No autorizado. Por favor, inicia sesión." };
+  }
+
+  const { error } = await supabase
+    .from("projects")
+    .delete()
+    .eq("id", projectId);
+
+  if (error) {
+    return { success: false, error: error.message };
+  }
+
+  return { success: true };
 }

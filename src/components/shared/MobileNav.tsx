@@ -12,7 +12,7 @@ const studentTabs = [
   { title: 'Panel', url: '/student/dashboard', icon: LayoutDashboard },
   { title: 'En Marcha', url: '/student/in-progress', icon: Rocket },
   { title: 'Proyectos', url: '/student/projects', icon: FolderOpen },
-  { title: 'IA', url: '/student/ai', icon: Bot },
+  { title: 'Simular', url: '/student/simulation', icon: Bot },
   { title: 'Perfil', url: '/student/profile', icon: User },
 ];
 

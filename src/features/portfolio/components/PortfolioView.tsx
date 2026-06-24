@@ -1,0 +1,213 @@
+"use client";
+
+import { useState, useEffect, useCallback } from "react";
+import { motion } from "framer-motion";
+import {
+  Award, Clock, Star, TrendingUp, ExternalLink, Filter,
+  BookOpen, Code2, Palette, Megaphone, Building2, Compass, Wrench,
+  Sparkles, CheckCircle2, Download, Share2, Eye, EyeOff, RefreshCw,
+} from "lucide-react";
+import { getPortfolioEntries } from "@/app/actions/simulation";
+
+const AREA_ICONS: Record<string, typeof Code2> = {
+  "Desarrollo de Software": Code2,
+  "Diseño Gráfico": Palette,
+  "Marketing": Megaphone,
+  "Administración": Building2,
+  "Arquitectura": Compass,
+  "Ingeniería": Wrench,
+};
+
+export function PortfolioView() {
+  const [entries, setEntries] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState<"all" | "simulation" | "real_project">("all");
+
+  const fetchData = useCallback(async () => {
+    try {
+      const data = await getPortfolioEntries();
+      setEntries(data);
+    } catch (err) {
+      console.error("Error fetching portfolio data:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  useEffect(() => {
+    const refresh = () => fetchData();
+    window.addEventListener("focus", refresh);
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible") refresh();
+    });
+    return () => {
+      window.removeEventListener("focus", refresh);
+    };
+  }, [fetchData]);
+
+  const filteredEntries = filter === "all" ? entries : entries.filter((e) => e.source_type === filter);
+
+  const totalHours = entries.reduce((sum, e) => sum + (e.hours_invested || 0), 0);
+  const totalProjects = entries.length;
+  const avgScore = entries.length > 0
+    ? Math.round(entries.reduce((sum, e) => sum + (e.score || 0), 0) / entries.length)
+    : 0;
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#F4F9FF] via-white to-[#EEF6FF] flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-[#BAD8F7] border-t-[#38A3F1] rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-[#F4F9FF] via-white to-[#EEF6FF]">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-8 space-y-6 sm:space-y-8">
+        <div className="flex items-start justify-between">
+          <div>
+            <p className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-brand-mid mb-1 sm:mb-2">
+              Nivel 3 · Portafolio Automático
+            </p>
+            <h1 className="text-xl sm:text-2xl font-bold text-ink-primary md:text-3xl">
+              Mi Portafolio Profesional
+            </h1>
+            <p className="text-xs sm:text-sm text-ink-secondary mt-1 sm:mt-2">
+              Cada proyecto completado genera evidencia automática de tus competencias
+            </p>
+          </div>
+          <button
+            onClick={fetchData}
+            className="flex items-center gap-1.5 text-xs font-semibold text-[#38A3F1] bg-white border border-[#BAD8F7] px-3 py-2 rounded-xl hover:bg-[#F0F7FF] transition shrink-0"
+          >
+            <RefreshCw className="w-3.5 h-3.5" />
+            Actualizar
+          </button>
+        </div>
+
+        <div className="grid grid-cols-3 gap-3 sm:gap-4">
+          {[
+            { label: "Proyectos", value: totalProjects, icon: BookOpen, color: "#38A3F1", bg: "#F0F7FF" },
+            { label: "Horas invertidas", value: totalHours, icon: Clock, color: "#F59E0B", bg: "#FFFBEB" },
+            { label: "Puntaje promedio", value: `${avgScore}%`, icon: Star, color: "#1D9E75", bg: "#E1F5EE" },
+          ].map((stat) => (
+            <div key={stat.label} className="bg-white rounded-xl sm:rounded-2xl border border-[#E8F3FD] p-3 sm:p-5 shadow-sm">
+              <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl flex items-center justify-center" style={{ background: stat.bg }}>
+                  <stat.icon className="w-4 h-4 sm:w-5 sm:h-5" style={{ color: stat.color }} />
+                </div>
+              </div>
+              <p className="text-lg sm:text-2xl font-bold text-[#0D3A6E]">{stat.value}</p>
+              <p className="text-[10px] sm:text-xs text-[#93B8D4] mt-0.5">{stat.label}</p>
+            </div>
+          ))}
+        </div>
+
+        <div className="flex flex-wrap gap-2">
+          {[
+            { key: "all" as const, label: "Todos" },
+            { key: "simulation" as const, label: "Simulaciones" },
+            { key: "real_project" as const, label: "Proyectos reales" },
+          ].map((f) => (
+            <button
+              key={f.key}
+              onClick={() => setFilter(f.key)}
+              className="text-xs font-semibold px-3 py-1.5 rounded-full border transition-all"
+              style={{
+                background: filter === f.key ? "#0D3A6E" : "white",
+                color: filter === f.key ? "white" : "#5B8DB8",
+                borderColor: filter === f.key ? "#0D3A6E" : "#E8F3FD",
+              }}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
+
+        {filteredEntries.length === 0 ? (
+          <div className="flex flex-col items-center gap-4 py-16">
+            <div className="w-16 h-16 bg-[#F0F7FF] rounded-2xl flex items-center justify-center">
+              <Award className="w-8 h-8 text-[#BAD8F7]" />
+            </div>
+            <h3 className="text-sm font-semibold text-[#0D3A6E]">Aún no tienes entradas en tu portafolio</h3>
+            <p className="text-xs text-[#5B8DB8] text-center max-w-md">
+              Completa simulaciones o proyectos reales para que se generen automáticamente aquí
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+            {filteredEntries.map((entry, i) => {
+              const Icon = AREA_ICONS[entry.skills_demonstrated?.[0]] || Sparkles;
+              return (
+                <motion.div
+                  key={entry.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.05 }}
+                  className="bg-white rounded-2xl border border-[#E8F3FD] overflow-hidden hover:shadow-xl hover:border-[#38A3F1]/30 transition-all duration-300"
+                >
+                  <div className="p-5 space-y-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 rounded-lg bg-[#F0F7FF] flex items-center justify-center">
+                          <Icon className="w-4 h-4 text-[#38A3F1]" />
+                        </div>
+                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
+                          style={{
+                            background: entry.source_type === "simulation" ? "#F0F7FF" : "#E1F5EE",
+                            color: entry.source_type === "simulation" ? "#0D5FA6" : "#1D9E75",
+                          }}
+                        >
+                          {entry.source_type === "simulation" ? "Simulación" : "Proyecto real"}
+                        </span>
+                      </div>
+                      {entry.score && (
+                        <span className="text-xs font-bold"
+                          style={{
+                            color: entry.score >= 70 ? "#1D9E75" : entry.score >= 40 ? "#D97706" : "#EF4444",
+                          }}
+                        >
+                          {entry.score}/100
+                        </span>
+                      )}
+                    </div>
+
+                    <h3 className="text-sm font-bold text-[#0D3A6E] line-clamp-2">{entry.title}</h3>
+                    <p className="text-xs text-[#5B8DB8] line-clamp-2 leading-relaxed">{entry.description}</p>
+
+                    {entry.skills_demonstrated?.length > 0 && (
+                      <div className="flex flex-wrap gap-1">
+                        {entry.skills_demonstrated.slice(0, 4).map((skill: string, j: number) => (
+                          <span key={j} className="text-[10px] bg-[#F0F7FF] text-[#0D5FA6] px-2 py-0.5 rounded-full font-medium">
+                            {skill}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+
+                    <div className="flex items-center gap-3 text-[10px] text-[#93B8D4] pt-1">
+                      <span className="flex items-center gap-1">
+                        <Clock className="w-3 h-3" />
+                        {entry.hours_invested || 0}h
+                      </span>
+                      {entry.completed_at && (
+                        <span className="flex items-center gap-1">
+                          <CheckCircle2 className="w-3 h-3" />
+                          {new Date(entry.completed_at).toLocaleDateString("es-SV")}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { trackProjectView } from "@/app/actions/pyme/premium";
 import { toast } from "sonner";
 import { ArrowLeft, CheckCircle, MapPin, Tag, BarChart, Zap } from "lucide-react";
 import Link from "next/link";
@@ -39,6 +40,10 @@ export function ProjectDetail({ project, hasApplied: initialApplied, studentId, 
   const router = useRouter();
   const [hasApplied, setHasApplied] = useState(initialApplied);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    trackProjectView(project.id);
+  }, [project.id]);
 
   const matchScore = calcMatch(project.skills, studentSkills);
   const studentSkillsLower = studentSkills.map(s => s.toLowerCase());

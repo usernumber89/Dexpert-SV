@@ -17,7 +17,7 @@ import { CreateProjectModal } from "./CreateProjectModal";
 import Image from "next/image";
 import {CreditsWidget} from "./CreditsWidget"
 import {BriefcaseIcon }  from "@phosphor-icons/react";
-import { closeProjectAndGenerateCertificates } from "@/app/actions/projects"; // Ajusta la ruta a tu archivo de acciones
+import { completeProject, deleteProject as deleteProjectAction } from "@/app/actions/projects";
 
 type Student = {
   id: string;
@@ -62,7 +62,7 @@ export function PymeDashboard({ user, pyme, projects,credits }: Props) {
   const [menuOpen, setMenuOpen] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState<"Todos" | "Activos" | "Borradores" | "Cerrados">("Todos");
+  const [statusFilter, setStatusFilter] = useState<"Todos" | "Activos" | "Borradores" | "Completados">("Todos");
   const [viewMode, setViewMode] = useState<"grid" | "list">("list");
 
   const filteredProjects = projects.filter(project => {
@@ -74,14 +74,14 @@ export function PymeDashboard({ user, pyme, projects,credits }: Props) {
     if (statusFilter === "Todos") return true;
     if (statusFilter === "Activos") return project.status === "active" && project.is_published;
     if (statusFilter === "Borradores") return !project.is_published;
-    if (statusFilter === "Cerrados") return project.status === "closed";
+    if (statusFilter === "Completados") return project.status === "completed";
     
     return true;
   });
 
   const totalActive = projects.filter(p => p.status === "active" && p.is_published).length;
   const totalDrafts = projects.filter(p => !p.is_published).length;
-  const totalClosed = projects.filter(p => p.status === "closed").length;
+  const totalCompleted = projects.filter(p => p.status === "completed").length;
 
   const stats = [
     { 
@@ -100,71 +100,68 @@ export function PymeDashboard({ user, pyme, projects,credits }: Props) {
       bgColor: "bg-emerald-50",
       borderColor: "border-emerald-200"
     },
-    { 
-      label: "Borradores", 
-      value: totalDrafts, 
-      icon: Clock,
+    {
+      label: "Borradores",
+      value: totalDrafts,
+      icon: Edit,
       color: "text-amber-600",
       bgColor: "bg-amber-50",
       borderColor: "border-amber-200"
     },
-    { 
-      label: "Cerrados", 
-      value: totalClosed, 
+    {
+      label: "Completados",
+      value: totalCompleted,
       icon: CheckCircle,
-      color: "text-gray-600",
-      bgColor: "bg-gray-50",
-      borderColor: "border-gray-200"
-    },
+      color: "text-emerald-600",
+      bgColor: "bg-emerald-100",
+      borderColor: "border-emerald-200",
+    }
   ];
 
-  // 📄 Modifica solo la función closeProject dentro de PymeDashboard.tsx
-const closeProject = async (id: string) => {
-  if (!confirm("¿Estás seguro de cerrar este proyecto? Se generarán automáticamente los certificados para los alumnos aceptados.")) return;
+  const markCompleted = async (id: string) => {
+    if (!confirm("¿Estás seguro de marcar este proyecto como completado? Se generarán los certificados para los estudiantes aceptados.")) return;
 
-  setIsLoading(true);
-  
-  try {
-    // Aquí enviamos el project.id de forma segura
-    const result = await closeProjectAndGenerateCertificates(id);
+    setIsLoading(true);
+    
+    try {
+      const result = await completeProject(id);
 
-    if (result.success) {
-      // ➔ SOLUCIÓN AL ERROR DE TIPO: Usamos un string directo para el toast
-      toast.success("Proyecto finalizado y certificados generados con éxito.");
-      router.refresh(); 
-    } else {
-      toast.error(result.error || "Error cerrando el proyecto");
+      if (result.success) {
+        toast.success("Proyecto completado y certificados generados con éxito.");
+        router.refresh(); 
+      } else {
+        toast.error(result.error || "Error al completar el proyecto");
+      }
+    } catch (error) {
+      toast.error("Ocurrió un error inesperado al conectar con el servidor.");
+      console.error(error);
+    } finally {
+      setIsLoading(false);
+      setMenuOpen(null);
     }
-  } catch (error) {
-    toast.error("Ocurrió un error inesperado al conectar con el servidor.");
-    console.error(error);
-  } finally {
-    setIsLoading(false);
-    setMenuOpen(null);
-  }
-};
+  };
 
   const deleteProject = async (id: string) => {
     if (!confirm("¿Estás seguro de que quieres eliminar este proyecto? Esta acción no se puede deshacer.")) return;
     setIsLoading(true);
-    const supabase = createClient();
-    const { error } = await supabase.from("projects").delete().eq("id", id);
+    
+    const result = await deleteProjectAction(id);
 
-    if (error) {
-      toast.error("Error eliminando proyecto");
-    } else {
+    if (result.success) {
       toast.success("Proyecto eliminado exitosamente");
       router.refresh();
+    } else {
+      toast.error(result.error || "Error eliminando proyecto");
     }
     setIsLoading(false);
     setMenuOpen(null);
   };
 
   const getStatusBadge = (project: Project) => {
-    if (project.status === "closed") {
+    if (project.status === "completed") {
       return {
-        label: "Cerrado",
-        color: "bg-red-100 text-gray-600 border-gray-200",
+        label: "Completado",
+        color: "bg-emerald-50 text-emerald-600 border-emerald-200",
         icon: CheckCircle
       };
     }
@@ -311,7 +308,7 @@ const closeProject = async (id: string) => {
                  <option value="Todos">Todos</option>
                 <option value="Activos">Activos</option>
                 <option value="Borradores">Borradores</option>
-                <option value="Cerrados">Cerrados</option>
+                <option value="Completados">Completados</option>
               </select>
 
               <div className="flex gap-1 p-1 bg-[#F0F7FF] rounded-lg">
@@ -499,12 +496,12 @@ const closeProject = async (id: string) => {
                                 className="absolute right-0 top-10 z-20 bg-white rounded-xl border border-[#BAD8F7] shadow-xl py-1 w-48 overflow-hidden"
                               >
                                 <button
-                                  onClick={() => closeProject(project.id)}
-                                  disabled={project.status === "closed" || isLoading}
+                                  onClick={() => markCompleted(project.id)}
+                                  disabled={project.status === "completed" || isLoading}
                                   className="flex items-center gap-2 w-full px-4 py-2.5 text-xs text-[#5B8DB8] hover:bg-[#F0F7FF] disabled:opacity-40 transition"
                                 >
-                                  <X className="w-3.5 h-3.5" />
-                                  Cerrar proyecto
+                                  <CheckCircle className="w-3.5 h-3.5" />
+                                  Completar proyecto
                                 </button>
                                 <button
                                   onClick={() => deleteProject(project.id)}

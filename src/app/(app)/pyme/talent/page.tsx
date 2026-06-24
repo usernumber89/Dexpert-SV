@@ -13,13 +13,17 @@ import {
   Sparkles,
   Users,
   Briefcase,
- 
+  Star,
+  Crown,
   CheckCircle2
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { toast } from "sonner";
 import {GithubLogoIcon, LinkedinLogoIcon} from "@phosphor-icons/react"
+import { saveStudent, removeSavedStudent, getSavedStudents } from "@/app/actions/pyme/premium";
+import { getPymePlan } from "@/app/actions/pyme/premium";
+import { isPremiumPlan } from "@/lib/premium";
 
 // Ajustado según el esquema de tu base de datos
 type Student = {
@@ -45,10 +49,42 @@ export default function TalentSearchPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedSkill, setSelectedSkill] = useState<string>("all");
   const [availableSkills, setAvailableSkills] = useState<string[]>([]);
+  const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
+  const [plan, setPlan] = useState<string | null>(null);
 
   useEffect(() => {
     loadStudents();
+    loadSavedAndPlan();
   }, []);
+
+  const loadSavedAndPlan = async () => {
+    const p = await getPymePlan();
+    setPlan(p);
+    if (isPremiumPlan(p)) {
+      const saved = await getSavedStudents();
+      setSavedIds(new Set(saved.map((s: any) => s.student_id)));
+    }
+  };
+
+  const handleToggleSave = async (studentId: string) => {
+    if (!isPremiumPlan(plan)) {
+      toast.error("Disponible en planes GROWTH y PRO");
+      return;
+    }
+    if (savedIds.has(studentId)) {
+      const res = await removeSavedStudent(studentId);
+      if (res.success) {
+        setSavedIds(prev => { const next = new Set(prev); next.delete(studentId); return next; });
+        toast.success("Eliminado de favoritos");
+      }
+    } else {
+      const res = await saveStudent(studentId);
+      if (res.success) {
+        setSavedIds(prev => new Set(prev).add(studentId));
+        toast.success("Guardado en Talent Pool");
+      }
+    }
+  };
 
   useEffect(() => {
     filterData();
@@ -223,6 +259,20 @@ export default function TalentSearchPage() {
                           <CheckCircle2 className="w-4 h-4 text-green-500" />
                         </div>
                       )}
+                      {/* Save/Favorite button */}
+                      <button
+                        onClick={() => handleToggleSave(student.id)}
+                        className="absolute -top-1 -left-1 w-6 h-6 rounded-full bg-white border border-[#E8F3FD] flex items-center justify-center hover:scale-110 transition-transform shadow-sm"
+                        title={savedIds.has(student.id) ? "Eliminar de favoritos" : isPremiumPlan(plan) ? "Guardar en Talent Pool" : "Disponible en planes premium"}
+                      >
+                        {savedIds.has(student.id) ? (
+                          <Star className="w-3 h-3 fill-[#F59E0B] text-[#F59E0B]" />
+                        ) : isPremiumPlan(plan) ? (
+                          <Star className="w-3 h-3 text-[#93B8D4]" />
+                        ) : (
+                          <Crown className="w-3 h-3 text-[#93B8D4]" />
+                        )}
+                      </button>
                     </div>
                     
                     <div className="flex-1 min-w-0 pt-1">

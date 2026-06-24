@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { createClient as createAdminClient } from "@supabase/supabase-js";
 
 export async function POST(_: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id: projectId } = await params;
@@ -24,7 +25,16 @@ export async function POST(_: Request, { params }: { params: Promise<{ id: strin
 
   if (existing) return Response.json({ error: "Already applied" }, { status: 400 });
 
-  const { data, error } = await supabase
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    return Response.json({ error: "Server config error" }, { status: 500 });
+  }
+
+  const supabaseAdmin = createAdminClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.SUPABASE_SERVICE_ROLE_KEY
+  );
+
+  const { data, error } = await supabaseAdmin
     .from("applications")
     .insert({ student_id: student.id, project_id: projectId })
     .select()

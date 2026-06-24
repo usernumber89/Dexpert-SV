@@ -9,6 +9,8 @@ import { CallToAction } from "@/components/landing/CallToAction";
 import { Footer } from "@/components/landing/Footer";
 import ActiveProjectsHub from "@/components/shared/ActiveProjectsHub";
 import { MilestonesShowcase } from "@/components/landing/MilestonesShowcase";
+import { StudentFeatures } from "@/components/landing/StudentFeatures";
+import { PymePremiumFeatures } from "@/components/landing/PymePremiumFeatures";
 import {outfit} from "@/lib/fonts"
 export default function Home() {
   return (
@@ -20,6 +22,10 @@ export default function Home() {
       
       <MilestonesShowcase/>
       
+      <StudentFeatures />
+
+      <PymePremiumFeatures />
+
       <Plans />
       <Testimony />
       <Faq />
