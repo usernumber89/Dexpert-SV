@@ -242,7 +242,7 @@ export async function GET(request: NextRequest, { params }: RouteProps) {
       doc.fillColor("#94A3B8")
          .fontSize(8)
          .font("Helvetica")
-         .text(`Validar autenticidad en: dexpert-sv.vercel.app/verify/${certificate.id}`, pageWidth - marginX - 200, footerY, {  align: "center" });
+         .text(`Validar autenticidad en: dexpert.app/verify/${certificate.id}`, pageWidth - marginX - 200, footerY, {  align: "center" });
       doc.y = 400;
 
       // ── BOTTOM GOLD LINE ──
