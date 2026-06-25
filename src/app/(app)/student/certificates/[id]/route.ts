@@ -23,6 +23,7 @@ export async function GET(request: NextRequest, { params }: RouteProps) {
       .select(`
         id,
         created_at,
+        paid,
         applications (
           id,
           students!student_id (
@@ -44,6 +45,10 @@ export async function GET(request: NextRequest, { params }: RouteProps) {
     if (error || !certificate) {
       console.error("❌ Error u objeto no encontrado en Supabase:", error);
       return new NextResponse("Certificado no encontrado", { status: 404 });
+    }
+
+    if (!certificate.paid) {
+      return new NextResponse("Debes pagar el certificado para descargarlo", { status: 402 });
     }
 
     // 2. Desempaquetamos las relaciones de forma segura

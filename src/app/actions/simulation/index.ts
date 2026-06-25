@@ -153,6 +153,67 @@ export async function getPortfolioEntries(): Promise<any[]> {
   return data || [];
 }
 
+export type CertificateEntry = {
+  id: string;
+  url: string;
+  created_at: string;
+  paid: boolean;
+  projectTitle: string;
+  pymeName: string;
+};
+
+export async function getCertificates(): Promise<CertificateEntry[]> {
+  const supabase = await createServerClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return [];
+
+  const { data: student } = await supabase
+    .from("students")
+    .select("id")
+    .eq("user_id", user.id)
+    .maybeSingle();
+  if (!student) return [];
+
+  // Primero obtenemos las aplicaciones del estudiante
+  const { data: apps } = await supabase
+    .from("applications")
+    .select("id")
+    .eq("student_id", student.id);
+
+  if (!apps || apps.length === 0) return [];
+
+  const appIds = apps.map(a => a.id);
+
+  const { data: certs } = await supabase
+    .from("certificates")
+    .select(`
+      id, url, created_at, paid, application_id,
+      applications!inner(
+        projects!inner(
+          title,
+          pymes!inner( company_name )
+        )
+      )
+    `)
+    .in("application_id", appIds);
+
+  if (!certs) return [];
+
+  return certs.map((cert: any) => {
+    const app = Array.isArray(cert.applications) ? cert.applications[0] : cert.applications;
+    const proj = Array.isArray(app?.projects) ? app?.projects[0] : app?.projects;
+    const pyme = Array.isArray(proj?.pymes) ? proj?.pymes[0] : proj?.pymes;
+    return {
+      id: cert.id,
+      url: cert.url,
+      created_at: cert.created_at,
+      paid: cert.paid ?? false,
+      projectTitle: proj?.title || "Proyecto",
+      pymeName: pyme?.company_name || "Empresa aliada",
+    };
+  });
+}
+
 export async function getStudentExperience() {
   const supabase = await createServerClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -314,6 +375,83 @@ export async function backfillExperience() {
       });
     }
 
+    created++;
+  }
+
+  return { success: true, created, errors };
+}
+
+export async function backfillRealProjects() {
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    return { success: false, error: "Faltan variables de entorno admin" };
+  }
+
+  const admin = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.SUPABASE_SERVICE_ROLE_KEY
+  );
+
+  // 1. Obtener todos los certificados
+  const { data: certs, error: certsError } = await admin
+    .from("certificates")
+    .select("id, application_id, created_at");
+
+  if (certsError || !certs) {
+    return { success: false, error: "Error al obtener certificados", details: certsError };
+  }
+
+  let created = 0;
+  let errors = 0;
+
+  for (const cert of certs) {
+    if (!cert.application_id) {
+      errors++;
+      continue;
+    }
+
+    // 2. Obtener la aplicación
+    const { data: app } = await admin
+      .from("applications")
+      .select("id, student_id, project_id")
+      .eq("id", cert.application_id)
+      .maybeSingle();
+
+    if (!app) {
+      errors++;
+      continue;
+    }
+
+    // 3. Obtener el proyecto
+    const { data: proj } = await admin
+      .from("projects")
+      .select("id, title, description")
+      .eq("id", app.project_id)
+      .maybeSingle();
+
+    if (!proj) {
+      errors++;
+      continue;
+    }
+
+    // 4. Upsert en portfolio_entries
+    const { error: peErr } = await admin.from("portfolio_entries").upsert({
+      student_id: app.student_id,
+      source_type: "real_project",
+      source_id: proj.id,
+      title: proj.title || "Proyecto real",
+      description: proj.description || null,
+       results: proj.description || "Proyecto completado satisfactoriamente.",
+      hours_invested: 0,
+      score: 100,
+      is_published: true,
+      completed_at: cert.created_at || new Date().toISOString(),
+    }, { onConflict: "source_id,source_type", ignoreDuplicates: false });
+
+    if (peErr) {
+      console.error("Error backfilling real project:", peErr);
+      errors++;
+      continue;
+    }
     created++;
   }
 

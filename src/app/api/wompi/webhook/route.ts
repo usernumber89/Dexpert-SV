@@ -29,15 +29,35 @@ export async function POST(req: Request) {
     // Si no es aprobada, respondemos 200 para que Wompi no reintente
     if (!esAprobada) return NextResponse.json({ success: true });
 
-    // Extraer datos del identificador (DEXPERT_plan_pymeId_timestamp)
-    const parts = identificador.split("_");
-    const plan = parts[1];
-    const pymeId = parts[2].trim();
-
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
+
+    // Certificate payment: DEXPERT_CERT_certificateId_studentId_timestamp
+    if (identificador.startsWith("DEXPERT_CERT_")) {
+      const parts = identificador.split("_");
+      const certificateId = parts[2];
+      const studentId = parts[3];
+
+      const { error: certErr } = await supabase
+        .from("certificates")
+        .update({ paid: true, transaction_id: IdTransaccion })
+        .eq("id", certificateId);
+
+      if (certErr) {
+        console.error("Error marking certificate as paid:", certErr);
+        return NextResponse.json({ error: certErr.message }, { status: 500 });
+      }
+
+      console.log(`Certificado ${certificateId} pagado por estudiante ${studentId}`);
+      return NextResponse.json({ success: true });
+    }
+
+    // Credit pack payment: DEXPERT_plan_pymeId_timestamp
+    const parts = identificador.split("_");
+    const plan = parts[1];
+    const pymeId = parts[2].trim();
 
     // 1. Obtener pyme con company_name para la factura
     const { data: pyme, error: pymeErr } = await supabase

@@ -15,7 +15,7 @@ import { useRouter } from 'next/navigation';
 import {
   LayoutDashboard, User, FolderOpen, Award, Bot,
   HelpCircle, Users, LogOut, Banknote, PanelLeft, GraduationCap, Rocket, Receipt,
-  BrainCircuit, BookOpen, Trophy, Star, BarChart3
+  BrainCircuit, BookOpen, Trophy, Star, BarChart3, BriefcaseBusiness, Building2
 } from 'lucide-react';
 import { DexpertLogo } from "@/components/DexpertLogo";
 import { BriefcaseIcon } from "@phosphor-icons/react";
@@ -24,11 +24,10 @@ const studentRoutes = [
   { title: 'Panel de Control', url: '/student/dashboard', icon: LayoutDashboard },
   { title: 'Proyectos en Marcha', url: '/student/in-progress', icon: Rocket },
   { title: 'Proyectos', url: '/student/projects', icon: FolderOpen },
+  { title: 'PyMEs', url: '/student/pymes', icon: Building2 },
   { title: 'Simulación Profesional', url: '/student/simulation', icon: BrainCircuit },
   { title: 'Portafolio', url: '/student/portfolio', icon: BookOpen },
-  { title: 'Mi Progreso', url: '/student/experience', icon: Trophy },
   { title: 'Perfil', url: '/student/profile', icon: User },
-  { title: 'Certificados', url: '/student/certificates', icon: Award },
   
   { title: 'Soporte', url: '/student/support', icon: HelpCircle },
 ];
@@ -39,7 +38,7 @@ const pymeRoutes = [
   { title: 'Aplicantes / Solicitudes', url: '/pyme/applications', icon: Users },
   { title: "Talento", url: '/pyme/talent', icon: GraduationCap, requiresPremiumPlan: true },
   { title: 'Mi Talent Pool', url: '/pyme/talent-pool', icon: Star, requiresPremiumPlan: true },
-  { title: 'Destacados', url: '/pyme/featured-projects', icon: Star, requiresPremiumPlan: true },
+  { title: 'Destacados', url: '/pyme/featured-projects', icon: BriefcaseBusiness, requiresPremiumPlan: true },
   { title: 'Analítica', url: '/pyme/analytics', icon: BarChart3, requiresPremiumPlan: true },
   { title: 'Créditos', url: '/pyme/pricing', icon: Banknote },
   { title: 'Facturas', url: '/pyme/invoices', icon: Receipt },

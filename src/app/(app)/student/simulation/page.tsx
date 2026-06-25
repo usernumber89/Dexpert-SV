@@ -11,5 +11,21 @@ export default async function SimulationPage() {
   const scenarios = await getScenariosByArea();
   const sessions = await getStudentSessions();
 
-  return <SimulationHub initialScenarios={scenarios} />;
+  const { data: evaluations } = await supabase
+    .from("evaluations")
+    .select("session_id, overall_score")
+    .in("session_id", sessions.map(s => s.id));
+
+  const evaluationMap: Record<string, number> = {};
+  evaluations?.forEach(e => {
+    evaluationMap[e.session_id] = e.overall_score;
+  });
+
+  return (
+    <SimulationHub
+      initialScenarios={scenarios}
+      initialSessions={sessions}
+      evaluationScores={evaluationMap}
+    />
+  );
 }

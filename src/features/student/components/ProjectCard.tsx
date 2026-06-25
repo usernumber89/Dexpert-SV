@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronRight, CheckCircle, MapPin, Calendar, Zap } from "lucide-react";
+import { ChevronRight, CheckCircle, MapPin, Calendar, Zap, Star } from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 
@@ -11,6 +11,7 @@ type Project = {
   skills: string;
   image_url: string | null;
   is_published: boolean;
+  is_featured: boolean;
   level: string | null;
   category: string | null;
   status: string;
@@ -89,7 +90,11 @@ export function ProjectCard({ project, hasApplied, studentSkills }: Props) {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
       whileHover={{ y: -4 }}
-      className="group relative flex flex-col gap-3 rounded-2xl border border-[#E8F3FD] bg-white p-5 shadow-sm transition-all duration-300 hover:border-[#38A3F1]/40 hover:shadow-xl hover:shadow-[#38A3F1]/5"
+      className={`group relative flex flex-col gap-3 rounded-2xl border bg-white p-5 shadow-sm transition-all duration-300 hover:shadow-xl ${
+        project.is_featured
+          ? "border-[#FDE9C0] shadow-[0_0_0_1px_#FDE9C0] hover:border-[#FDE9C0] hover:shadow-[#FDE9C0]/20"
+          : "border-[#E8F3FD] hover:border-[#38A3F1]/40 hover:shadow-[#38A3F1]/5"
+      }`}
     >
       {/* Gradiente decorativo sutil */}
       <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-[#F4F9FF]/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
@@ -133,6 +138,16 @@ export function ProjectCard({ project, hasApplied, studentSkills }: Props) {
             </span>
           )}
         </div>
+
+        {/* Featured badge */}
+        {project.is_featured && (
+          <div className="flex items-center gap-1">
+            <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#FFFBEB] text-[#D97706] border border-[#FDE9C0] w-fit">
+              <Star className="w-3 h-3 fill-[#D97706]" />
+              Destacado
+            </span>
+          </div>
+        )}
 
         {/* Título y descripción */}
         <div>

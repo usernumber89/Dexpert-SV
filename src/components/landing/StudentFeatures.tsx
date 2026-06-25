@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import {
-  BotMessageSquare, Target, BookOpen, Trophy, ArrowRight,
+  BotMessageSquare, Target, BookOpen, ArrowRight,
   CheckCircle2, Sparkles, Brain, Star, Zap, BarChart3,
   MessageSquare, FileText, Award, Unlock,
 } from "lucide-react";
@@ -48,19 +48,6 @@ const levels = [
       "Portafolio digital compartible desde el primer proyecto",
     ],
   },
-  {
-    level: 4,
-    title: "Experiencia Real",
-    subtitle: "Demostrá tu capacidad y accedé a proyectos reales",
-    color: "#8B5CF6",
-    bg: "#F5F3FF",
-    features: [
-      "Sistema de niveles y experiencia (XP) por proyecto completado",
-      "Desbloqueo progresivo de proyectos reales de empresas",
-      "Badges y logros que validan tu crecimiento",
-      "De simulación a experiencia laboral real en un solo flujo",
-    ],
-  },
 ];
 
 const containerVariants = {
@@ -95,7 +82,7 @@ export function StudentFeatures() {
           <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-white rounded-md shadow-sm border border-[#BAD8F7] mb-5">
             
             <span className="text-xs font-semibold uppercase tracking-wider text-[#0D5FA6]">
-              4 niveles de crecimiento
+              3 niveles de crecimiento
             </span>
           </div>
           <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-[#0D3A6E] mb-4">
@@ -124,7 +111,7 @@ export function StudentFeatures() {
           className="grid md:grid-cols-2 gap-5"
         >
           {levels.map((lvl) => {
-            const Icon = [BotMessageSquare, BarChart3, BookOpen, Trophy][lvl.level - 1];
+            const Icon = [BotMessageSquare, BarChart3, BookOpen][lvl.level - 1];
             return (
               <motion.div
                 key={lvl.level}

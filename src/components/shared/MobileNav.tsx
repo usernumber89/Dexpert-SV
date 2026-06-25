@@ -5,13 +5,14 @@ import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import {
   LayoutDashboard, User, FolderOpen, Rocket, Bot,
-  Users, GraduationCap,
+  Users, GraduationCap, Building2,
 } from 'lucide-react';
 
 const studentTabs = [
   { title: 'Panel', url: '/student/dashboard', icon: LayoutDashboard },
   { title: 'En Marcha', url: '/student/in-progress', icon: Rocket },
   { title: 'Proyectos', url: '/student/projects', icon: FolderOpen },
+  { title: 'PyMEs', url: '/student/pymes', icon: Building2 },
   { title: 'Simular', url: '/student/simulation', icon: Bot },
   { title: 'Perfil', url: '/student/profile', icon: User },
 ];

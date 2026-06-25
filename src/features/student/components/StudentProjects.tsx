@@ -11,6 +11,7 @@ type Project = {
   skills: string;
   image_url: string | null;
   is_published: boolean;
+  is_featured: boolean;
   level: string | null;
   category: string | null;
   created_at: string;
@@ -26,6 +27,8 @@ type Props = {
   projects: Project[];
   appliedProjectIds: string[];
   studentSkills: string[];
+  pymeFilter?: string;
+  pymeName?: string;
 };
 
 const CATEGORIES = ["All", "Web development", "Marketing", "Design", "Data", "Other"];
@@ -40,7 +43,7 @@ function calculateMatch(projectSkills: string, studentSkills: string[]): number 
   return Math.round((matching.length / required.length) * 100);
 }
 
-export function StudentProjects({ projects, appliedProjectIds, studentSkills }: Props) {
+export function StudentProjects({ projects, appliedProjectIds, studentSkills, pymeFilter, pymeName }: Props) {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
   const [level, setLevel] = useState("All");
@@ -61,7 +64,11 @@ export function StudentProjects({ projects, appliedProjectIds, studentSkills }: 
         const matchLevel = level === "All" || p.level === level;
         return matchSearch && matchCategory && matchLevel;
       })
-      .sort((a, b) => b.matchPercentage - a.matchPercentage);
+      .sort((a, b) => {
+        if (a.is_featured && !b.is_featured) return -1;
+        if (!a.is_featured && b.is_featured) return 1;
+        return b.matchPercentage - a.matchPercentage;
+      });
   }, [projects, search, category, level, studentSkills]);
 
   const hasActiveFilters = search || category !== "All" || level !== "All";
@@ -78,13 +85,25 @@ export function StudentProjects({ projects, appliedProjectIds, studentSkills }: 
         {/* Header */}
         <div>
           <p className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-brand-mid mb-1 sm:mb-2">
-            Explora oportunidades
+            {pymeFilter ? `Proyectos de ${pymeName}` : "Explora oportunidades"}
           </p>
-          <h1 className="text-xl sm:text-2xl font-bold text-ink-primary md:text-3xl">
-            Proyectos Disponibles
-          </h1>
+          <div className="flex items-center gap-3">
+            <h1 className="text-xl sm:text-2xl font-bold text-ink-primary md:text-3xl">
+              {pymeFilter ? `Proyectos de ${pymeName}` : "Proyectos Disponibles"}
+            </h1>
+            {pymeFilter && (
+              <a
+                href="/student/projects"
+                className="text-[11px] font-semibold text-[#38A3F1] hover:text-[#0D5FA6] transition-colors shrink-0"
+              >
+                Ver todos
+              </a>
+            )}
+          </div>
           <p className="text-xs sm:text-sm text-ink-secondary mt-1 sm:mt-2">
-            Encuentra proyectos que coincidan con tus habilidades e intereses
+            {pymeFilter
+              ? `Explora los proyectos publicados por ${pymeName}`
+              : "Encuentra proyectos que coincidan con tus habilidades e intereses"}
           </p>
         </div>
 

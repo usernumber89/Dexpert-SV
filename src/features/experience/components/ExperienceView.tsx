@@ -5,8 +5,10 @@ import { motion } from "framer-motion";
 import {
   Trophy, Star, Lock, Unlock, Zap, TrendingUp,
   CheckCircle2, Award, Briefcase, Target, RefreshCw,
+  Loader2,
 } from "lucide-react";
 import { getStudentExperience, getExperienceLevels } from "@/app/actions/simulation";
+import { toast } from "sonner";
 
 type ExperienceData = {
   level: number;
@@ -30,6 +32,7 @@ export function ExperienceView() {
   const [experience, setExperience] = useState<ExperienceData | null>(null);
   const [levels, setLevels] = useState<LevelInfo[]>([]);
   const [loading, setLoading] = useState(true);
+  const [syncing, setSyncing] = useState(false);
 
   const fetchData = useCallback(async () => {
     try {
@@ -101,13 +104,39 @@ export function ExperienceView() {
               Gana experiencia con simulaciones y desbloquea proyectos reales
             </p>
           </div>
-          <button
-            onClick={fetchData}
-            className="flex items-center gap-1.5 text-xs font-semibold text-[#38A3F1] bg-white border border-[#BAD8F7] px-3 py-2 rounded-xl hover:bg-[#F0F7FF] transition shrink-0"
-          >
-            <RefreshCw className="w-3.5 h-3.5" />
-            Actualizar
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={fetchData}
+              className="flex items-center gap-1.5 text-xs font-semibold text-[#38A3F1] bg-white border border-[#BAD8F7] px-3 py-2 rounded-xl hover:bg-[#F0F7FF] transition shrink-0"
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+              Actualizar
+            </button>
+            <button
+              onClick={async () => {
+                setSyncing(true);
+                try {
+                  const res = await fetch("/api/backfill");
+                  const data = await res.json();
+                  if (data.success) {
+                    toast.success(`Sincronizadas ${data.created} simulaciones`);
+                    fetchData();
+                  } else {
+                    toast.error(data.error || "Error al sincronizar");
+                  }
+                } catch {
+                  toast.error("Error de conexión");
+                } finally {
+                  setSyncing(false);
+                }
+              }}
+              disabled={syncing}
+              className="flex items-center gap-1.5 text-xs font-semibold text-[#1D9E75] bg-white border border-[#BFE8DA] px-3 py-2 rounded-xl hover:bg-[#E1F5EE] transition shrink-0 disabled:opacity-50"
+            >
+              {syncing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
+              {syncing ? "Sincronizando..." : "Sincronizar"}
+            </button>
+          </div>
         </div>
 
         {/* Current Level Card */}

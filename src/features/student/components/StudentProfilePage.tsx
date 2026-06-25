@@ -70,7 +70,7 @@ export default function StudentProfilePage() {
   const [stats, setStats] = useState<ApplicationStats>({ total: 0, pending: 0, accepted: 0, rejected: 0 });
   const [isEditing, setIsEditing] = useState(false);
   const [editedProfile, setEditedProfile] = useState<Partial<StudentProfile>>({});
-  const [activeTab, setActiveTab] = useState<"profile" | "settings" | "applications">("profile");
+  const [activeTab, setActiveTab] = useState<"profile"  | "applications">("profile");
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [uploadingResume, setUploadingResume] = useState(false);
   const [skillInput, setSkillInput] = useState("");
@@ -440,7 +440,7 @@ if (applications) {
             >
               {/* Tabs */}
               <div className="flex p-1.5 bg-[#F0F7FF] m-4 rounded-xl">
-                {(["profile", "applications", "settings"] as const).map(tab => (
+                {(["profile", "applications"] as const).map(tab => (
                   <button 
                     key={tab} 
                     onClick={() => setActiveTab(tab)}
@@ -715,7 +715,7 @@ if (applications) {
   </motion.div>
 )}
 
-                  {activeTab === "settings" && (
+                 {/* {activeTab === "settings" && (
                     <motion.div 
                       key="settings" 
                       initial={{ opacity: 0, x: -10 }} 
@@ -771,7 +771,7 @@ if (applications) {
                         </motion.button>
                       </div>
                     </motion.div>
-                  )}
+                  )} */}
                 </AnimatePresence>
               </div>
             </motion.div>

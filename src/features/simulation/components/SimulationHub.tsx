@@ -1,14 +1,16 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
+import Link from "next/link";
 import {
   Code2, Palette, Megaphone, Building2, Compass, Wrench, Sparkles,
-  Clock, Target, AlertTriangle, User, ArrowRight, CheckCircle2,
-  BotMessageSquare, FileText, Loader2, Brain, BookOpen, Star,
+  Clock, User, CheckCircle2,
+  BotMessageSquare, Loader2, Trophy,
+  History, ChevronRight,
 } from "lucide-react";
-import { Scenario } from "@/app/actions/simulation";
+import { Scenario, SimulationSession } from "@/app/actions/simulation";
 
 const AREA_ICONS: Record<string, { icon: typeof Code2; color: string; bg: string }> = {
   "Desarrollo de Software": { icon: Code2, color: "#38A3F1", bg: "#F0F7FF" },
@@ -99,6 +101,7 @@ function ScenarioCard({ scenario, onStart, loading }: {
           style={{
             background: loading ? "#E8F3FD" : "#0D3A6E",
             color: loading ? "#93B8D4" : "white",
+            cursor: "pointer",
           }}
         >
           {loading ? (
@@ -113,7 +116,15 @@ function ScenarioCard({ scenario, onStart, loading }: {
   );
 }
 
-export function SimulationHub({ initialScenarios }: { initialScenarios: Scenario[] }) {
+export function SimulationHub({
+  initialScenarios,
+  initialSessions = [],
+  evaluationScores = {},
+}: {
+  initialScenarios: Scenario[];
+  initialSessions?: (SimulationSession & { scenario?: Scenario })[];
+  evaluationScores?: Record<string, number>;
+}) {
   const router = useRouter();
   const [selectedArea, setSelectedArea] = useState<string | null>(null);
   const [startingId, setStartingId] = useState<string | null>(null);
@@ -123,6 +134,9 @@ export function SimulationHub({ initialScenarios }: { initialScenarios: Scenario
   const filteredScenarios = selectedArea
     ? initialScenarios.filter((s) => s.area === selectedArea)
     : initialScenarios;
+
+  const evaluatedSessions = initialSessions.filter(s => s.status === "evaluated");
+  const inProgressSessions = initialSessions.filter(s => s.status === "in_progress" || s.status === "completed");
 
   const startSimulation = async (scenarioId: string) => {
     setStartingId(scenarioId);
@@ -168,6 +182,7 @@ export function SimulationHub({ initialScenarios }: { initialScenarios: Scenario
               background: !selectedArea ? "#0D3A6E" : "white",
               color: !selectedArea ? "white" : "#5B8DB8",
               borderColor: !selectedArea ? "#0D3A6E" : "#E8F3FD",
+              cursor: "pointer",
             }}
           >
             Todas las áreas
@@ -184,6 +199,7 @@ export function SimulationHub({ initialScenarios }: { initialScenarios: Scenario
                   background: isActive ? config.bg : "white",
                   color: isActive ? config.color : "#5B8DB8",
                   borderColor: isActive ? config.color + "40" : "#E8F3FD",
+                  cursor: "pointer",
                 }}
               >
                 <config.icon className="w-3.5 h-3.5" />
@@ -223,6 +239,134 @@ export function SimulationHub({ initialScenarios }: { initialScenarios: Scenario
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* Mis Simulaciones */}
+        <section>
+          <div className="flex items-center justify-between mb-4 mt-8 sm:mt-12">
+            <div>
+              <p className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-brand-mid mb-1">
+                Tu historial
+              </p>
+              <h2 className="text-lg sm:text-xl font-bold text-ink-primary">
+                Mis Simulaciones
+              </h2>
+            </div>
+            <Link
+              href="/student/simulation"
+              className="text-[11px] sm:text-xs font-semibold text-[#38A3F1] hover:text-[#0D5FA6] transition-colors flex items-center gap-1"
+            >
+              Ver todas
+              <ChevronRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+
+          {initialSessions.length === 0 ? (
+            <div className="flex flex-col items-center gap-3 py-8 text-center">
+              <History className="w-8 h-8 text-[#BAD8F7]" />
+              <p className="text-sm text-[#5B8DB8]">Aún no has realizado ninguna simulación</p>
+              <p className="text-xs text-[#93B8D4]">Selecciona un escenario arriba y comienza a practicar</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+              {/* En progreso */}
+              {inProgressSessions.map((session) => {
+                const areaConfig = session.scenario
+                  ? AREA_ICONS[session.scenario.area] || AREA_ICONS["Otras áreas"]
+                  : AREA_ICONS["Otras áreas"];
+                const Icon = areaConfig.icon;
+                return (
+                  <Link key={session.id} href={`/student/simulation/${session.id}`}>
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      whileHover={{ y: -4 }}
+                      className="group bg-white rounded-2xl border border-[#E8F3FD] p-5 hover:shadow-xl hover:border-[#38A3F1]/30 transition-all duration-300"
+                    >
+                      <div className="flex items-start gap-3 mb-3">
+                        <div
+                          className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                          style={{ background: areaConfig.bg }}
+                        >
+                          <Icon className="w-5 h-5" style={{ color: areaConfig.color }} />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: areaConfig.color }}>
+                            {session.scenario?.area || "Simulación"}
+                          </p>
+                          <h3 className="text-sm font-bold text-[#0D3A6E] truncate">{session.scenario?.title || "Simulación"}</h3>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-[#F59E0B] bg-[#FFFBEB] border border-[#FDE9C0] px-2 py-0.5 rounded-full">
+                          <Loader2 className="w-3 h-3" />
+                          En progreso
+                        </span>
+                      </div>
+                    </motion.div>
+                  </Link>
+                );
+              })}
+
+              {/* Evaluadas */}
+              {evaluatedSessions.map((session) => {
+                const score = evaluationScores[session.id];
+                const areaConfig = session.scenario
+                  ? AREA_ICONS[session.scenario.area] || AREA_ICONS["Otras áreas"]
+                  : AREA_ICONS["Otras áreas"];
+                const Icon = areaConfig.icon;
+                const scoreColor = score != null
+                  ? score >= 70 ? "text-[#1D9E75]" : score >= 40 ? "text-[#D97706]" : "text-[#EF4444]"
+                  : "text-[#93B8D4]";
+                const scoreBg = score != null
+                  ? score >= 70 ? "bg-[#E1F5EE]" : score >= 40 ? "bg-[#FFFBEB]" : "bg-[#FEF2F2]"
+                  : "bg-[#F0F7FF]";
+
+                return (
+                  <Link key={session.id} href={`/student/simulation/${session.id}`}>
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      whileHover={{ y: -4 }}
+                      className="group bg-white rounded-2xl border border-[#E8F3FD] p-5 hover:shadow-xl hover:border-[#38A3F1]/30 transition-all duration-300"
+                    >
+                      <div className="flex items-start gap-3 mb-3">
+                        <div
+                          className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                          style={{ background: areaConfig.bg }}
+                        >
+                          <Icon className="w-5 h-5" style={{ color: areaConfig.color }} />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: areaConfig.color }}>
+                            {session.scenario?.area || "Simulación"}
+                          </p>
+                          <h3 className="text-sm font-bold text-[#0D3A6E] truncate">{session.scenario?.title || "Simulación"}</h3>
+                        </div>
+                        {score != null && (
+                          <div className={`text-sm font-bold px-2.5 py-1 rounded-full ${scoreBg} ${scoreColor} flex-shrink-0`}>
+                            {score}/100
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-[#1D9E75] bg-[#E1F5EE] border border-[#BFE8DA] px-2 py-0.5 rounded-full">
+                          <CheckCircle2 className="w-3 h-3" />
+                          Evaluada
+                        </span>
+                        <span className="inline-flex items-center gap-1 text-[10px] text-[#5B8DB8]">
+                          <Trophy className="w-3 h-3" />
+                          Completada
+                        </span>
+                      </div>
+                    </motion.div>
+                  </Link>
+                );
+              })}
+            </div>
+          )}
+        </section>
       </div>
     </div>
   );

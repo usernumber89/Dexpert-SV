@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
+import { toast } from "sonner";
 import {
   Send, BotMessageSquare, User, Sparkles, Clock, Target,
   AlertTriangle, FileText, Loader2, CheckCircle2, X,
@@ -74,7 +75,7 @@ export function SimulationWorkspace({
 
   const loadMessages = async () => {
     const msgs = await getSessionMessages(session.id);
-    if (msgs.length > 1) {
+    if (msgs.length > 0) {
       setMessages(msgs);
       setMessageCount(msgs.filter(m => m.role === "user").length);
     }
@@ -180,7 +181,11 @@ export function SimulationWorkspace({
         setEvaluation(data);
         setCompleted(true);
         setActiveTab("evaluation");
+      } else {
+        toast.error(data.error || "Error al evaluar la simulación. Intenta de nuevo.");
       }
+    } catch {
+      toast.error("Error de conexión. Verifica tu internet e intenta de nuevo.");
     } finally {
       setEvaluating(false);
     }
@@ -250,7 +255,7 @@ export function SimulationWorkspace({
                 Solicitar cambio
               </button>
             )}
-            {messageCount >= 3 && !completed && (
+            {messageCount >= 1 && !completed && (
               <button
                 onClick={finishAndEvaluate}
                 disabled={evaluating}

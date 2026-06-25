@@ -164,7 +164,7 @@ export function StudentDashboard({ user, student, applications, projects }: Prop
           ))}
         </div>
 
-        {/* AI Banner */}
+        {/* AI Banner 
         <div className="relative overflow-hidden bg-gradient-to-r from-[#0D3A6E] to-[#1A4A7A] rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-xl">
           <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full blur-2xl" />
           <div className="relative flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
@@ -183,7 +183,7 @@ export function StudentDashboard({ user, student, applications, projects }: Prop
               Abrir IA
             </Link>
           </div>
-        </div>
+        </div>*/}
 
         {/* Recent Applications */}
         <div className="bg-white rounded-xl sm:rounded-2xl border border-[#E8F3FD] shadow-sm overflow-hidden">
