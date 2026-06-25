@@ -107,6 +107,12 @@ export async function POST(req: Request) {
       credits_granted: creditsToAdd,
     });
 
+    // 3b. Registrar también en purchases para que el sidebar detecte el plan
+    await supabase.from("purchases").insert({
+      user_id: pyme.user_id,
+      plan: plan.toUpperCase(),
+    });
+
     // 4. Generar factura
     try {
       const year = new Date().getFullYear();
