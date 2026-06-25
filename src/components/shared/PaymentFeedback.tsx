@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import {
   useSearchParams,
   useRouter,
@@ -13,11 +13,13 @@ import {
 } from "lucide-react";
 
 import { toast } from "sonner";
+import { recordPurchase } from "@/app/actions/pyme/premium";
 
 export function PaymentFeedback() {
   const params = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
+  const recordedRef = useRef(false);
 
   const [showSuccess, setShowSuccess] =
     useState(false);
@@ -43,9 +45,21 @@ export function PaymentFeedback() {
         }
       );
 
+      const plan = params.get("plan");
+      if (plan && !recordedRef.current) {
+        recordedRef.current = true;
+        recordPurchase(transactionId, plan).then((res) => {
+          if (res?.success) {
+            console.log("Plan registrado:", res.plan);
+            router.refresh();
+          } else {
+            console.error("Error registrando compra:", res?.error);
+          }
+        });
+      }
+
       const timer = setTimeout(() => {
         router.replace(pathname);
-        router.refresh();
       }, 8000);
 
       return () => clearTimeout(timer);

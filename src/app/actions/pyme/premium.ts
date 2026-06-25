@@ -21,6 +21,108 @@ export async function getPymePlan() {
 
 import { isPremiumPlan } from "@/lib/premium";
 
+const PLAN_CREDITS: Record<string, number> = {
+  starter: 3,
+  growth: 10,
+  pro: 25,
+};
+
+const PLAN_AMOUNTS: Record<string, number> = {
+  starter: 9.99,
+  growth: 24.99,
+  pro: 49.99,
+};
+
+const PLAN_NAMES: Record<string, string> = {
+  starter: "Dexpert Starter",
+  growth: "Dexpert Growth",
+  pro: "Dexpert Pro",
+};
+
+export async function recordPurchase(transactionId: string, plan: string) {
+  const supabase = await createServerClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: "No autorizado" };
+
+  const { data: pyme } = await supabase
+    .from("pymes")
+    .select("id, company_name")
+    .eq("user_id", user.id)
+    .maybeSingle();
+  if (!pyme) return { error: "PYME no encontrada" };
+
+  const supabaseAdmin = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+
+  const creditsToAdd = PLAN_CREDITS[plan];
+  const planUpper = plan.toUpperCase();
+
+  // 1. Actualizar créditos
+  const { data: creditsData } = await supabaseAdmin
+    .from("pyme_credits")
+    .select("credits_available")
+    .eq("pyme_id", pyme.id)
+    .maybeSingle();
+
+  if (creditsData) {
+    await supabaseAdmin
+      .from("pyme_credits")
+      .update({
+        credits_available: creditsData.credits_available + creditsToAdd,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("pyme_id", pyme.id);
+  } else {
+    await supabaseAdmin
+      .from("pyme_credits")
+      .insert({ pyme_id: pyme.id, credits_available: creditsToAdd, credits_used: 0 });
+  }
+
+  // 2. Historial
+  await supabaseAdmin.from("credit_purchases").insert({
+    user_id: user.id,
+    pyme_id: pyme.id,
+    plan: planUpper,
+    stripe_id: transactionId,
+    credits_granted: creditsToAdd,
+  });
+
+  // 3. Purchases (para sidebar)
+  await supabaseAdmin.from("purchases").insert({
+    user_id: user.id,
+    plan: planUpper,
+  });
+
+  // 4. Factura
+  try {
+    const year = new Date().getFullYear();
+    const { count } = await supabaseAdmin
+      .from("invoices")
+      .select("*", { count: "exact", head: true })
+      .gte("created_at", `${year}-01-01`)
+      .lte("created_at", `${year}-12-31`);
+
+    const invoiceNumber = `FACT-${year}-${String((count || 0) + 1).padStart(6, "0")}`;
+
+    await supabaseAdmin.from("invoices").insert({
+      pyme_id: pyme.id,
+      user_id: user.id,
+      invoice_number: invoiceNumber,
+      plan: planUpper,
+      plan_name: PLAN_NAMES[plan] || plan,
+      amount: PLAN_AMOUNTS[plan] || 0,
+      transaction_id: transactionId,
+      company_name: pyme.company_name || null,
+    });
+  } catch (e) {
+    console.error("Error generando factura (no crítico):", e);
+  }
+
+  return { success: true, plan: planUpper };
+}
+
 // ── Proyectos Destacados ──
 
 export async function toggleFeaturedProject(projectId: string, featured: boolean) {

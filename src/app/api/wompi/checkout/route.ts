@@ -36,7 +36,7 @@ export async function POST(req: Request) {
       monto: selectedPlan.amount,
       nombreProducto: selectedPlan.name,
       configuracion: {
-        urlRedirect: `${process.env.NEXT_PUBLIC_APP_URL}/pyme/dashboard?success=true`,
+        urlRedirect: `${process.env.NEXT_PUBLIC_APP_URL}/pyme/dashboard?success=true&plan=${plan}`,
         urlWebhook: `${process.env.NEXT_PUBLIC_APP_URL}/api/wompi/webhook`,
         notificarTransaccionCliente: true,
       },
