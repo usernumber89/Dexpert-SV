@@ -2,15 +2,15 @@ import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
 const PLAN_CREDITS: Record<string, number> = {
-  starter: 3,
+  starter: 1,
   growth: 10,
   pro: 25,
 };
 
 const PLAN_AMOUNTS: Record<string, number> = {
-  starter: 9.99,
-  growth: 24.99,
-  pro: 49.99,
+  starter: 3.99,
+  growth: 27.49,
+  pro: 54.99,
 };
 
 const PLAN_NAMES: Record<string, string> = {

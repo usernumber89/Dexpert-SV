@@ -7,12 +7,10 @@ import {
   Eye, Users, Calendar, ArrowRight,
   Building2, Sparkles, TrendingUp, Zap,
 } from "lucide-react";
-import { getAllProjectsAnalytics } from "@/app/actions/pyme/premium";
-import { FeaturedToggle } from "./FeaturedToggle";
-import { getPymePlan } from "@/app/actions/pyme/premium";
+import { getAllProjectsAnalytics, getPymePlan } from "@/app/actions/pyme/premium";
 import { isPremiumPlan } from "@/lib/premium";
+import { FeaturedToggle } from "./FeaturedToggle";
 import Link from "next/link";
-import PremiumGuard from "@/features/pyme/components/PremiumGuard";
 import {QuestionIcon} from "@phosphor-icons/react"
 
 type Project = {
@@ -32,12 +30,14 @@ export default function FeaturedProjectsPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<"all" | "featured" | "not-featured">("all");
+  const [hasPremium, setHasPremium] = useState(false);
 
   useEffect(() => {
     getAllProjectsAnalytics().then((data: any) => {
       setProjects(data);
       setLoading(false);
     });
+    getPymePlan().then((plan) => setHasPremium(isPremiumPlan(plan)));
   }, []);
 
   const filtered = projects.filter((p) => {
@@ -57,8 +57,7 @@ export default function FeaturedProjectsPage() {
   }
 
   return (
-    <PremiumGuard>
-      <div className="max-w-5xl mx-auto space-y-8">
+    <div className="max-w-5xl mx-auto space-y-8">
         {/* Header */}
         <div>
           <h1 className="text-2xl font-bold text-[#0D3A6E] flex items-center gap-2">
@@ -187,7 +186,7 @@ export default function FeaturedProjectsPage() {
                   <FeaturedToggle
                     projectId={project.id}
                     isFeatured={project.is_featured}
-                    isPremium={true}
+                    isPremium={hasPremium}
                     onToggle={(id, featured) => {
                       setProjects((prev) =>
                         prev.map((p) =>
@@ -247,6 +246,5 @@ export default function FeaturedProjectsPage() {
           </div>
         )}
       </div>
-    </PremiumGuard>
   );
 }

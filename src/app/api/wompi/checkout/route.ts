@@ -3,9 +3,9 @@ import { createClient } from "@/lib/supabase/server";
 import { getWompiToken } from "@/lib/wompi";
 
 const PLANS = {
-  starter: { amount: 9.99, credits: 3, name: "Dexpert Starter" },
-  growth: { amount: 24.99, credits: 10, name: "Dexpert Growth" },
-  pro: { amount: 49.99, credits: 25, name: "Dexpert Pro" },
+  starter: { amount: 3.99, credits: 1, name: "Dexpert Starter" },
+  growth: { amount: 27.49, credits: 10, name: "Dexpert Growth" },
+  pro: { amount: 54.99, credits: 25, name: "Dexpert Pro" },
 } as const;
 
 export async function POST(req: Request) {

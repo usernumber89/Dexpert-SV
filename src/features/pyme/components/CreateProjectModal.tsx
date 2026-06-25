@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
-import { X, Sparkles, Brain, Loader2 } from "lucide-react";
+import { X, Sparkles, Brain, Loader2, Crown } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
 import { ProjectAnalysis } from "./ProjectAnalysis";
 
 const schema = z.object({
@@ -41,6 +42,22 @@ export function CreateProjectModal({ onClose, onSuccess }: {
   const [analysis, setAnalysis] = useState<AnalysisResult | null>(null);
   const [category, setCategory] = useState("");
   const [level, setLevel] = useState("");
+
+  const [hasAIAccess, setHasAIAccess] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      const supabase = createClient();
+      const { data, error } = await supabase
+        .from("purchases")
+        .select("plan")
+        .eq("user_id", (await supabase.auth.getUser()).data.user?.id)
+        .order("created_at", { ascending: false })
+        .limit(1);
+      const plan = data?.[0]?.plan;
+      setHasAIAccess(plan === "GROWTH" || plan === "PRO");
+    })();
+  }, []);
 
   const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<FormValues>({
     resolver: zodResolver(schema),
@@ -168,26 +185,38 @@ export function CreateProjectModal({ onClose, onSuccess }: {
         <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-4">
 
           {/* AI section */}
-          <div className="rounded-xl bg-[#F0F7FF] border border-[#BAD8F7] p-4 space-y-3">
-            <div className="flex items-center gap-2">
-              <Sparkles className="w-3.5 h-3.5 text-[#38A3F1]" />
-              <p className="text-xs font-medium text-[#38A3F1] uppercase tracking-widest">Generar con IA</p>
+          {hasAIAccess ? (
+            <div className="rounded-xl bg-[#F0F7FF] border border-[#BAD8F7] p-4 space-y-3">
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-3.5 h-3.5 text-[#38A3F1]" />
+                <p className="text-xs font-medium text-[#38A3F1] uppercase tracking-widest">Generar con IA</p>
+              </div>
+              <input
+                {...register("prompt")}
+                placeholder="ej. Necesito un sitio web para mi panadería en Santa Ana"
+                className="w-full text-sm px-3 py-2.5 rounded-lg border border-[#BAD8F7] bg-white text-[#0D3A6E] placeholder:text-[#93B8D4] focus:outline-none focus:border-[#38A3F1] transition-colors"
+              />
+              <button
+                type="button"
+                onClick={generateWithAI}
+                disabled={generating || analyzing}
+                className="flex items-center gap-2 text-sm font-medium text-[#38A3F1] hover:text-[#0D5FA6] transition disabled:opacity-50"
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                {generating ? "Generando..." : analyzing ? "Analizando..." : "Generar descripción"}
+              </button>
             </div>
-            <input
-              {...register("prompt")}
-              placeholder="ej. Necesito un sitio web para mi panadería en Santa Ana"
-              className="w-full text-sm px-3 py-2.5 rounded-lg border border-[#BAD8F7] bg-white text-[#0D3A6E] placeholder:text-[#93B8D4] focus:outline-none focus:border-[#38A3F1] transition-colors"
-            />
-            <button
-              type="button"
-              onClick={generateWithAI}
-              disabled={generating || analyzing}
-              className="flex items-center gap-2 text-sm font-medium text-[#38A3F1] hover:text-[#0D5FA6] transition disabled:opacity-50"
-            >
-              <Sparkles className="w-3.5 h-3.5" />
-              {generating ? "Generando..." : analyzing ? "Analizando..." : "Generar descripción"}
-            </button>
-          </div>
+          ) : (
+            <div className="rounded-xl bg-[#FFFBEB] border border-[#FDE68A] p-4 space-y-2">
+              <div className="flex items-center gap-2">
+                <Crown className="w-3.5 h-3.5 text-[#F59E0B]" />
+                <p className="text-xs font-medium text-[#F59E0B] uppercase tracking-widest">IA disponible en Growth+</p>
+              </div>
+              <p className="text-xs text-[#5B8DB8]">
+                El escritor de briefs con IA está disponible en los planes Growth y Pro.
+              </p>
+            </div>
+          )}
 
           {/* Fields */}
           <div className="space-y-3">
@@ -224,7 +253,7 @@ export function CreateProjectModal({ onClose, onSuccess }: {
           </div>
 
           {/* Analyze button (manual, for when user types their own description) */}
-          {description?.trim().length >= 10 && !analysis && !analyzing && !generating && (
+          {hasAIAccess && description?.trim().length >= 10 && !analysis && !analyzing && !generating && (
             <button
               type="button"
               onClick={analyzeProject}

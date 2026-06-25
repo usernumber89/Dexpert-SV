@@ -26,41 +26,42 @@ const PLANS = [
   {
     id: "STARTER",
     name: "Starter",
-    tagline: "Perfecto para probar Dexpert con tus primeros proyectos reales.",
-    price: 9.99,
-    credits: 3,
-    perCredit: "3.33",
+    tagline: "Perfecto para empezar con tu primer proyecto real.",
+    price: 3.99,
+    credits: 1,
+    perCredit: "3.99",
     icon: Route,
     iconBg: "bg-white",
     iconColor: "text-[#38A3F1]",
     badge: null,
     cta: "Comenzar",
     features: [
-      "3 créditos de proyecto",
-      "Solicitudes de estudiantes",
-      "Visibilidad estándar",
-      "Escritor de briefs AI básico",
-      "Soporte por correo electrónico",
+      "1 proyecto activo",
+      "Postulaciones de estudiantes",
     ],
     highlighted: false,
   },
   {
     id: "GROWTH",
     name: "Growth",
-    tagline: "Para PYMES que necesitan talento consistente a lo largo de múltiples proyectos.",
-    price: 24.99,
+    tagline: "Para PYMES que necesitan talento consistente en múltiples proyectos.",
+    price: 27.49,
     credits: 10,
-    perCredit: "2.50",
+    perCredit: "2.75",
     icon: Sprout,
     iconBg: "bg-[#0D3A6E]",
     iconColor: "text-white",
-    
+
     cta: "Obtener Growth",
     features: [
-      "10 créditos de proyecto",
+      "10 proyectos activos",
       "Todo en Starter",
-      "Escritor de briefs AI (completo)",
+      "Visibilidad destacada",
+      "Proyectos destacados",
+      "Analítica completa",
+      "Escritor de briefs AI",
       "Candidatos recomendados",
+      "Talent Pool (guardar estudiantes)",
       "Soporte prioritario",
     ],
     highlighted: true,
@@ -69,20 +70,19 @@ const PLANS = [
     id: "PRO",
     name: "Pro",
     tagline: "Para PYMES en crecimiento con necesidades constantes de contratación.",
-    price: 49.99,
+    price: 54.99,
     credits: 25,
-    perCredit: "2.00",
+    perCredit: "2.20",
     icon: Crown,
     iconBg: "bg-white",
     iconColor: "text-[#38A3F1]",
-    
+
     cta: "Obtener Pro",
     features: [
-      "25 créditos de proyecto",
+      "25 proyectos activos",
       "Todo en Growth",
-      "Listados destacados",
-      "Sólo los mejores candidatos",
-      "Gerente de cuenta dedicado",
+      "Solo candidatos destacados",
+      "Account Manager dedicado",
     ],
     highlighted: false,
   },
@@ -169,6 +169,7 @@ export function PymePricing({ pymeId, creditsAvailable: initialAvailable, credit
         "Redirigiendo a Wompi..."
       );
 
+      document.cookie = `pending_plan=${planId.toLowerCase()}; path=/; max-age=3600`;
       window.location.href = data.url;
     } catch (error) {
       console.error(error);

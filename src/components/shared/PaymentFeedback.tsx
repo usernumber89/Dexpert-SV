@@ -45,9 +45,12 @@ export function PaymentFeedback() {
         }
       );
 
-      const plan = params.get("plan");
+      const planFromUrl = params.get("plan");
+      const planFromCookie = document.cookie.split("; ").find(c => c.startsWith("pending_plan="))?.split("=")[1];
+      const plan = planFromUrl || planFromCookie;
       if (plan && !recordedRef.current) {
         recordedRef.current = true;
+        document.cookie = "pending_plan=; path=/; max-age=0";
         recordPurchase(transactionId, plan).then((res) => {
           if (res?.success) {
             console.log("Plan registrado:", res.plan);
