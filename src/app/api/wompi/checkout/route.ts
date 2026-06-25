@@ -2,11 +2,12 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getWompiToken } from "@/lib/wompi";
 
-const PLANS = {
-  starter: { amount: 3.99, credits: 1, name: "Dexpert Starter" },
-  growth: { amount: 27.49, credits: 10, name: "Dexpert Growth" },
-  pro: { amount: 54.99, credits: 25, name: "Dexpert Pro" },
-} as const;
+const PLANS: Record<string, { amount: number; name: string }> = {
+  starter: { amount: 3.99, name: "Dexpert Starter" },
+  growth: { amount: 27.49, name: "Dexpert Growth" },
+  pro: { amount: 54.99, name: "Dexpert Pro" },
+  talent: { amount: 6.99, name: "Acceso a Talento" },
+};
 
 export async function POST(req: Request) {
   try {
@@ -16,7 +17,7 @@ export async function POST(req: Request) {
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const { plan } = await req.json();
-    const selectedPlan = PLANS[plan as keyof typeof PLANS];
+    const selectedPlan = PLANS[plan];
 
     if (!selectedPlan) return NextResponse.json({ error: "Invalid plan" }, { status: 400 });
 

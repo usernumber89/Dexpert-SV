@@ -12,6 +12,7 @@ import { usePathname } from 'next/navigation';
 import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
+import { hasTalentAccess } from '@/app/actions/pyme/premium';
 import {
   LayoutDashboard, User, FolderOpen, Award, Bot,
   HelpCircle, Users, LogOut, Banknote, PanelLeft, GraduationCap, Rocket, Receipt,
@@ -36,10 +37,10 @@ const pymeRoutes = [
   { title: 'Panel de Control', url: '/pyme/dashboard', icon: LayoutDashboard },
   { title: 'Proyectos en Marcha', url: '/pyme/in-progress', icon: Rocket },
   { title: 'Aplicantes / Solicitudes', url: '/pyme/applications', icon: Users },
-  { title: "Talento", url: '/pyme/talent', icon: GraduationCap, requiresPremiumPlan: true },
-  { title: 'Mi Talent Pool', url: '/pyme/talent-pool', icon: Star, requiresPremiumPlan: true },
-  { title: 'Destacados', url: '/pyme/featured-projects', icon: BriefcaseBusiness, requiresPremiumPlan: true },
-  { title: 'Analítica', url: '/pyme/analytics', icon: BarChart3, requiresPremiumPlan: true },
+  { title: "Talento", url: '/pyme/talent', icon: GraduationCap, requiresTalentAccess: true },
+  { title: 'Mi Talent Pool', url: '/pyme/talent-pool', icon: Star },
+  { title: 'Destacados', url: '/pyme/featured-projects', icon: BriefcaseBusiness },
+  { title: 'Analítica', url: '/pyme/analytics', icon: BarChart3 },
   { title: 'Créditos', url: '/pyme/pricing', icon: Banknote },
   { title: 'Facturas', url: '/pyme/invoices', icon: Receipt },
   { title: 'Perfil', url: '/pyme/profile', icon: User },
@@ -56,6 +57,7 @@ export function AppSidebar() {
 
   const [mounted, setMounted] = useState(false);
   const [currentPlan, setCurrentPlan] = useState<string | null>(null);
+  const [talentUnlocked, setTalentUnlocked] = useState(false);
 
   console.log("=== DEXPERT SIDEBAR DEBUG ===");
   console.log("Rol actual:", role);
@@ -103,12 +105,11 @@ export function AppSidebar() {
       }
     }
 
-    // CORRECCIÓN AQUÍ: Si hay sesión de usuario, buscamos su plan directamente 
-    // sin importar si 'role' se quedó colgado en null.
     if (user?.id) {
       fetchLatestPlan();
+      hasTalentAccess().then(setTalentUnlocked);
     }
-  }, [user?.id]); // Escuchamos únicamente al cambio del ID de usuario
+  }, [user?.id]);
 
   const handleSignOut = async () => {
     const supabase = createClient();
@@ -132,18 +133,11 @@ export function AppSidebar() {
     );
   }
 
-  // Validación de acceso premium basada en tu estado de plan actual
-  const hasPremiumAccess = currentPlan === 'GROWTH' || currentPlan === 'PRO';
-  console.log("¿Tiene acceso Premium?:", hasPremiumAccess);
-
   const filteredPymeRoutes = pymeRoutes.filter(route => {
-    if (route.requiresPremiumPlan && !hasPremiumAccess) {
-      return false; 
-    }
+    if ((route as any).requiresTalentAccess && !talentUnlocked) return false;
     return true;
   });
 
-  // Si el rol es STUDENT renderiza studentRoutes, para cualquier otro caso (o null provicional) renderiza las de PYME filtradas
   const routes = role === 'STUDENT' ? studentRoutes : filteredPymeRoutes;
   const profileHref = role === 'STUDENT' ? '/student/profile' : '/pyme/profile';
   const displayName = profile?.full_name || user?.email?.split('@')[0] || 'User';

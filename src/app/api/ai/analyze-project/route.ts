@@ -2,7 +2,6 @@ import { generateText } from "ai";
 import { groq } from "@ai-sdk/groq";
 import { z } from "zod";
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
 
 const AnalysisSchema = z.object({
   categoria: z.string(),
@@ -18,23 +17,6 @@ const AnalysisSchema = z.object({
 
 export async function POST(req: Request) {
   try {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
-
-    const { data: purchase } = await supabase
-      .from("purchases")
-      .select("plan")
-      .eq("user_id", user.id)
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
-
-    const plan = purchase?.plan;
-    if (plan !== "GROWTH" && plan !== "PRO") {
-      return NextResponse.json({ error: "Disponible en planes Growth y Pro" }, { status: 403 });
-    }
-
     const { prompt } = await req.json();
 
     if (!prompt || typeof prompt !== "string") {

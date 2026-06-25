@@ -3,6 +3,20 @@
 import { createClient as createServerClient } from "@/lib/supabase/server";
 import { createClient } from "@supabase/supabase-js";
 
+export async function hasTalentAccess() {
+  const supabase = await createServerClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return false;
+
+  const { data: purchases } = await supabase
+    .from("purchases")
+    .select("plan")
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: false });
+
+  return purchases?.some(p => p.plan === "TALENT_ACCESS" || p.plan === "GROWTH" || p.plan === "PRO") ?? false;
+}
+
 export async function getPymePlan() {
   const supabase = await createServerClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -55,6 +69,15 @@ export async function recordPurchase(transactionId: string, plan: string) {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
+
+  // Si es talent access, solo registrar en purchases
+  if (plan === "talent") {
+    await supabaseAdmin.from("purchases").insert({
+      user_id: user.id,
+      plan: "TALENT_ACCESS",
+    });
+    return { success: true, plan: "TALENT_ACCESS" };
+  }
 
   const creditsToAdd = PLAN_CREDITS[plan];
   const planUpper = plan.toUpperCase();
@@ -130,9 +153,6 @@ export async function toggleFeaturedProject(projectId: string, featured: boolean
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: "No autorizado" };
 
-  const plan = await getPymePlan();
-  if (!isPremiumPlan(plan)) return { error: "Se requiere plan premium" };
-
   const { error } = await supabase
     .from("projects")
     .update({ is_featured: featured })
@@ -178,9 +198,6 @@ export async function saveStudent(studentId: string, notes?: string) {
   const supabase = await createServerClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: "No autorizado" };
-
-  const plan = await getPymePlan();
-  if (!isPremiumPlan(plan)) return { error: "Se requiere plan premium" };
 
   const pymeId = await getPymeId(supabase, user.id);
   if (!pymeId) return { error: "Perfil PYME no encontrado" };

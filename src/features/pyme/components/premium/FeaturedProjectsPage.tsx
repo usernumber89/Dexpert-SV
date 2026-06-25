@@ -7,8 +7,7 @@ import {
   Eye, Users, Calendar, ArrowRight,
   Building2, Sparkles, TrendingUp, Zap,
 } from "lucide-react";
-import { getAllProjectsAnalytics, getPymePlan } from "@/app/actions/pyme/premium";
-import { isPremiumPlan } from "@/lib/premium";
+import { getAllProjectsAnalytics } from "@/app/actions/pyme/premium";
 import { FeaturedToggle } from "./FeaturedToggle";
 import Link from "next/link";
 import {QuestionIcon} from "@phosphor-icons/react"
@@ -30,14 +29,12 @@ export default function FeaturedProjectsPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<"all" | "featured" | "not-featured">("all");
-  const [hasPremium, setHasPremium] = useState(false);
 
   useEffect(() => {
     getAllProjectsAnalytics().then((data: any) => {
       setProjects(data);
       setLoading(false);
     });
-    getPymePlan().then((plan) => setHasPremium(isPremiumPlan(plan)));
   }, []);
 
   const filtered = projects.filter((p) => {
@@ -186,7 +183,7 @@ export default function FeaturedProjectsPage() {
                   <FeaturedToggle
                     projectId={project.id}
                     isFeatured={project.is_featured}
-                    isPremium={hasPremium}
+                    isPremium={true}
                     onToggle={(id, featured) => {
                       setProjects((prev) =>
                         prev.map((p) =>

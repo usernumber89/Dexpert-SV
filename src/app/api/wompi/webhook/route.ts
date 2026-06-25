@@ -71,6 +71,17 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Pyme not found" }, { status: 404 });
     }
 
+    // Si es talent access, solo registrar en purchases (sin créditos ni factura)
+    if (plan === "talent") {
+      await supabase.from("purchases").insert({
+        user_id: pyme.user_id,
+        plan: "TALENT_ACCESS",
+      });
+
+      console.log(`Talento desbloqueado para PYME ${pymeId}`);
+      return NextResponse.json({ success: true });
+    }
+
     const creditsToAdd = PLAN_CREDITS[plan];
 
     // 2. Obtener los créditos actuales de pyme_credits
