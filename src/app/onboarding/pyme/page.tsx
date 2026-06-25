@@ -104,6 +104,7 @@ export default function PymeOnboardingPage() {
 
     const { error } = await supabase.from("pymes").upsert({
       id: user.id,
+      user_id: user.id,
       company_name: form.name,
       contact_person: form.contact,
       description: form.description,

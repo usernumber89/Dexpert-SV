@@ -174,6 +174,7 @@ export default function SignUpPage() {
         });
       } else {
         await supabase.from("pymes").upsert({
+          id: user.id,
           user_id: user.id,
           company_name: fullName,
           contact_person: fullName,
