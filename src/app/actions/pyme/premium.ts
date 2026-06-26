@@ -8,12 +8,7 @@ export async function hasTalentAccess() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return false;
 
-  const supabaseAdmin = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
-
-  const { data: purchases } = await supabaseAdmin
+  const { data: purchases } = await getSupabaseAdmin()
     .from("purchases")
     .select("plan")
     .eq("user_id", user.id)
@@ -27,12 +22,7 @@ export async function getPymePlan() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return null;
 
-  const supabaseAdmin = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
-
-  const { data: purchase } = await supabaseAdmin
+  const { data: purchase } = await getSupabaseAdmin()
     .from("purchases")
     .select("plan")
     .eq("user_id", user.id)
@@ -44,6 +34,13 @@ export async function getPymePlan() {
 }
 
 import { isPremiumPlan } from "@/lib/premium";
+
+function getSupabaseAdmin() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+}
 
 const PLAN_CREDITS: Record<string, number> = {
   starter: 1,
@@ -192,10 +189,11 @@ export async function getSavedStudents() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return [];
 
-  const pymeId = await getPymeId(supabase, user.id);
+  const admin = getSupabaseAdmin();
+  const pymeId = await getPymeId(admin, user.id);
   if (!pymeId) return [];
 
-  const { data } = await supabase
+  const { data } = await admin
     .from("saved_students")
     .select("*, student:students(*)")
     .eq("pyme_id", pymeId)
@@ -299,6 +297,16 @@ export async function trackProjectView(projectId: string) {
   await supabaseAdmin.rpc("increment_project_views", {
     p_project_id: projectId,
   });
+}
+
+// ── Directorio de Talento ──
+
+export async function getStudents() {
+  const { data } = await getSupabaseAdmin()
+    .from("students")
+    .select("*")
+    .order("full_name", { ascending: true });
+  return data || [];
 }
 
 // ── Helpers ──

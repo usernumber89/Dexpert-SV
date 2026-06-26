@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { createClient } from "@/lib/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Search,
@@ -21,7 +20,7 @@ import Image from "next/image";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import {GithubLogoIcon, LinkedinLogoIcon} from "@phosphor-icons/react"
-import { saveStudent, removeSavedStudent, getSavedStudents } from "@/app/actions/pyme/premium";
+import { saveStudent, removeSavedStudent, getSavedStudents, getStudents } from "@/app/actions/pyme/premium";
 
 // Ajustado según el esquema de tu base de datos
 type Student = {
@@ -81,16 +80,8 @@ export default function TalentSearchPage() {
   }, [searchTerm, selectedSkill, students]);
 
   const loadStudents = async () => {
-    const supabase = createClient();
-    
     try {
-      // Obtenemos los estudiantes. Puedes agregar un .eq('is_public', true) si tienes esa bandera
-      const { data, error } = await supabase
-        .from("students")
-        .select("*")
-        .order("full_name", { ascending: true });
-
-      if (error) throw error;
+      const data = await getStudents();
 
       if (data) {
         setStudents(data);
