@@ -1,13 +1,26 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { TalentPoolPanel } from "@/features/pyme/components/premium/TalentPoolPanel";
 import { TalentPaywall } from "@/features/pyme/components/TalentPaywall";
 import { hasTalentAccess } from "@/app/actions/pyme/premium";
 import { Loader2 } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 
-export default function TalentPoolPage() {
+function TalentPoolLoader() {
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-[#F0F7FF] via-white to-[#E8F3FD] flex items-center justify-center">
+      <div className="text-center max-w-sm px-4">
+        <div className="w-16 h-16 rounded-2xl bg-[#F0F7FF] border border-[#BAD8F7] flex items-center justify-center mx-auto mb-4">
+          <Loader2 className="w-8 h-8 text-[#38A3F1] animate-spin" />
+        </div>
+        <h2 className="text-lg font-bold text-[#0D3A6E] mb-2">Verificando acceso...</h2>
+      </div>
+    </div>
+  );
+}
+
+function TalentPoolContent() {
   const searchParams = useSearchParams();
   const isPostPayment = searchParams.get("success") === "true";
 
@@ -86,5 +99,13 @@ export default function TalentPoolPage() {
         <TalentPoolPanel />
       </div>
     </div>
+  );
+}
+
+export default function TalentPoolPage() {
+  return (
+    <Suspense fallback={<TalentPoolLoader />}>
+      <TalentPoolContent />
+    </Suspense>
   );
 }

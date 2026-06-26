@@ -1,7 +1,7 @@
-// app/pyme/talent/page.tsx  ← reemplaza el useEffect de hasTalentAccess
+"use client";
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, Suspense } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Search, Filter, MapPin, GraduationCap, Mail, ArrowUpRight,
@@ -34,7 +34,7 @@ type Student = {
   portfolio: string | null;
 };
 
-export default function TalentSearchPage() {
+function TalentSearchContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const isPostPayment = searchParams.get("success") === "true";
@@ -355,5 +355,24 @@ export default function TalentSearchPage() {
         )}
       </div>
     </div>
+  );
+}
+
+function TalentSearchLoader() {
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-[#F0F7FF] via-white to-[#E8F3FD] flex items-center justify-center">
+      <div className="text-center">
+        <Loader2 className="w-10 h-10 text-[#38A3F1] animate-spin mx-auto mb-4" />
+        <p className="text-sm text-[#5B8DB8]">Cargando...</p>
+      </div>
+    </div>
+  );
+}
+
+export default function TalentSearchPage() {
+  return (
+    <Suspense fallback={<TalentSearchLoader />}>
+      <TalentSearchContent />
+    </Suspense>
   );
 }
