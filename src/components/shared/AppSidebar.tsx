@@ -61,15 +61,26 @@ export function AppSidebar() {
 
   useEffect(() => {
     setMounted(true);
+    checkAccess();
+  }, []);
 
+  useEffect(() => {
+    const hasSuccess = new URLSearchParams(window.location.search).get("success") === "true";
+    if (hasSuccess) {
+      checkAccess();
+    }
+  }, [pathname]);
+
+  const checkAccess = async () => {
     const params = new URLSearchParams(window.location.search);
     const planFromUrl = params.get('plan');
     if (planFromUrl) {
       setCurrentPlan(planFromUrl.toUpperCase());
     }
 
-    hasTalentAccess().then(setTalentUnlocked);
-  }, []);
+    const access = await hasTalentAccess();
+    setTalentUnlocked(access);
+  };
 
   const handleSignOut = async () => {
     const supabase = createClient();
