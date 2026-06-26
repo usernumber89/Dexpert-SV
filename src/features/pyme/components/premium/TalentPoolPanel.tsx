@@ -7,7 +7,7 @@ import {
   MessageSquare, Mail, Search, Crown, ExternalLink,
 } from "lucide-react";
 import {
-  getSavedStudents, removeSavedStudent, getPymePlan,
+  getSavedStudents, removeSavedStudent, getPymePlan, hasTalentAccess,
 } from "@/app/actions/pyme/premium";
 import { isPremiumPlan } from "@/lib/premium";
 import { toast } from "sonner";
@@ -34,6 +34,7 @@ export function TalentPoolPanel() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [plan, setPlan] = useState<string | null>(null);
+  const [talentAccess, setTalentAccess] = useState(false);
 
   useEffect(() => {
     getPymePlan().then(setPlan);
@@ -41,9 +42,10 @@ export function TalentPoolPanel() {
       setSaved(data as SavedStudent[]);
       setLoading(false);
     });
+    hasTalentAccess().then(setTalentAccess);
   }, []);
 
-  const isPremium = isPremiumPlan(plan);
+  const isPremium = isPremiumPlan(plan) || talentAccess;
 
   const filtered = saved.filter((s) =>
     !search || s.student.full_name?.toLowerCase().includes(search.toLowerCase())

@@ -16,7 +16,7 @@ import { hasTalentAccess } from '@/app/actions/pyme/premium';
 import {
   LayoutDashboard, User, FolderOpen, Award, Bot,
   HelpCircle, Users, LogOut, Banknote, PanelLeft, GraduationCap, Rocket, Receipt,
-  BrainCircuit, BookOpen, Trophy, Star, BarChart3, BriefcaseBusiness, Building2
+  BrainCircuit, BookOpen, Trophy, Star, BarChart3, BriefcaseBusiness, Building2, Lock
 } from 'lucide-react';
 import { DexpertLogo } from "@/components/DexpertLogo";
 import { BriefcaseIcon } from "@phosphor-icons/react";
@@ -68,17 +68,24 @@ export function AppSidebar() {
   useEffect(() => {
     setMounted(true);
 
-    async function fetchLatestPlan() {
+    async function checkAccess() {
+      // 1. Check URL params first (fastest — from payment redirect)
       const params = new URLSearchParams(window.location.search);
       const planFromUrl = params.get('plan');
       if (planFromUrl) {
         console.log("🎯 Plan encontrado en la URL:", planFromUrl);
         setCurrentPlan(planFromUrl.toUpperCase());
+        const lower = planFromUrl.toLowerCase();
+        if (lower === "talent" || lower === "growth" || lower === "pro") {
+          setTalentUnlocked(true);
+          return; // Don't query DB — URL param is authoritative on redirect
+        }
       }
 
       if (!user?.id) return;
 
       try {
+        // 2. Query the latest purchase from DB
         const supabase = createClient();
         console.log("🔍 Buscando compras en la base de datos para el usuario:", user.id);
         
@@ -91,23 +98,27 @@ export function AppSidebar() {
 
         if (error) {
           console.error("❌ Error de Supabase al leer plan:", error.message);
-          return;
-        }
-
-        if (data && data.length > 0) {
+        } else if (data && data.length > 0) {
           console.log("✅ Plan recuperado con éxito de la DB:", data[0].plan);
           setCurrentPlan(data[0].plan);
+          const dbPlan = data[0].plan;
+          if (dbPlan === "TALENT_ACCESS" || dbPlan === "GROWTH" || dbPlan === "PRO") {
+            setTalentUnlocked(true);
+            return;
+          }
         } else {
           console.log("⚠️ No se encontraron filas en la tabla 'purchases' para este usuario.");
         }
       } catch (err) {
         console.error("❌ Error crítico en la petición de plan:", err);
       }
+
+      // 3. Final fallback: server action (checks all purchases rows)
+      hasTalentAccess().then(setTalentUnlocked);
     }
 
     if (user?.id) {
-      fetchLatestPlan();
-      hasTalentAccess().then(setTalentUnlocked);
+      checkAccess();
     }
   }, [user?.id]);
 
@@ -133,12 +144,7 @@ export function AppSidebar() {
     );
   }
 
-  const filteredPymeRoutes = pymeRoutes.filter(route => {
-    if ((route as any).requiresTalentAccess && !talentUnlocked) return false;
-    return true;
-  });
-
-  const routes = role === 'STUDENT' ? studentRoutes : filteredPymeRoutes;
+  const routes = role === 'STUDENT' ? studentRoutes : pymeRoutes;
   const profileHref = role === 'STUDENT' ? '/student/profile' : '/pyme/profile';
   const displayName = profile?.full_name || user?.email?.split('@')[0] || 'User';
 
@@ -186,31 +192,39 @@ export function AppSidebar() {
           )}
           <SidebarMenu className={`gap-1 ${isCollapsed ? 'items-center' : ''}`}>
             {routes.map((item) => {
-              const isActive = pathname.startsWith(item.url);
+              const isLocked = (item as any).requiresTalentAccess && !talentUnlocked;
+              const isActive = !isLocked && pathname.startsWith(item.url);
               return (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild isActive={isActive} tooltip={item.title}>
+                  <SidebarMenuButton asChild isActive={isActive} tooltip={isLocked ? `${item.title} (Bloqueado)` : item.title}>
                     <Link
-                      href={item.url}
+                      href={isLocked ? '/pyme/pricing' : item.url}
                       onClick={handleLinkClick}
                       className={`flex items-center rounded-lg transition-all duration-200 text-sm ${
                         isCollapsed
                           ? 'justify-center w-10 h-10 mx-auto p-0'
                           : 'justify-start gap-3 px-3 py-2 w-full'
                       } ${
-                        isActive
-                          ? 'bg-[#F0F7FF] text-[#0D5FA6] font-medium'
-                          : 'text-[#5B8DB8] hover:bg-[#F0F7FF] hover:text-[#0D3A6E]'
+                        isLocked
+                          ? 'text-[#BAD8F7] cursor-not-allowed opacity-60'
+                          : isActive
+                            ? 'bg-[#F0F7FF] text-[#0D5FA6] font-medium'
+                            : 'text-[#5B8DB8] hover:bg-[#F0F7FF] hover:text-[#0D3A6E]'
                       }`}
                     >
                       <item.icon
                         className={`flex-shrink-0 transition-colors ${
                           isCollapsed ? 'w-5 h-5' : 'w-4 h-4'
                         } ${
-                          isActive ? 'text-[#38A3F1]' : 'text-[#93B8D4]'
+                          isLocked ? 'text-[#BAD8F7]' : isActive ? 'text-[#38A3F1]' : 'text-[#93B8D4]'
                         }`}
                       />
-                      {!isCollapsed && <span>{item.title}</span>}
+                      {!isCollapsed && (
+                        <span className="flex items-center gap-2">
+                          {item.title}
+                          {isLocked && <Lock className="w-3 h-3" />}
+                        </span>
+                      )}
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
