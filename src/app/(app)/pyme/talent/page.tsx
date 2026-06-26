@@ -1,30 +1,23 @@
+// app/pyme/talent/page.tsx  ← reemplaza el useEffect de hasTalentAccess
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Search,
-  Filter,
-  MapPin,
-  GraduationCap,
-  Mail,
-  ArrowUpRight,
-  Sparkles,
-  Users,
-  Briefcase,
-  Star,
-  CheckCircle2,
-  Loader2,
+  Search, Filter, MapPin, GraduationCap, Mail, ArrowUpRight,
+  Sparkles, Users, Briefcase, Star, CheckCircle2, Loader2,
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
-import {GithubLogoIcon, LinkedinLogoIcon} from "@phosphor-icons/react"
-import { saveStudent, removeSavedStudent, getSavedStudents, getStudents, hasTalentAccess } from "@/app/actions/pyme/premium";
+import { useRouter, useSearchParams } from "next/navigation";
+import { GithubLogoIcon, LinkedinLogoIcon } from "@phosphor-icons/react";
+import {
+  saveStudent, removeSavedStudent, getSavedStudents,
+  getStudents, hasTalentAccess,
+} from "@/app/actions/pyme/premium";
 import { TalentPaywall } from "@/features/pyme/components/TalentPaywall";
 
-// Ajustado según el esquema de tu base de datos
 type Student = {
   id: string;
   full_name: string | null;
@@ -43,8 +36,12 @@ type Student = {
 
 export default function TalentSearchPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const isPostPayment = searchParams.get("success") === "true";
+
   const [loading, setLoading] = useState(true);
   const [hasAccess, setHasAccess] = useState<boolean | null>(null);
+  const [checkingPayment, setCheckingPayment] = useState(false);
   const [students, setStudents] = useState<Student[]>([]);
   const [filteredStudents, setFilteredStudents] = useState<Student[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -52,22 +49,73 @@ export default function TalentSearchPage() {
   const [availableSkills, setAvailableSkills] = useState<string[]>([]);
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
 
-  useEffect(() => {
-    hasTalentAccess().then((access) => {
-      setHasAccess(access);
-      if (access) {
-        loadStudents();
-        loadSavedAndPlan();
-      } else {
-        setLoading(false);
-      }
-    });
+  const loadStudentsAndSaved = useCallback(async () => {
+    const [data, saved] = await Promise.all([getStudents(), getSavedStudents()]);
+    if (data) {
+      setStudents(data as Student[]);
+      const allSkills = new Set<string>();
+      (data as Student[]).forEach(s => s.skills?.forEach(skill => allSkills.add(skill)));
+      setAvailableSkills(Array.from(allSkills).sort());
+    }
+    setSavedIds(new Set(saved.map((s: any) => s.student_id)));
   }, []);
 
-  const loadSavedAndPlan = async () => {
-    const saved = await getSavedStudents();
-    setSavedIds(new Set(saved.map((s: any) => s.student_id)));
-  };
+  useEffect(() => {
+    const init = async () => {
+      const access = await hasTalentAccess();
+
+      if (access) {
+        setHasAccess(true);
+        await loadStudentsAndSaved();
+        setLoading(false);
+        return;
+      }
+
+      // Si viene de un pago, hacer polling
+      if (isPostPayment) {
+        setCheckingPayment(true);
+        setLoading(false);
+
+        const MAX = 8;
+        const INTERVAL = 2500;
+        for (let i = 0; i < MAX; i++) {
+          await new Promise(r => setTimeout(r, INTERVAL));
+          const retryAccess = await hasTalentAccess();
+          if (retryAccess) {
+            setHasAccess(true);
+            setCheckingPayment(false);
+            await loadStudentsAndSaved();
+            return;
+          }
+        }
+        // Timeout: mostrar paywall de todas formas
+        setHasAccess(false);
+        setCheckingPayment(false);
+      } else {
+        setHasAccess(false);
+        setLoading(false);
+      }
+    };
+
+    init();
+  }, [isPostPayment, loadStudentsAndSaved]);
+
+  useEffect(() => {
+    let filtered = [...students];
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase();
+      filtered = filtered.filter(s =>
+        s.full_name?.toLowerCase().includes(term) ||
+        s.major?.toLowerCase().includes(term) ||
+        s.university?.toLowerCase().includes(term) ||
+        s.skills?.some(skill => skill.toLowerCase().includes(term))
+      );
+    }
+    if (selectedSkill !== "all") {
+      filtered = filtered.filter(s => s.skills?.includes(selectedSkill));
+    }
+    setFilteredStudents(filtered);
+  }, [searchTerm, selectedSkill, students]);
 
   const handleToggleSave = async (studentId: string) => {
     if (savedIds.has(studentId)) {
@@ -85,62 +133,39 @@ export default function TalentSearchPage() {
     }
   };
 
-  useEffect(() => {
-    filterData();
-  }, [searchTerm, selectedSkill, students]);
-
-  const loadStudents = async () => {
-    try {
-      const data = await getStudents();
-
-      if (data) {
-        setStudents(data);
-        
-        // Extraer todas las habilidades únicas para el filtro
-        const allSkills = new Set<string>();
-        (data as Student[]).forEach((student: Student) => {
-    if (student.skills) {
-      student.skills.forEach((skill: string) => allSkills.add(skill));
-    }
-  });
-        setAvailableSkills(Array.from(allSkills).sort());
-      }
-    } catch (error) {
-      console.error("Error loading talent:", error);
-      toast.error("Error loading the talent directory");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const filterData = () => {
-    let filtered = [...students];
-
-    if (searchTerm) {
-      const term = searchTerm.toLowerCase();
-      filtered = filtered.filter(s => 
-        s.full_name?.toLowerCase().includes(term) ||
-        s.major?.toLowerCase().includes(term) ||
-        s.university?.toLowerCase().includes(term) ||
-        s.skills?.some(skill => skill.toLowerCase().includes(term))
-      );
-    }
-
-    if (selectedSkill !== "all") {
-      filtered = filtered.filter(s => 
-        s.skills?.includes(selectedSkill)
-      );
-    }
-
-    setFilteredStudents(filtered);
-  };
-
+  // Pantalla de carga inicial
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#F0F7FF] via-white to-[#E8F3FD] flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="w-10 h-10 text-[#38A3F1] animate-spin mx-auto mb-4" />
           <p className="text-sm text-[#5B8DB8]">Verificando acceso...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Pantalla de espera post-pago (polling activo)
+  if (checkingPayment) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#F0F7FF] via-white to-[#E8F3FD] flex items-center justify-center">
+        <div className="text-center max-w-sm px-4">
+          <div className="w-16 h-16 rounded-2xl bg-[#F0F7FF] border border-[#BAD8F7] flex items-center justify-center mx-auto mb-4">
+            <Loader2 className="w-8 h-8 text-[#38A3F1] animate-spin" />
+          </div>
+          <h2 className="text-lg font-bold text-[#0D3A6E] mb-2">Confirmando tu pago</h2>
+          <p className="text-sm text-[#5B8DB8]">
+            Estamos verificando la transacción con Wompi. Esto puede tomar unos segundos...
+          </p>
+          <div className="mt-6 flex justify-center gap-1.5">
+            {[0, 1, 2].map(i => (
+              <div
+                key={i}
+                className="w-2 h-2 rounded-full bg-[#38A3F1] animate-bounce"
+                style={{ animationDelay: `${i * 0.15}s` }}
+              />
+            ))}
+          </div>
         </div>
       </div>
     );
@@ -153,7 +178,7 @@ export default function TalentSearchPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#F0F7FF] via-white to-[#E8F3FD]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-8">
-        
+
         {/* Header */}
         <div className="mb-6 sm:mb-8">
           <p className="text-[10px] sm:text-xs font-medium uppercase tracking-widest text-[#93B8D4] mb-1 sm:mb-2">
@@ -167,10 +192,9 @@ export default function TalentSearchPage() {
           </p>
         </div>
 
-        {/* Search and Filters Banner */}
+        {/* Search and Filters */}
         <div className="bg-white rounded-xl sm:rounded-2xl border border-[#BAD8F7] p-3 sm:p-5 mb-4 sm:mb-8 shadow-sm">
           <div className="flex flex-col md:flex-row gap-3 sm:gap-4">
-            {/* Search Input */}
             <div className="flex-1 relative">
               <Search className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-[#93B8D4]" />
               <input
@@ -181,8 +205,6 @@ export default function TalentSearchPage() {
                 className="w-full pl-9 sm:pl-12 pr-4 py-2.5 sm:py-3 rounded-lg sm:rounded-xl border border-[#BAD8F7] text-xs sm:text-sm text-[#0D3A6E] focus:outline-none focus:border-[#38A3F1] focus:ring-4 focus:ring-[#38A3F1]/10 transition-all bg-[#F8FBFF] min-h-[44px]"
               />
             </div>
-            
-            {/* Skills Filter */}
             <div className="md:w-64 relative">
               <div className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 flex items-center gap-2 pointer-events-none">
                 <Filter className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#93B8D4]" />
@@ -202,19 +224,23 @@ export default function TalentSearchPage() {
         </div>
 
         {/* Results Info */}
-        <div className="mb-4 sm:mb-6 flex items-center justify-between">
+        <div className="mb-4 sm:mb-6">
           <p className="text-xs sm:text-sm font-medium text-[#5B8DB8]">
             Mostrando <span className="text-[#0D3A6E] font-bold">{filteredStudents.length}</span> estudiantes
           </p>
         </div>
 
-        {/* Students Grid */}
+        {/* Grid */}
         {filteredStudents.length === 0 ? (
           <div className="bg-white rounded-xl sm:rounded-2xl border border-[#BAD8F7] py-12 sm:py-20 text-center">
             <Users className="w-12 h-12 sm:w-16 sm:h-16 text-[#BAD8F7] mx-auto mb-3 sm:mb-4" />
-            <h3 className="text-base sm:text-lg font-semibold text-[#0D3A6E] mb-1 sm:mb-2">No se encontraron estudiantes</h3>
-            <p className="text-xs sm:text-sm text-[#5B8DB8]">Intenta ajustar tus términos de búsqueda o filtros.</p>
-            <button 
+            <h3 className="text-base sm:text-lg font-semibold text-[#0D3A6E] mb-1 sm:mb-2">
+              No se encontraron estudiantes
+            </h3>
+            <p className="text-xs sm:text-sm text-[#5B8DB8]">
+              Intenta ajustar tus términos de búsqueda o filtros.
+            </p>
+            <button
               onClick={() => { setSearchTerm(""); setSelectedSkill("all"); }}
               className="mt-4 sm:mt-6 text-xs sm:text-sm font-medium text-[#38A3F1] hover:text-[#0D5FA6] transition-colors min-h-[44px]"
             >
@@ -234,16 +260,10 @@ export default function TalentSearchPage() {
                   key={student.id}
                   className="bg-white rounded-2xl border border-[#BAD8F7] overflow-hidden hover:shadow-xl hover:shadow-[#38A3F1]/10 transition-all group flex flex-col"
                 >
-                  {/* Card Header */}
                   <div className="p-6 pb-0 flex gap-4">
                     <div className="relative w-16 h-16 rounded-2xl bg-gradient-to-br from-[#F0F7FF] to-[#E8F3FD] border border-[#BAD8F7] flex-shrink-0 overflow-hidden">
                       {student.avatar_url ? (
-                        <Image
-                          src={student.avatar_url}
-                          alt={student.full_name || "Avatar"}
-                          fill
-                          className="object-cover"
-                        />
+                        <Image src={student.avatar_url} alt={student.full_name || "Avatar"} fill className="object-cover" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center text-xl font-bold text-[#38A3F1]">
                           {student.full_name?.charAt(0).toUpperCase() || "?"}
@@ -254,7 +274,6 @@ export default function TalentSearchPage() {
                           <CheckCircle2 className="w-4 h-4 text-green-500" />
                         </div>
                       )}
-                      {/* Save/Favorite button */}
                       <button
                         onClick={() => handleToggleSave(student.id)}
                         className="absolute -top-1 -left-1 w-6 h-6 rounded-full bg-white border border-[#E8F3FD] flex items-center justify-center hover:scale-110 transition-transform shadow-sm"
@@ -267,7 +286,7 @@ export default function TalentSearchPage() {
                         )}
                       </button>
                     </div>
-                    
+
                     <div className="flex-1 min-w-0 pt-1">
                       <Link href={`/pyme/talent/${student.id}`}>
                         <h3 className="text-base font-bold text-[#0D3A6E] hover:text-[#38A3F1] transition-colors truncate">
@@ -284,20 +303,14 @@ export default function TalentSearchPage() {
                     </div>
                   </div>
 
-                  {/* Card Body (Skills & Location) */}
                   <div className="p-6 flex-1 flex flex-col">
                     <div className="flex items-center gap-2 mb-4 text-xs text-[#5B8DB8]">
                       <MapPin className="w-3.5 h-3.5" />
                       {student.location || "El Salvador"}
                     </div>
-
-                    {/* Skills Wrapper */}
                     <div className="flex flex-wrap gap-1.5 mb-6 mt-auto">
                       {student.skills?.slice(0, 4).map((skill, i) => (
-                        <span 
-                          key={i} 
-                          className="text-[11px] font-medium bg-[#F0F7FF] text-[#0D5FA6] px-2.5 py-1 rounded-lg border border-[#BAD8F7]/50"
-                        >
+                        <span key={i} className="text-[11px] font-medium bg-[#F0F7FF] text-[#0D5FA6] px-2.5 py-1 rounded-lg border border-[#BAD8F7]/50">
                           {skill}
                         </span>
                       ))}
@@ -307,10 +320,7 @@ export default function TalentSearchPage() {
                         </span>
                       )}
                     </div>
-
-                    {/* Card Actions */}
                     <div className="pt-4 border-t border-[#F0F7FF] flex items-center justify-between gap-3">
-                      {/* Social/Links */}
                       <div className="flex gap-1">
                         {student.linkedin && (
                           <a href={student.linkedin} target="_blank" rel="noreferrer" className="p-2 rounded-lg text-[#93B8D4] hover:bg-[#F0F7FF] hover:text-[#0D5FA6] transition-colors">
@@ -328,12 +338,10 @@ export default function TalentSearchPage() {
                           </a>
                         )}
                       </div>
-
-                      {/* Primary Contact Action */}
-                      <a
+                      
                         href={`mailto:${student.email}?subject=Oportunidad%20de%20Proyecto%20-%20Contacto%20desde%20la%20plataforma`}
                         className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-[#0D3A6E] to-[#1D5A9E] text-white text-sm font-medium px-4 py-2.5 rounded-xl hover:shadow-lg hover:shadow-[#38A3F1]/25 transition-all group/btn"
-                      >
+                     <a >
                         <Mail className="w-4 h-4" />
                         Contactar
                         <ArrowUpRight className="w-3 h-3 opacity-50 group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform" />

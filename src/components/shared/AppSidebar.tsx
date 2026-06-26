@@ -16,7 +16,8 @@ import { hasTalentAccess } from '@/app/actions/pyme/premium';
 import {
   LayoutDashboard, User, FolderOpen, Award, Bot,
   HelpCircle, Users, LogOut, Banknote, PanelLeft, GraduationCap, Rocket, Receipt,
-  BrainCircuit, BookOpen, Trophy, Star, BarChart3, BriefcaseBusiness, Building2, Crown, Lock
+  BrainCircuit, BookOpen, Trophy, Star, BarChart3, BriefcaseBusiness, Building2, Crown, Lock,
+  Loader2,
 } from 'lucide-react';
 import { DexpertLogo } from "@/components/DexpertLogo";
 import { BriefcaseIcon } from "@phosphor-icons/react";
@@ -29,7 +30,6 @@ const studentRoutes = [
   { title: 'Simulación Profesional', url: '/student/simulation', icon: BrainCircuit },
   { title: 'Portafolio', url: '/student/portfolio', icon: BookOpen },
   { title: 'Perfil', url: '/student/profile', icon: User },
-  
   { title: 'Soporte', url: '/student/support', icon: HelpCircle },
 ];
 
@@ -58,6 +58,8 @@ export function AppSidebar() {
   const [mounted, setMounted] = useState(false);
   const [currentPlan, setCurrentPlan] = useState<string | null>(null);
   const [talentUnlocked, setTalentUnlocked] = useState(false);
+  // Estado para mostrar spinner mientras espera el webhook post-pago
+  const [checkingAccess, setCheckingAccess] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -67,19 +69,51 @@ export function AppSidebar() {
   useEffect(() => {
     const hasSuccess = new URLSearchParams(window.location.search).get("success") === "true";
     if (hasSuccess) {
-      checkAccess();
+      checkAccessWithRetry();
     }
   }, [pathname]);
 
   const checkAccess = async () => {
     const params = new URLSearchParams(window.location.search);
     const planFromUrl = params.get('plan');
-    if (planFromUrl) {
-      setCurrentPlan(planFromUrl.toUpperCase());
-    }
+    if (planFromUrl) setCurrentPlan(planFromUrl.toUpperCase());
 
     const access = await hasTalentAccess();
     setTalentUnlocked(access);
+  };
+
+  // Versión con polling: reintenta hasta 8 veces cada 2.5s (20s total)
+  // para darle tiempo al webhook de Wompi de procesar el pago
+  const checkAccessWithRetry = async () => {
+    const params = new URLSearchParams(window.location.search);
+    const planFromUrl = params.get('plan');
+    if (planFromUrl) setCurrentPlan(planFromUrl.toUpperCase());
+
+    // Chequeo inmediato primero
+    const immediateAccess = await hasTalentAccess();
+    if (immediateAccess) {
+      setTalentUnlocked(true);
+      return;
+    }
+
+    // Si no hay acceso todavía, activamos polling
+    setCheckingAccess(true);
+    const MAX_ATTEMPTS = 8;
+    const INTERVAL_MS = 2500;
+
+    for (let i = 0; i < MAX_ATTEMPTS; i++) {
+      await new Promise(resolve => setTimeout(resolve, INTERVAL_MS));
+      const access = await hasTalentAccess();
+      if (access) {
+        setTalentUnlocked(true);
+        setCheckingAccess(false);
+        return;
+      }
+    }
+
+    // Si después de 20s sigue sin acceso, paramos el spinner
+    // (el webhook puede llegar después y el usuario puede refrescar)
+    setCheckingAccess(false);
   };
 
   const handleSignOut = async () => {
@@ -93,7 +127,6 @@ export function AppSidebar() {
     setOpenMobile(false);
   };
 
-  // Render defensivo básico
   if (!mounted || authLoading) {
     return (
       <Sidebar collapsible="icon" className="border-r border-[#BAD8F7] bg-white">
@@ -119,24 +152,24 @@ export function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon" className="border-r border-[#BAD8F7] bg-white transition-all duration-300">
-      <SidebarHeader 
+      <SidebarHeader
         className={`py-5 border-b border-[#BAD8F7] flex ${
           isCollapsed ? 'flex-col items-center gap-4 px-2' : 'flex-row items-center justify-between px-4'
         }`}
       >
         <Link href="/" className="flex items-center justify-center" onClick={handleLinkClick}>
           {isCollapsed ? (
-            <img src="/1.svg" className=" w-50 transition-all" />
+            <img src="/1.svg" className="w-50 transition-all" />
           ) : (
             <div className="mx-auto transition-all">
-              <img src="/dex.png" className="w-50"/>
+              <img src="/dex.png" className="w-50" />
             </div>
           )}
         </Link>
-        
-        <button 
-          onClick={toggleSidebar} 
-          className="p-1 rounded-md hover:bg-[#F0F7FF] text-[#93B8D4] transition-colors" 
+
+        <button
+          onClick={toggleSidebar}
+          className="p-1 rounded-md hover:bg-[#F0F7FF] text-[#93B8D4] transition-colors"
           title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         >
           <PanelLeft className={`w-5 h-5 transition-transform duration-300 ${isCollapsed ? 'rotate-180' : ''}`} />
@@ -144,6 +177,14 @@ export function AppSidebar() {
       </SidebarHeader>
 
       <SidebarContent className="px-2 py-3">
+        {/* Banner de verificación post-pago */}
+        {checkingAccess && !isCollapsed && (
+          <div className="mx-2 mb-3 px-3 py-2 rounded-lg bg-[#F0F7FF] border border-[#BAD8F7] flex items-center gap-2">
+            <Loader2 className="w-3.5 h-3.5 text-[#38A3F1] animate-spin flex-shrink-0" />
+            <p className="text-[11px] text-[#5B8DB8]">Verificando tu pago...</p>
+          </div>
+        )}
+
         <SidebarGroup>
           {!isCollapsed && (
             <SidebarGroupLabel className="text-[10px] font-medium uppercase tracking-widest text-[#93B8D4] px-2 mb-2">
@@ -185,16 +226,20 @@ export function AppSidebar() {
                       )}
                       {!isCollapsed && isPremium && (
                         <span className={`flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${
-                          isLocked
+                          checkingAccess
+                            ? 'bg-blue-50 text-blue-500 border border-blue-200'
+                            : isLocked
                             ? 'bg-amber-50 text-amber-600 border border-amber-200'
                             : 'bg-green-50 text-green-600 border border-green-200'
                         }`}>
-                          {isLocked ? (
+                          {checkingAccess ? (
+                            <Loader2 className="w-2.5 h-2.5 animate-spin" />
+                          ) : isLocked ? (
                             <Lock className="w-2.5 h-2.5" />
                           ) : (
                             <Crown className="w-2.5 h-2.5" />
                           )}
-                          {isLocked ? 'Premium' : 'Desbloqueado'}
+                          {checkingAccess ? 'Verificando' : isLocked ? 'Premium' : 'Desbloqueado'}
                         </span>
                       )}
                     </Link>

@@ -5,20 +5,61 @@ import { TalentPoolPanel } from "@/features/pyme/components/premium/TalentPoolPa
 import { TalentPaywall } from "@/features/pyme/components/TalentPaywall";
 import { hasTalentAccess } from "@/app/actions/pyme/premium";
 import { Loader2 } from "lucide-react";
+import { useSearchParams } from "next/navigation";
 
 export default function TalentPoolPage() {
+  const searchParams = useSearchParams();
+  const isPostPayment = searchParams.get("success") === "true";
+
   const [hasAccess, setHasAccess] = useState<boolean | null>(null);
+  const [checkingPayment, setCheckingPayment] = useState(false);
 
   useEffect(() => {
-    hasTalentAccess().then(setHasAccess);
-  }, []);
+    const init = async () => {
+      const access = await hasTalentAccess();
+      if (access) {
+        setHasAccess(true);
+        return;
+      }
 
-  if (hasAccess === null) {
+      if (isPostPayment) {
+        setCheckingPayment(true);
+        const MAX = 8;
+        const INTERVAL = 2500;
+        for (let i = 0; i < MAX; i++) {
+          await new Promise(r => setTimeout(r, INTERVAL));
+          const retryAccess = await hasTalentAccess();
+          if (retryAccess) {
+            setHasAccess(true);
+            setCheckingPayment(false);
+            return;
+          }
+        }
+        setHasAccess(false);
+        setCheckingPayment(false);
+      } else {
+        setHasAccess(false);
+      }
+    };
+
+    init();
+  }, [isPostPayment]);
+
+  if (hasAccess === null || checkingPayment) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#F0F7FF] via-white to-[#E8F3FD] flex items-center justify-center">
-        <div className="text-center">
-          <Loader2 className="w-10 h-10 text-[#38A3F1] animate-spin mx-auto mb-4" />
-          <p className="text-sm text-[#5B8DB8]">Verificando acceso...</p>
+        <div className="text-center max-w-sm px-4">
+          <div className="w-16 h-16 rounded-2xl bg-[#F0F7FF] border border-[#BAD8F7] flex items-center justify-center mx-auto mb-4">
+            <Loader2 className="w-8 h-8 text-[#38A3F1] animate-spin" />
+          </div>
+          <h2 className="text-lg font-bold text-[#0D3A6E] mb-2">
+            {checkingPayment ? "Confirmando tu pago" : "Verificando acceso..."}
+          </h2>
+          {checkingPayment && (
+            <p className="text-sm text-[#5B8DB8]">
+              Estamos verificando la transacción con Wompi. Esto puede tomar unos segundos...
+            </p>
+          )}
         </div>
       </div>
     );

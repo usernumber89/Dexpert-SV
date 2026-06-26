@@ -14,7 +14,21 @@ export async function hasTalentAccess() {
     .eq("user_id", user.id)
     .order("created_at", { ascending: false });
 
-  return purchases?.some(p => p.plan === "TALENT_ACCESS" || p.plan === "GROWTH" || p.plan === "PRO") ?? false;
+  return purchases?.some(p =>
+    p.plan === "TALENT_ACCESS" || p.plan === "GROWTH" || p.plan === "PRO"
+  ) ?? false;
+}
+
+// Nuevo: espera hasta que el acceso esté disponible (útil post-pago)
+export async function pollTalentAccess(maxAttempts = 8, intervalMs = 2000): Promise<boolean> {
+  for (let i = 0; i < maxAttempts; i++) {
+    const access = await hasTalentAccess();
+    if (access) return true;
+    if (i < maxAttempts - 1) {
+      await new Promise(resolve => setTimeout(resolve, intervalMs));
+    }
+  }
+  return false;
 }
 
 export async function getPymePlan() {
@@ -77,7 +91,6 @@ export async function recordPurchase(transactionId: string, plan: string) {
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
 
-  // Si es talent access, solo registrar en purchases
   if (plan === "talent") {
     await supabaseAdmin.from("purchases").insert({
       user_id: user.id,
@@ -89,7 +102,6 @@ export async function recordPurchase(transactionId: string, plan: string) {
   const creditsToAdd = PLAN_CREDITS[plan];
   const planUpper = plan.toUpperCase();
 
-  // 1. Actualizar créditos
   const { data: creditsData } = await supabaseAdmin
     .from("pyme_credits")
     .select("credits_available")
@@ -110,7 +122,6 @@ export async function recordPurchase(transactionId: string, plan: string) {
       .insert({ pyme_id: pyme.id, credits_available: creditsToAdd, credits_used: 0 });
   }
 
-  // 2. Historial
   await supabaseAdmin.from("credit_purchases").insert({
     user_id: user.id,
     pyme_id: pyme.id,
@@ -119,13 +130,11 @@ export async function recordPurchase(transactionId: string, plan: string) {
     credits_granted: creditsToAdd,
   });
 
-  // 3. Purchases (para sidebar)
   await supabaseAdmin.from("purchases").insert({
     user_id: user.id,
     plan: planUpper,
   });
 
-  // 4. Factura
   try {
     const year = new Date().getFullYear();
     const { count } = await supabaseAdmin
@@ -153,8 +162,6 @@ export async function recordPurchase(transactionId: string, plan: string) {
   return { success: true, plan: planUpper };
 }
 
-// ── Proyectos Destacados ──
-
 export async function toggleFeaturedProject(projectId: string, featured: boolean) {
   const supabase = await createServerClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -181,8 +188,6 @@ export async function getFeaturedProjects() {
     .limit(20);
   return data || [];
 }
-
-// ── Talent Pool (Favoritos) ──
 
 export async function getSavedStudents() {
   const supabase = await createServerClient();
@@ -236,8 +241,6 @@ export async function removeSavedStudent(studentId: string) {
   return { success: true };
 }
 
-// ── Analítica de proyecto ──
-
 export async function getAllProjectsAnalytics() {
   const supabase = await createServerClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -286,20 +289,14 @@ export async function getProjectAnalytics(projectId: string) {
   return { analytics, applications: applications || [] };
 }
 
-// ── Vistas de proyectos ──
-
 export async function trackProjectView(projectId: string) {
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) return;
   const supabaseAdmin = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
     process.env.SUPABASE_SERVICE_ROLE_KEY
   );
-  await supabaseAdmin.rpc("increment_project_views", {
-    p_project_id: projectId,
-  });
+  await supabaseAdmin.rpc("increment_project_views", { p_project_id: projectId });
 }
-
-// ── Directorio de Talento ──
 
 export async function getStudents() {
   const { data } = await getSupabaseAdmin()
@@ -308,8 +305,6 @@ export async function getStudents() {
     .order("full_name", { ascending: true });
   return data || [];
 }
-
-// ── Helpers ──
 
 async function getPymeId(supabase: any, userId: string) {
   const { data } = await supabase
