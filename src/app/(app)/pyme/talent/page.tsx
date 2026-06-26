@@ -50,11 +50,16 @@ function TalentSearchContent() {
 
   const loadStudentsAndSaved = useCallback(async () => {
     const [data, saved] = await Promise.all([getStudents(), getSavedStudents()]);
-    if (data) {
+    console.log("[TalentPage] getStudents result:", data?.length, "records");
+    (data || []).forEach((s: any) => console.log("  -", s.full_name, s.email));
+    if (data && data.length > 0) {
       setStudents(data as Student[]);
       const allSkills = new Set<string>();
       (data as Student[]).forEach(s => s.skills?.forEach(skill => allSkills.add(skill)));
       setAvailableSkills(Array.from(allSkills).sort());
+    } else {
+      setStudents([]);
+      setAvailableSkills([]);
     }
     setSavedIds(new Set(saved.map((s: any) => s.student_id)));
   }, []);

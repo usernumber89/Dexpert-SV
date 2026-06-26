@@ -94,6 +94,7 @@ export async function recordPurchase(transactionId: string, plan: string) {
   if (plan === "talent") {
     await supabaseAdmin.from("purchases").insert({
       user_id: user.id,
+      pyme_id: pyme.id,
       plan: "TALENT_ACCESS",
     });
     return { success: true, plan: "TALENT_ACCESS" };
@@ -132,6 +133,7 @@ export async function recordPurchase(transactionId: string, plan: string) {
 
   await supabaseAdmin.from("purchases").insert({
     user_id: user.id,
+    pyme_id: pyme.id,
     plan: planUpper,
   });
 

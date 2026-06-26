@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import {
   useSearchParams,
   useRouter,
@@ -8,86 +8,71 @@ import {
 } from "next/navigation";
 import {
   CheckCircle2,
-  Sparkles,
   XCircle,
 } from "lucide-react";
 
 import { toast } from "sonner";
 import { recordPurchase } from "@/app/actions/pyme/premium";
 
+const processedKeys = new Set<string>();
+
 export function PaymentFeedback() {
   const params = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
-  const recordedRef = useRef(false);
 
-  const [showSuccess, setShowSuccess] =
-    useState(false);
-
-  const plan = params.get("plan");
-  const amount = params.get("monto");
- const transactionId =
-  params.get("idTransaccion");
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [plan, setPlan] = useState<string | null>(null);
+  const [amount, setAmount] = useState<string | null>(null);
+  const [transactionId, setTransactionId] = useState<string | null>(null);
 
   useEffect(() => {
-    const isSuccess =
-      params.get("success") === "true";
-
-    const isCanceled =
-      params.get("canceled") === "true";
-
-    const planFromUrl = params.get("plan");
-    const planFromCookie = document.cookie.split("; ").find(c => c.startsWith("pending_plan="))?.split("=")[1];
-    const plan = planFromUrl || planFromCookie;
-
-    if (isSuccess && (transactionId || plan === "talent")) {
-      setShowSuccess(true);
-
-      toast.success(
-        plan === "talent" ? "Talento desbloqueado" : "Pago procesado correctamente",
-        {
-          duration: 4000,
-        }
-      );
-
-      if (plan && !recordedRef.current) {
-        recordedRef.current = true;
-        document.cookie = "pending_plan=; path=/; max-age=0";
-        sessionStorage.setItem("talent_unlocked", "true");
-        recordPurchase(transactionId || `talent_${Date.now()}`, plan).then((res) => {
-          if (res?.success) {
-            console.log("Plan registrado:", res.plan);
-            router.refresh();
-          } else {
-            console.error("Error registrando compra:", res?.error);
-          }
-        });
-      }
-
-      const timer = setTimeout(() => {
-        if (plan === "talent") {
-          router.replace("/pyme/talent");
-        } else {
-          router.replace(pathname);
-        }
-      }, 8000);
-
-      return () => clearTimeout(timer);
-    }
+    const isSuccess = params.get("success") === "true";
+    const isCanceled = params.get("canceled") === "true";
 
     if (isCanceled) {
-      toast.error(
-        "El pago fue cancelado",
-        {
-          icon: (
-            <XCircle className="h-4 w-4" />
-          ),
-        }
-      );
-
-      router.replace(pathname);
+      window.history.replaceState({}, "", pathname);
+      toast.error("El pago fue cancelado", {
+        icon: <XCircle className="h-4 w-4" />,
+      });
+      return;
     }
-  }, [params, router, pathname, transactionId]);
+
+    if (!isSuccess) return;
+
+    const planFromUrl = params.get("plan") || "";
+    const planFromCookie = document.cookie
+      .split("; ")
+      .find(c => c.startsWith("pending_plan="))
+      ?.split("=")[1];
+    const resolvedPlan = planFromUrl || planFromCookie || "";
+    const txnId = params.get("idTransaccion") || `fallback_${Date.now()}`;
+    const monto = params.get("monto");
+
+    const dedupKey = `${resolvedPlan}_${txnId}`;
+    if (processedKeys.has(dedupKey)) return;
+    processedKeys.add(dedupKey);
+
+    window.history.replaceState({}, "", pathname);
+    document.cookie = "pending_plan=; path=/; max-age=0";
+
+    setPlan(resolvedPlan);
+    setAmount(monto);
+    setTransactionId(txnId);
+    setShowSuccess(true);
+
+    if (resolvedPlan === "talent") {
+      sessionStorage.setItem("talent_unlocked", "true");
+    }
+
+    recordPurchase(txnId, resolvedPlan).then((res) => {
+      if (res?.success) {
+        console.log("Plan registrado:", res.plan);
+      } else {
+        console.error("Error registrando compra:", res?.error);
+      }
+    });
+  }, [params, pathname]);
 
   if (!showSuccess) return null;
 
@@ -116,7 +101,6 @@ export function PaymentFeedback() {
               <span className="text-sm text-muted-foreground">
                 Monto pagado
               </span>
-
               <span className="font-semibold">
                 ${amount}
               </span>
@@ -138,17 +122,19 @@ export function PaymentFeedback() {
           </div>
         )}
 
-        <div className="mt-6 text-center text-xs text-muted-foreground">
-          ID: {transactionId}
-        </div>
+        {transactionId && !transactionId.startsWith("fallback_") && (
+          <div className="mt-6 text-center text-xs text-muted-foreground">
+            ID: {transactionId}
+          </div>
+        )}
 
         <button
           onClick={() => {
             setShowSuccess(false);
-            router.replace(pathname);
-            router.refresh();
             if (plan === "talent") {
-              router.push("/pyme/talent");
+              router.replace("/pyme/talent");
+            } else {
+              router.replace(pathname);
             }
           }}
           className="mt-6 w-full rounded-xl bg-black px-4 py-3 font-medium text-white transition hover:opacity-90"

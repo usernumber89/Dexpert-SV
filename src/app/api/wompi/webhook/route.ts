@@ -75,6 +75,7 @@ export async function POST(req: Request) {
     if (plan === "talent") {
       await supabase.from("purchases").insert({
         user_id: pyme.user_id,
+        pyme_id: pymeId,
         plan: "TALENT_ACCESS",
       });
 
@@ -121,6 +122,7 @@ export async function POST(req: Request) {
     // 3b. Registrar también en purchases para que el sidebar detecte el plan
     await supabase.from("purchases").insert({
       user_id: pyme.user_id,
+      pyme_id: pymeId,
       plan: plan.toUpperCase(),
     });
 
