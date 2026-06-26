@@ -1,12 +1,13 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { getWompiToken } from "@/lib/wompi";
 
 const PLANS: Record<string, { amount: number; name: string }> = {
   starter: { amount: 3.99, name: "Dexpert Starter" },
   growth: { amount: 27.49, name: "Dexpert Growth" },
   pro: { amount: 54.99, name: "Dexpert Pro" },
-  talent: { amount: 6.99, name: "Acceso a Talento" },
+  talent: { amount: 7.99, name: "Acceso a Talento" },
 };
 
 export async function POST(req: Request) {
@@ -28,6 +29,21 @@ export async function POST(req: Request) {
       .single();
 
     if (!pyme) return NextResponse.json({ error: "Pyme not found" }, { status: 404 });
+
+    if (plan === "talent") {
+      const admin = createAdminClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!
+      );
+      const { data: existing } = await admin
+        .from("purchases")
+        .select("plan")
+        .eq("user_id", user.id)
+        .in("plan", ["TALENT_ACCESS", "GROWTH", "PRO"]);
+      if (existing && existing.length > 0) {
+        return NextResponse.json({ error: "Ya tienes acceso a Talento", url: `${process.env.NEXT_PUBLIC_APP_URL}/pyme/talent` }, { status: 409 });
+      }
+    }
 
     const accessToken = await getWompiToken();
     const comercioId = `DEXPERT_${plan}_${pyme.id}_${Date.now()}`;

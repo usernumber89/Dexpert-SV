@@ -124,7 +124,7 @@ export default function PymeOnboardingPage() {
     }
 
     toast.success("¡Perfil de negocio creado exitosamente!");
-    router.push("/pyme/dashboard");
+    router.push("/pyme/pricing");
   };
 
   return (

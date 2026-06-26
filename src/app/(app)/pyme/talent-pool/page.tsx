@@ -1,11 +1,32 @@
-import { createClient } from "@/lib/supabase/server";
-import { redirect } from "next/navigation";
-import { TalentPoolPanel } from "@/features/pyme/components/premium/TalentPoolPanel";
+"use client";
 
-export default async function TalentPoolPage() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/sign-in");
+import { useState, useEffect } from "react";
+import { TalentPoolPanel } from "@/features/pyme/components/premium/TalentPoolPanel";
+import { TalentPaywall } from "@/features/pyme/components/TalentPaywall";
+import { hasTalentAccess } from "@/app/actions/pyme/premium";
+import { Loader2 } from "lucide-react";
+
+export default function TalentPoolPage() {
+  const [hasAccess, setHasAccess] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    hasTalentAccess().then(setHasAccess);
+  }, []);
+
+  if (hasAccess === null) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#F0F7FF] via-white to-[#E8F3FD] flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-10 h-10 text-[#38A3F1] animate-spin mx-auto mb-4" />
+          <p className="text-sm text-[#5B8DB8]">Verificando acceso...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!hasAccess) {
+    return <TalentPaywall />;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#F4F9FF] via-white to-[#EEF6FF]">

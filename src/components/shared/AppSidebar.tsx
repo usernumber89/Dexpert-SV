@@ -16,7 +16,7 @@ import { hasTalentAccess } from '@/app/actions/pyme/premium';
 import {
   LayoutDashboard, User, FolderOpen, Award, Bot,
   HelpCircle, Users, LogOut, Banknote, PanelLeft, GraduationCap, Rocket, Receipt,
-  BrainCircuit, BookOpen, Trophy, Star, BarChart3, BriefcaseBusiness, Building2, Lock
+  BrainCircuit, BookOpen, Trophy, Star, BarChart3, BriefcaseBusiness, Building2, Crown, Lock
 } from 'lucide-react';
 import { DexpertLogo } from "@/components/DexpertLogo";
 import { BriefcaseIcon } from "@phosphor-icons/react";
@@ -37,8 +37,8 @@ const pymeRoutes = [
   { title: 'Panel de Control', url: '/pyme/dashboard', icon: LayoutDashboard },
   { title: 'Proyectos en Marcha', url: '/pyme/in-progress', icon: Rocket },
   { title: 'Aplicantes / Solicitudes', url: '/pyme/applications', icon: Users },
-  { title: "Talento", url: '/pyme/talent', icon: GraduationCap, requiresTalentAccess: true },
-  { title: 'Mi Talent Pool', url: '/pyme/talent-pool', icon: Star },
+  { title: 'Talento', url: '/pyme/talent', icon: GraduationCap, premium: true },
+  { title: 'Mi Talent Pool', url: '/pyme/talent-pool', icon: Star, premium: true },
   { title: 'Destacados', url: '/pyme/featured-projects', icon: BriefcaseBusiness },
   { title: 'Analítica', url: '/pyme/analytics', icon: BarChart3 },
   { title: 'Créditos', url: '/pyme/pricing', icon: Banknote },
@@ -59,68 +59,17 @@ export function AppSidebar() {
   const [currentPlan, setCurrentPlan] = useState<string | null>(null);
   const [talentUnlocked, setTalentUnlocked] = useState(false);
 
-  console.log("=== DEXPERT SIDEBAR DEBUG ===");
-  console.log("Rol actual:", role);
-  console.log("User ID de la sesión:", user?.id);
-  console.log("Plan detectado en el estado:", currentPlan);
-  console.log("=============================");
-
   useEffect(() => {
     setMounted(true);
 
-    async function checkAccess() {
-      // 1. Check URL params first (fastest — from payment redirect)
-      const params = new URLSearchParams(window.location.search);
-      const planFromUrl = params.get('plan');
-      if (planFromUrl) {
-        console.log("🎯 Plan encontrado en la URL:", planFromUrl);
-        setCurrentPlan(planFromUrl.toUpperCase());
-        const lower = planFromUrl.toLowerCase();
-        if (lower === "talent" || lower === "growth" || lower === "pro") {
-          setTalentUnlocked(true);
-          return; // Don't query DB — URL param is authoritative on redirect
-        }
-      }
-
-      if (!user?.id) return;
-
-      try {
-        // 2. Query the latest purchase from DB
-        const supabase = createClient();
-        console.log("🔍 Buscando compras en la base de datos para el usuario:", user.id);
-        
-        const { data, error } = await supabase
-          .from('purchases')
-          .select('plan')
-          .eq('user_id', user.id)
-          .order('created_at', { ascending: false })
-          .limit(1);
-
-        if (error) {
-          console.error("❌ Error de Supabase al leer plan:", error.message);
-        } else if (data && data.length > 0) {
-          console.log("✅ Plan recuperado con éxito de la DB:", data[0].plan);
-          setCurrentPlan(data[0].plan);
-          const dbPlan = data[0].plan;
-          if (dbPlan === "TALENT_ACCESS" || dbPlan === "GROWTH" || dbPlan === "PRO") {
-            setTalentUnlocked(true);
-            return;
-          }
-        } else {
-          console.log("⚠️ No se encontraron filas en la tabla 'purchases' para este usuario.");
-        }
-      } catch (err) {
-        console.error("❌ Error crítico en la petición de plan:", err);
-      }
-
-      // 3. Final fallback: server action (checks all purchases rows)
-      hasTalentAccess().then(setTalentUnlocked);
+    const params = new URLSearchParams(window.location.search);
+    const planFromUrl = params.get('plan');
+    if (planFromUrl) {
+      setCurrentPlan(planFromUrl.toUpperCase());
     }
 
-    if (user?.id) {
-      checkAccess();
-    }
-  }, [user?.id]);
+    hasTalentAccess().then(setTalentUnlocked);
+  }, []);
 
   const handleSignOut = async () => {
     const supabase = createClient();
@@ -192,37 +141,49 @@ export function AppSidebar() {
           )}
           <SidebarMenu className={`gap-1 ${isCollapsed ? 'items-center' : ''}`}>
             {routes.map((item) => {
-              const isLocked = (item as any).requiresTalentAccess && !talentUnlocked;
-              const isActive = !isLocked && pathname.startsWith(item.url);
+              const isActive = pathname.startsWith(item.url);
+              const isPremium = (item as any).premium === true;
+              const isLocked = isPremium && !talentUnlocked;
               return (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild isActive={isActive} tooltip={isLocked ? `${item.title} (Bloqueado)` : item.title}>
+                  <SidebarMenuButton asChild isActive={isActive} tooltip={item.title}>
                     <Link
-                      href={isLocked ? '/pyme/pricing' : item.url}
+                      href={item.url}
                       onClick={handleLinkClick}
                       className={`flex items-center rounded-lg transition-all duration-200 text-sm ${
                         isCollapsed
                           ? 'justify-center w-10 h-10 mx-auto p-0'
                           : 'justify-start gap-3 px-3 py-2 w-full'
                       } ${
-                        isLocked
-                          ? 'text-[#BAD8F7] cursor-not-allowed opacity-60'
-                          : isActive
-                            ? 'bg-[#F0F7FF] text-[#0D5FA6] font-medium'
-                            : 'text-[#5B8DB8] hover:bg-[#F0F7FF] hover:text-[#0D3A6E]'
+                        isActive
+                          ? 'bg-[#F0F7FF] text-[#0D5FA6] font-medium'
+                          : isLocked
+                          ? 'text-[#93B8D4] hover:bg-[#F0F7FF] hover:text-[#0D3A6E]'
+                          : 'text-[#5B8DB8] hover:bg-[#F0F7FF] hover:text-[#0D3A6E]'
                       }`}
                     >
                       <item.icon
                         className={`flex-shrink-0 transition-colors ${
                           isCollapsed ? 'w-5 h-5' : 'w-4 h-4'
                         } ${
-                          isLocked ? 'text-[#BAD8F7]' : isActive ? 'text-[#38A3F1]' : 'text-[#93B8D4]'
+                          isActive ? 'text-[#38A3F1]' : isLocked ? 'text-[#BAD8F7]' : 'text-[#93B8D4]'
                         }`}
                       />
                       {!isCollapsed && (
-                        <span className="flex items-center gap-2">
-                          {item.title}
-                          {isLocked && <Lock className="w-3 h-3" />}
+                        <span className="flex-1 truncate">{item.title}</span>
+                      )}
+                      {!isCollapsed && isPremium && (
+                        <span className={`flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${
+                          isLocked
+                            ? 'bg-amber-50 text-amber-600 border border-amber-200'
+                            : 'bg-green-50 text-green-600 border border-green-200'
+                        }`}>
+                          {isLocked ? (
+                            <Lock className="w-2.5 h-2.5" />
+                          ) : (
+                            <Crown className="w-2.5 h-2.5" />
+                          )}
+                          {isLocked ? 'Premium' : 'Desbloqueado'}
                         </span>
                       )}
                     </Link>

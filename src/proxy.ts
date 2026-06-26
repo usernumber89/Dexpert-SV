@@ -2,7 +2,7 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 // 🛠️ Agregamos '/verify' para capturar de forma dinámica cualquier ID de certificado
-const PUBLIC_ROUTES = ['/sign-in', '/sign-up', '/terminos', '/privacidad', '/verify']
+const PUBLIC_ROUTES = ['/sign-in', '/sign-up', '/forgot-password', '/reset-password', '/terminos', '/privacidad', '/verify']
 const AUTH_ROUTES = ['/sign-in', '/sign-up']
 
 export async function proxy(request: NextRequest) {

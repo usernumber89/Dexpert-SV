@@ -24,7 +24,7 @@ export default function Home() {
       
       <StudentFeatures />
 
-      <PymePremiumFeatures />
+   
 
       <Plans />
       <Testimony />

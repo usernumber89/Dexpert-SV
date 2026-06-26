@@ -22,7 +22,7 @@ const plans = [
     features: [
       { text: "1 proyecto activo", highlight: true },
       { text: "Postulaciones de estudiantes", highlight: true },
-      { text: "Talent Pool (guardar estudiantes)", highlight: false },
+      //{ text: "Talent Pool (guardar estudiantes)", highlight: false },
     ],
     badge: null,
     cta: "Comenzar",
@@ -42,9 +42,9 @@ const plans = [
       { text: "Proyectos destacados", highlight: true },
       { text: "Analítica completa", highlight: true },
       { text: "Escritor de briefs AI", highlight: true },
-      { text: "Candidatos recomendados", highlight: true },
+      //{ text: "Candidatos recomendados", highlight: true },
       { text: "Soporte prioritario", highlight:true },
-      { text: "Talent Pool (guardar estudiantes)", highlight: true },
+      //{ text: "Talent Pool (guardar estudiantes)", highlight: true },
     ],
     badge: null,
     cta: "Obtener Growth",
@@ -60,7 +60,7 @@ const plans = [
     features: [
       { text: "25 proyectos activos", highlight: true },
       { text: "Todo en Growth", highlight: true },
-      { text: "Solo candidatos destacados", highlight: true },
+     // { text: "Solo candidatos destacados", highlight: true },
       { text: "Account Manager dedicado", highlight: true },
     ],
     badge: null,
@@ -75,20 +75,7 @@ export default function Plans() {
 
   const handleCheckout = async (plan: PlanKey) => {
     if (!user) { router.push("/sign-up"); return; }
-    setLoading(plan);
-    try {
-      const res = await fetch("/api/stripe/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plan }),
-      });
-      const data = await res.json();
-      if (data.url) window.location.href = data.url;
-    } catch {
-      console.error("Checkout error");
-    } finally {
-      setLoading(null);
-    }
+    router.push("/pyme/pricing");
   };
 
   return (

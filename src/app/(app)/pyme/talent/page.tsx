@@ -14,13 +14,15 @@ import {
   Briefcase,
   Star,
   CheckCircle2,
+  Loader2,
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import {GithubLogoIcon, LinkedinLogoIcon} from "@phosphor-icons/react"
-import { saveStudent, removeSavedStudent, getSavedStudents, getStudents } from "@/app/actions/pyme/premium";
+import { saveStudent, removeSavedStudent, getSavedStudents, getStudents, hasTalentAccess } from "@/app/actions/pyme/premium";
+import { TalentPaywall } from "@/features/pyme/components/TalentPaywall";
 
 // Ajustado según el esquema de tu base de datos
 type Student = {
@@ -42,6 +44,7 @@ type Student = {
 export default function TalentSearchPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
+  const [hasAccess, setHasAccess] = useState<boolean | null>(null);
   const [students, setStudents] = useState<Student[]>([]);
   const [filteredStudents, setFilteredStudents] = useState<Student[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -50,8 +53,15 @@ export default function TalentSearchPage() {
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
-    loadStudents();
-    loadSavedAndPlan();
+    hasTalentAccess().then((access) => {
+      setHasAccess(access);
+      if (access) {
+        loadStudents();
+        loadSavedAndPlan();
+      } else {
+        setLoading(false);
+      }
+    });
   }, []);
 
   const loadSavedAndPlan = async () => {
@@ -127,13 +137,17 @@ export default function TalentSearchPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#F0F7FF] flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-[#F0F7FF] via-white to-[#E8F3FD] flex items-center justify-center">
         <div className="text-center">
-          <div className="w-12 h-12 border-4 border-[#38A3F1] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-[#5B8DB8]">Cargando talento...</p>
+          <Loader2 className="w-10 h-10 text-[#38A3F1] animate-spin mx-auto mb-4" />
+          <p className="text-sm text-[#5B8DB8]">Verificando acceso...</p>
         </div>
       </div>
     );
+  }
+
+  if (hasAccess === false) {
+    return <TalentPaywall />;
   }
 
   return (

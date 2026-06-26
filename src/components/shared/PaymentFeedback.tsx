@@ -24,6 +24,7 @@ export function PaymentFeedback() {
   const [showSuccess, setShowSuccess] =
     useState(false);
 
+  const plan = params.get("plan");
   const amount = params.get("monto");
  const transactionId =
   params.get("idTransaccion");
@@ -94,11 +95,13 @@ export function PaymentFeedback() {
         </div>
 
         <h2 className="mt-6 text-center text-2xl font-bold">
-          ¡Pago exitoso!
+          {plan === "talent" ? "¡Talento desbloqueado!" : "¡Pago exitoso!"}
         </h2>
 
         <p className="mt-3 text-center text-muted-foreground">
-          Tu compra fue procesada correctamente.
+          {plan === "talent"
+            ? "Ahora tenés acceso completo al directorio de talento."
+            : "Tu compra fue procesada correctamente."}
         </p>
 
         {amount && (
@@ -115,14 +118,19 @@ export function PaymentFeedback() {
           </div>
         )}
 
-        <div className="mt-6 flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 p-3">
-          
-
-          <p className="text-sm text-amber-700">
-            Tus créditos estarán disponibles
-            en unos segundos.
-          </p>
-        </div>
+        {plan === "talent" ? (
+          <div className="mt-6 flex items-center gap-2 rounded-xl border border-green-200 bg-green-50 p-3">
+            <p className="text-sm text-green-700">
+              Ya podés explorar estudiantes, filtrar por habilidades y guardar tus favoritos.
+            </p>
+          </div>
+        ) : (
+          <div className="mt-6 flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 p-3">
+            <p className="text-sm text-amber-700">
+              Tus créditos estarán disponibles en unos segundos.
+            </p>
+          </div>
+        )}
 
         <div className="mt-6 text-center text-xs text-muted-foreground">
           ID: {transactionId}
@@ -133,10 +141,13 @@ export function PaymentFeedback() {
             setShowSuccess(false);
             router.replace(pathname);
             router.refresh();
+            if (plan === "talent") {
+              router.push("/pyme/talent");
+            }
           }}
           className="mt-6 w-full rounded-xl bg-black px-4 py-3 font-medium text-white transition hover:opacity-90"
         >
-          Continuar al Dashboard
+          {plan === "talent" ? "Ir a Talento" : "Continuar al Dashboard"}
         </button>
       </div>
     </div>

@@ -132,8 +132,8 @@ export function Footer() {
               {[
                 { href: "/privacidad", label: "Política de Privacidad", icon: Shield },
                 { href: "/terminos", label: "Términos y Condiciones", icon: Shield },
-                { href: "/cookies", label: "Política de Cookies", icon: Shield },
-                { href: "/accessibility", label: "Accesibilidad", icon: HelpCircle },
+               // { href: "/cookies", label: "Política de Cookies", icon: Shield },
+                //{ href: "/accessibility", label: "Accesibilidad", icon: HelpCircle },
               ].map((link) => {
                 const Icon = link.icon;
                 return (
