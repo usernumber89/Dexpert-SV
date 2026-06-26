@@ -8,7 +8,12 @@ export async function hasTalentAccess() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return false;
 
-  const { data: purchases } = await supabase
+  const supabaseAdmin = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+
+  const { data: purchases } = await supabaseAdmin
     .from("purchases")
     .select("plan")
     .eq("user_id", user.id)
@@ -22,7 +27,12 @@ export async function getPymePlan() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return null;
 
-  const { data: purchase } = await supabase
+  const supabaseAdmin = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+
+  const { data: purchase } = await supabaseAdmin
     .from("purchases")
     .select("plan")
     .eq("user_id", user.id)
