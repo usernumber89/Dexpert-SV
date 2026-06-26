@@ -1,5 +1,4 @@
 "use client";
-"use client";
 
 import { useState, useEffect, useCallback, Suspense } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -17,6 +16,7 @@ import {
   getStudents, hasTalentAccess,
 } from "@/app/actions/pyme/premium";
 import { TalentPaywall } from "@/features/pyme/components/TalentPaywall";
+import { useTalentAccess } from "@/hooks/useTalentAccess";
 
 type Student = {
   id: string;
@@ -39,15 +39,14 @@ function TalentSearchContent() {
   const searchParams = useSearchParams();
   const isPostPayment = searchParams.get("success") === "true";
 
-  const [loading, setLoading] = useState(true);
-  const [hasAccess, setHasAccess] = useState<boolean | null>(null);
-  const [checkingPayment, setCheckingPayment] = useState(false);
+  const { hasAccess, loading: accessLoading, refetch } = useTalentAccess();
   const [students, setStudents] = useState<Student[]>([]);
   const [filteredStudents, setFilteredStudents] = useState<Student[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedSkill, setSelectedSkill] = useState<string>("all");
   const [availableSkills, setAvailableSkills] = useState<string[]>([]);
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
+  const [checkingPayment, setCheckingPayment] = useState(false);
 
   const loadStudentsAndSaved = useCallback(async () => {
     const [data, saved] = await Promise.all([getStudents(), getSavedStudents()]);
@@ -61,44 +60,30 @@ function TalentSearchContent() {
   }, []);
 
   useEffect(() => {
-    const init = async () => {
-      const access = await hasTalentAccess();
+    if (hasAccess === true) {
+      loadStudentsAndSaved();
+    }
+  }, [hasAccess, loadStudentsAndSaved]);
 
-      if (access) {
-        setHasAccess(true);
-        await loadStudentsAndSaved();
-        setLoading(false);
-        return;
-      }
-
-      // Si viene de un pago, hacer polling
-      if (isPostPayment) {
-        setCheckingPayment(true);
-        setLoading(false);
-
-        const MAX = 8;
-        const INTERVAL = 2500;
-        for (let i = 0; i < MAX; i++) {
+  useEffect(() => {
+    if (hasAccess === false && isPostPayment) {
+      setCheckingPayment(true);
+      const poll = async () => {
+        const MAX_RETRIES = 20;
+        const INTERVAL = 3000;
+        for (let i = 0; i < MAX_RETRIES; i++) {
           await new Promise(r => setTimeout(r, INTERVAL));
-          const retryAccess = await hasTalentAccess();
-          if (retryAccess) {
-            setHasAccess(true);
+          const access = await refetch();
+          if (access) {
             setCheckingPayment(false);
-            await loadStudentsAndSaved();
             return;
           }
         }
-        // Timeout: mostrar paywall de todas formas
-        setHasAccess(false);
         setCheckingPayment(false);
-      } else {
-        setHasAccess(false);
-        setLoading(false);
-      }
-    };
-
-    init();
-  }, [isPostPayment, loadStudentsAndSaved]);
+      };
+      poll();
+    }
+  }, [hasAccess, isPostPayment, refetch]);
 
   useEffect(() => {
     let filtered = [...students];
@@ -133,8 +118,7 @@ function TalentSearchContent() {
     }
   };
 
-  // Pantalla de carga inicial
-  if (loading) {
+  if (accessLoading || (hasAccess === null && !checkingPayment)) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#F0F7FF] via-white to-[#E8F3FD] flex items-center justify-center">
         <div className="text-center">
@@ -145,7 +129,6 @@ function TalentSearchContent() {
     );
   }
 
-  // Pantalla de espera post-pago (polling activo)
   if (checkingPayment) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#F0F7FF] via-white to-[#E8F3FD] flex items-center justify-center">
@@ -155,7 +138,7 @@ function TalentSearchContent() {
           </div>
           <h2 className="text-lg font-bold text-[#0D3A6E] mb-2">Confirmando tu pago</h2>
           <p className="text-sm text-[#5B8DB8]">
-            Estamos verificando la transacción con Wompi. Esto puede tomar unos segundos...
+            Estamos verificando la transacción con Wompi. Esto puede tomar hasta 60 segundos...
           </p>
           <div className="mt-6 flex justify-center gap-1.5">
             {[0, 1, 2].map(i => (
@@ -178,8 +161,6 @@ function TalentSearchContent() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#F0F7FF] via-white to-[#E8F3FD]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-8">
-
-        {/* Header */}
         <div className="mb-6 sm:mb-8">
           <p className="text-[10px] sm:text-xs font-medium uppercase tracking-widest text-[#93B8D4] mb-1 sm:mb-2">
             Directorio de Talento
@@ -192,7 +173,6 @@ function TalentSearchContent() {
           </p>
         </div>
 
-        {/* Search and Filters */}
         <div className="bg-white rounded-xl sm:rounded-2xl border border-[#BAD8F7] p-3 sm:p-5 mb-4 sm:mb-8 shadow-sm">
           <div className="flex flex-col md:flex-row gap-3 sm:gap-4">
             <div className="flex-1 relative">
@@ -202,7 +182,7 @@ function TalentSearchContent() {
                 placeholder="Buscar por nombre, carrera, universidad o habilidad..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-9 sm:pl-12 pr-4 py-2.5 sm:py-3 rounded-lg sm:rounded-xl border border-[#BAD8F7] text-xs sm:text-sm text-[#0D3A6E] focus:outline-none focus:border-[#38A3F1] focus:ring-4 focus:ring-[#38A3F1]/10 transition-all bg-[#F8FBFF] min-h-[44px]"
+                className="w-full pl-9 sm:pl-12 pr-4 py-2.5 sm:py-3 rounded-lg sm:rounded-xl border border-[#BAD8F7] text-xs sm:text-sm text-[#0D3A6E] placeholder:text-[#93B8D4] focus:outline-none focus:border-[#38A3F1] focus:ring-4 focus:ring-[#38A3F1]/10 transition-all bg-[#F8FBFF] min-h-[44px]"
               />
             </div>
             <div className="md:w-64 relative">
@@ -223,14 +203,12 @@ function TalentSearchContent() {
           </div>
         </div>
 
-        {/* Results Info */}
-        <div className="mb-4 sm:mb-6">
+        <div className="mb-6 sm:mb-6">
           <p className="text-xs sm:text-sm font-medium text-[#5B8DB8]">
             Mostrando <span className="text-[#0D3A6E] font-bold">{filteredStudents.length}</span> estudiantes
           </p>
         </div>
 
-        {/* Grid */}
         {filteredStudents.length === 0 ? (
           <div className="bg-white rounded-xl sm:rounded-2xl border border-[#BAD8F7] py-12 sm:py-20 text-center">
             <Users className="w-12 h-12 sm:w-16 sm:h-16 text-[#BAD8F7] mx-auto mb-3 sm:mb-4" />
@@ -338,10 +316,10 @@ function TalentSearchContent() {
                           </a>
                         )}
                       </div>
-                      
+                      <a
                         href={`mailto:${student.email}?subject=Oportunidad%20de%20Proyecto%20-%20Contacto%20desde%20la%20plataforma`}
                         className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-[#0D3A6E] to-[#1D5A9E] text-white text-sm font-medium px-4 py-2.5 rounded-xl hover:shadow-lg hover:shadow-[#38A3F1]/25 transition-all group/btn"
-                     <a >
+                      >
                         <Mail className="w-4 h-4" />
                         Contactar
                         <ArrowUpRight className="w-3 h-3 opacity-50 group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform" />

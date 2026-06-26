@@ -1,26 +1,38 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import {
   Crown,
-  Lock,
   Check,
-  Search,
-  Star,
-  Mail,
   ArrowRight,
   ShieldCheck,
   Zap,
+  RefreshCw,
+  Clock,
 } from "lucide-react";
+import { recordPurchase } from "@/app/actions/pyme/premium";
+
+const PENDING_COOKIE = "pending_plan";
 
 export function TalentPaywall() {
   const [loading, setLoading] = useState(false);
+  const [verifying, setVerifying] = useState(false);
+  const [hasPending, setHasPending] = useState(false);
+
+  useEffect(() => {
+    const hasCookie = document.cookie
+      .split("; ")
+      .some(c => c.startsWith(`${PENDING_COOKIE}=`));
+    setHasPending(hasCookie);
+  }, []);
 
   const handlePurchase = async () => {
     setLoading(true);
     try {
+      sessionStorage.setItem("talent_unlocked", "true");
+
       const res = await fetch("/api/wompi/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -29,6 +41,7 @@ export function TalentPaywall() {
       const data = await res.json();
 
       if (!res.ok) {
+        sessionStorage.removeItem("talent_unlocked");
         if (res.status === 409 && data.url) {
           window.location.href = data.url;
           return;
@@ -37,15 +50,44 @@ export function TalentPaywall() {
       }
 
       if (!data.url) {
+        sessionStorage.removeItem("talent_unlocked");
         throw new Error("No se pudo obtener la URL de pago");
       }
 
-      document.cookie = "pending_plan=talent; path=/; max-age=3600";
+      document.cookie = `${PENDING_COOKIE}=talent; path=/; max-age=3600`;
       window.location.href = data.url;
     } catch (error: any) {
+      sessionStorage.removeItem("talent_unlocked");
       console.error("Error en checkout talent:", error);
       toast.error(error.message || "Error al procesar el pago. Intentá de nuevo.");
       setLoading(false);
+    }
+  };
+
+  const handleVerifyPayment = async () => {
+    setVerifying(true);
+    try {
+      const planCookie = document.cookie
+        .split("; ")
+        .find(c => c.startsWith(`${PENDING_COOKIE}=`))
+        ?.split("=")[1];
+
+      const plan = planCookie || "talent";
+
+      const res = await recordPurchase(`manual_${Date.now()}`, plan);
+      if (res?.success) {
+        document.cookie = `${PENDING_COOKIE}=; path=/; max-age=0`;
+        sessionStorage.setItem("talent_unlocked", "true");
+        toast.success("¡Acceso verificado! Redirigiendo...");
+        setTimeout(() => window.location.reload(), 1000);
+      } else {
+        toast.error("No pudimos verificar tu pago. Contactá a soporte.");
+      }
+    } catch (err) {
+      console.error("Error verificando pago:", err);
+      toast.error("Error al verificar. Intentá de nuevo.");
+    } finally {
+      setVerifying(false);
     }
   };
 
@@ -129,6 +171,34 @@ export function TalentPaywall() {
             <ShieldCheck className="w-3 h-3" />
             Pago seguro procesado por Wompi • SSL encriptado
           </div>
+
+          {hasPending && (
+            <div className="mt-6 pt-6 border-t border-[#E8F3FD]">
+              <div className="flex items-center gap-2 mb-3 text-xs text-[#5B8DB8]">
+                <Clock className="w-3.5 h-3.5" />
+                ¿Ya realizaste el pago?
+              </div>
+              <motion.button
+                onClick={handleVerifyPayment}
+                disabled={verifying}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="w-full flex items-center justify-center gap-2 text-sm font-semibold text-[#0D5FA6] bg-[#F0F7FF] border border-[#BAD8F7] py-3 rounded-xl hover:bg-[#E8F3FD] transition-all disabled:opacity-50"
+              >
+                {verifying ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-[#38A3F1] border-t-transparent rounded-full animate-spin" />
+                    Verificando...
+                  </>
+                ) : (
+                  <>
+                    <RefreshCw className="w-4 h-4" />
+                    Ya pagué — Verificar mi acceso
+                  </>
+                )}
+              </motion.button>
+            </div>
+          )}
         </div>
       </motion.div>
     </div>

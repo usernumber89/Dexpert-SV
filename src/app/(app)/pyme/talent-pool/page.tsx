@@ -6,6 +6,7 @@ import { TalentPaywall } from "@/features/pyme/components/TalentPaywall";
 import { hasTalentAccess } from "@/app/actions/pyme/premium";
 import { Loader2 } from "lucide-react";
 import { useSearchParams } from "next/navigation";
+import { useTalentAccess } from "@/hooks/useTalentAccess";
 
 function TalentPoolLoader() {
   return (
@@ -24,55 +25,44 @@ function TalentPoolContent() {
   const searchParams = useSearchParams();
   const isPostPayment = searchParams.get("success") === "true";
 
-  const [hasAccess, setHasAccess] = useState<boolean | null>(null);
+  const { hasAccess, loading, refetch } = useTalentAccess();
   const [checkingPayment, setCheckingPayment] = useState(false);
 
   useEffect(() => {
-    const init = async () => {
-      const access = await hasTalentAccess();
-      if (access) {
-        setHasAccess(true);
-        return;
-      }
-
-      if (isPostPayment) {
-        setCheckingPayment(true);
-        const MAX = 8;
-        const INTERVAL = 2500;
-        for (let i = 0; i < MAX; i++) {
+    if (hasAccess === false && isPostPayment) {
+      setCheckingPayment(true);
+      const poll = async () => {
+        const MAX_RETRIES = 20;
+        const INTERVAL = 3000;
+        for (let i = 0; i < MAX_RETRIES; i++) {
           await new Promise(r => setTimeout(r, INTERVAL));
-          const retryAccess = await hasTalentAccess();
-          if (retryAccess) {
-            setHasAccess(true);
+          const access = await refetch();
+          if (access) {
             setCheckingPayment(false);
             return;
           }
         }
-        setHasAccess(false);
         setCheckingPayment(false);
-      } else {
-        setHasAccess(false);
-      }
-    };
+      };
+      poll();
+    }
+  }, [hasAccess, isPostPayment, refetch]);
 
-    init();
-  }, [isPostPayment]);
+  if (loading || (hasAccess === null && !checkingPayment)) {
+    return <TalentPoolLoader />;
+  }
 
-  if (hasAccess === null || checkingPayment) {
+  if (checkingPayment) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#F0F7FF] via-white to-[#E8F3FD] flex items-center justify-center">
         <div className="text-center max-w-sm px-4">
           <div className="w-16 h-16 rounded-2xl bg-[#F0F7FF] border border-[#BAD8F7] flex items-center justify-center mx-auto mb-4">
             <Loader2 className="w-8 h-8 text-[#38A3F1] animate-spin" />
           </div>
-          <h2 className="text-lg font-bold text-[#0D3A6E] mb-2">
-            {checkingPayment ? "Confirmando tu pago" : "Verificando acceso..."}
-          </h2>
-          {checkingPayment && (
-            <p className="text-sm text-[#5B8DB8]">
-              Estamos verificando la transacción con Wompi. Esto puede tomar unos segundos...
-            </p>
-          )}
+          <h2 className="text-lg font-bold text-[#0D3A6E] mb-2">Confirmando tu pago</h2>
+          <p className="text-sm text-[#5B8DB8]">
+            Estamos verificando la transacción con Wompi. Esto puede tomar hasta 60 segundos...
+          </p>
         </div>
       </div>
     );

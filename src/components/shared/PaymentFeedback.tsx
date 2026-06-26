@@ -53,6 +53,7 @@ export function PaymentFeedback() {
       if (plan && !recordedRef.current) {
         recordedRef.current = true;
         document.cookie = "pending_plan=; path=/; max-age=0";
+        sessionStorage.setItem("talent_unlocked", "true");
         recordPurchase(transactionId || `talent_${Date.now()}`, plan).then((res) => {
           if (res?.success) {
             console.log("Plan registrado:", res.plan);
@@ -64,7 +65,11 @@ export function PaymentFeedback() {
       }
 
       const timer = setTimeout(() => {
-        router.replace(pathname);
+        if (plan === "talent") {
+          router.replace("/pyme/talent");
+        } else {
+          router.replace(pathname);
+        }
       }, 8000);
 
       return () => clearTimeout(timer);

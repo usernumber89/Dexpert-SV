@@ -12,7 +12,7 @@ import { usePathname } from 'next/navigation';
 import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
-import { hasTalentAccess } from '@/app/actions/pyme/premium';
+import { useTalentAccess } from '@/hooks/useTalentAccess';
 import {
   LayoutDashboard, User, FolderOpen, Award, Bot,
   HelpCircle, Users, LogOut, Banknote, PanelLeft, GraduationCap, Rocket, Receipt,
@@ -57,64 +57,15 @@ export function AppSidebar() {
 
   const [mounted, setMounted] = useState(false);
   const [currentPlan, setCurrentPlan] = useState<string | null>(null);
-  const [talentUnlocked, setTalentUnlocked] = useState(false);
-  // Estado para mostrar spinner mientras espera el webhook post-pago
-  const [checkingAccess, setCheckingAccess] = useState(false);
+
+  const { hasAccess: talentUnlocked, loading: accessLoading } = useTalentAccess();
 
   useEffect(() => {
     setMounted(true);
-    checkAccess();
+    const params = new URLSearchParams(window.location.search);
+    const planFromUrl = params.get('plan');
+    if (planFromUrl) setCurrentPlan(planFromUrl.toUpperCase());
   }, []);
-
-  useEffect(() => {
-    const hasSuccess = new URLSearchParams(window.location.search).get("success") === "true";
-    if (hasSuccess) {
-      checkAccessWithRetry();
-    }
-  }, [pathname]);
-
-  const checkAccess = async () => {
-    const params = new URLSearchParams(window.location.search);
-    const planFromUrl = params.get('plan');
-    if (planFromUrl) setCurrentPlan(planFromUrl.toUpperCase());
-
-    const access = await hasTalentAccess();
-    setTalentUnlocked(access);
-  };
-
-  // Versión con polling: reintenta hasta 8 veces cada 2.5s (20s total)
-  // para darle tiempo al webhook de Wompi de procesar el pago
-  const checkAccessWithRetry = async () => {
-    const params = new URLSearchParams(window.location.search);
-    const planFromUrl = params.get('plan');
-    if (planFromUrl) setCurrentPlan(planFromUrl.toUpperCase());
-
-    // Chequeo inmediato primero
-    const immediateAccess = await hasTalentAccess();
-    if (immediateAccess) {
-      setTalentUnlocked(true);
-      return;
-    }
-
-    // Si no hay acceso todavía, activamos polling
-    setCheckingAccess(true);
-    const MAX_ATTEMPTS = 8;
-    const INTERVAL_MS = 2500;
-
-    for (let i = 0; i < MAX_ATTEMPTS; i++) {
-      await new Promise(resolve => setTimeout(resolve, INTERVAL_MS));
-      const access = await hasTalentAccess();
-      if (access) {
-        setTalentUnlocked(true);
-        setCheckingAccess(false);
-        return;
-      }
-    }
-
-    // Si después de 20s sigue sin acceso, paramos el spinner
-    // (el webhook puede llegar después y el usuario puede refrescar)
-    setCheckingAccess(false);
-  };
 
   const handleSignOut = async () => {
     const supabase = createClient();
@@ -178,7 +129,7 @@ export function AppSidebar() {
 
       <SidebarContent className="px-2 py-3">
         {/* Banner de verificación post-pago */}
-        {checkingAccess && !isCollapsed && (
+        {accessLoading && !isCollapsed && (
           <div className="mx-2 mb-3 px-3 py-2 rounded-lg bg-[#F0F7FF] border border-[#BAD8F7] flex items-center gap-2">
             <Loader2 className="w-3.5 h-3.5 text-[#38A3F1] animate-spin flex-shrink-0" />
             <p className="text-[11px] text-[#5B8DB8]">Verificando tu pago...</p>
@@ -226,20 +177,20 @@ export function AppSidebar() {
                       )}
                       {!isCollapsed && isPremium && (
                         <span className={`flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${
-                          checkingAccess
+                          accessLoading
                             ? 'bg-blue-50 text-blue-500 border border-blue-200'
                             : isLocked
                             ? 'bg-amber-50 text-amber-600 border border-amber-200'
                             : 'bg-green-50 text-green-600 border border-green-200'
                         }`}>
-                          {checkingAccess ? (
+                          {accessLoading ? (
                             <Loader2 className="w-2.5 h-2.5 animate-spin" />
                           ) : isLocked ? (
                             <Lock className="w-2.5 h-2.5" />
                           ) : (
                             <Crown className="w-2.5 h-2.5" />
                           )}
-                          {checkingAccess ? 'Verificando' : isLocked ? 'Premium' : 'Desbloqueado'}
+                          {accessLoading ? 'Verificando' : isLocked ? 'Premium' : 'Desbloqueado'}
                         </span>
                       )}
                     </Link>
