@@ -15,15 +15,13 @@ import {
   Briefcase,
   Star,
   CheckCircle2,
-  Crown,
-  Lock,
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import {GithubLogoIcon, LinkedinLogoIcon} from "@phosphor-icons/react"
-import { saveStudent, removeSavedStudent, getSavedStudents, hasTalentAccess } from "@/app/actions/pyme/premium";
+import { saveStudent, removeSavedStudent, getSavedStudents } from "@/app/actions/pyme/premium";
 
 // Ajustado según el esquema de tu base de datos
 type Student = {
@@ -45,8 +43,6 @@ type Student = {
 export default function TalentSearchPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
-  const [accessChecked, setAccessChecked] = useState(false);
-  const [hasAccess, setHasAccess] = useState(false);
   const [students, setStudents] = useState<Student[]>([]);
   const [filteredStudents, setFilteredStudents] = useState<Student[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -55,16 +51,8 @@ export default function TalentSearchPage() {
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
-    hasTalentAccess().then((access) => {
-      setHasAccess(access);
-      setAccessChecked(true);
-      if (access) {
-        loadStudents();
-        loadSavedAndPlan();
-      } else {
-        setLoading(false);
-      }
-    });
+    loadStudents();
+    loadSavedAndPlan();
   }, []);
 
   const loadSavedAndPlan = async () => {
@@ -146,69 +134,12 @@ export default function TalentSearchPage() {
     setFilteredStudents(filtered);
   };
 
-  if (loading || !accessChecked) {
+  if (loading) {
     return (
       <div className="min-h-screen bg-[#F0F7FF] flex items-center justify-center">
         <div className="text-center">
           <div className="w-12 h-12 border-4 border-[#38A3F1] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
           <p className="text-[#5B8DB8]">Cargando talento...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!hasAccess) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-[#F0F7FF] via-white to-[#E8F3FD] flex items-center justify-center p-6">
-        <div className="max-w-md w-full text-center">
-          <div className="bg-white rounded-3xl border border-[#BAD8F7] shadow-2xl p-8">
-            <div className="w-16 h-16 rounded-2xl bg-[#FFFBEB] flex items-center justify-center mx-auto mb-4">
-              <Crown className="w-8 h-8 text-[#F59E0B]" />
-            </div>
-            <h2 className="text-xl font-bold text-[#0D3A6E] mb-2">Acceso a Talento</h2>
-            <p className="text-sm text-[#5B8DB8] mb-2 leading-relaxed">
-              Encontrá y contactá al estudiante ideal para tus proyectos.
-            </p>
-            <div className="text-3xl font-extrabold text-[#0D3A6E] mb-2">$6.99</div>
-            <p className="text-xs text-[#93B8D4] mb-6">Pago único • Acceso permanente</p>
-
-            <button
-              onClick={async () => {
-                const res = await fetch("/api/wompi/checkout", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ plan: "talent" }),
-                });
-                const data = await res.json();
-                if (data.url) {
-                  document.cookie = "pending_plan=talent; path=/; max-age=3600";
-                  window.location.href = data.url;
-                }
-              }}
-              className="w-full bg-gradient-to-r from-[#F59E0B] to-[#E67E22] text-white text-sm font-semibold py-3 rounded-xl hover:opacity-90 transition shadow-md flex items-center justify-center gap-2"
-            >
-              <Lock className="w-4 h-4" />
-              Desbloquear Talento — $6.99
-            </button>
-
-            <div className="mt-6 space-y-2 text-left">
-              {[
-                "Buscar estudiantes por habilidades",
-                "Ver perfiles completos",
-                "Contactar directamente",
-                "Acceso permanente",
-              ].map((f, i) => (
-                <div key={i} className="flex items-center gap-2 text-xs text-[#5B8DB8]">
-                  <Star className="w-3 h-3 text-[#38A3F1]" />
-                  {f}
-                </div>
-              ))}
-            </div>
-
-            <p className="text-[10px] text-[#93B8D4] mt-6">
-              Esta es una compra única. No requiere suscripción.
-            </p>
-          </div>
         </div>
       </div>
     );
