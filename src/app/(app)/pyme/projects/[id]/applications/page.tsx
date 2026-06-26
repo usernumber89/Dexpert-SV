@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect, notFound } from "next/navigation";
 import { PymeApplications } from "@/features/pyme/components/PymeApplications";
+import { getStudentAcceptanceCounts } from "@/app/actions/pyme/premium";
 
 export default async function PymeProjectApplicationsPage({
   params,
@@ -30,8 +31,7 @@ export default async function PymeProjectApplicationsPage({
           id, full_name, email, phone, location, bio,
           university, major, graduation_year,
           skills, linkedin, github, portfolio, resume_url,
-          avatar_url, verified, education,
-          all_apps:applications ( status )
+          avatar_url, verified, education
         )
       )
     `)
@@ -41,17 +41,19 @@ export default async function PymeProjectApplicationsPage({
 
   if (!project) notFound();
 
+  const studentIds = (project.applications || [])
+    .map((app: any) => app.students?.id)
+    .filter(Boolean);
+  const acceptanceCounts = await getStudentAcceptanceCounts(studentIds);
+
   const projectWithMetrics = {
     ...project,
     applications: (project.applications || []).map((app: any) => {
       const studentData = app.students as any;
       if (studentData) {
-        const studentApps = studentData.all_apps || [];
-        studentData.total_applications = studentApps.length;
-        studentData.accepted_applications = studentApps.filter(
-          (a: any) => a.status === "ACCEPTED"
-        ).length;
-        delete studentData.all_apps;
+        const counts = acceptanceCounts[studentData.id];
+        studentData.total_applications = counts?.total ?? 0;
+        studentData.accepted_applications = counts?.accepted ?? 0;
       }
       return app;
     }),

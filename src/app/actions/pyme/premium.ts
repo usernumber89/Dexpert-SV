@@ -308,6 +308,28 @@ export async function getStudents() {
   return data || [];
 }
 
+export async function getStudentAcceptanceCounts(studentIds: string[]): Promise<Record<string, { total: number; accepted: number }>> {
+  if (!studentIds.length) return {};
+
+  const admin = getSupabaseAdmin();
+  const { data: applications } = await admin
+    .from("applications")
+    .select("student_id, status")
+    .in("student_id", studentIds);
+
+  if (!applications) return {};
+
+  const counts: Record<string, { total: number; accepted: number }> = {};
+  for (const id of studentIds) {
+    const apps = applications.filter(a => a.student_id === id);
+    counts[id] = {
+      total: apps.length,
+      accepted: apps.filter(a => a.status === "ACCEPTED").length,
+    };
+  }
+  return counts;
+}
+
 async function getPymeId(supabase: any, userId: string) {
   const { data } = await supabase
     .from("pymes")

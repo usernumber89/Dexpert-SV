@@ -48,13 +48,17 @@ export function PortfolioView() {
   }, [fetchData]);
 
   useEffect(() => {
-    const refresh = () => fetchData();
+    const refresh = () => { if (document.visibilityState === "visible") fetchData(); };
     window.addEventListener("focus", refresh);
     document.addEventListener("visibilitychange", () => {
       if (document.visibilityState === "visible") refresh();
     });
+    const interval = setInterval(() => {
+      if (document.visibilityState === "visible") fetchData();
+    }, 30000);
     return () => {
       window.removeEventListener("focus", refresh);
+      clearInterval(interval);
     };
   }, [fetchData]);
 

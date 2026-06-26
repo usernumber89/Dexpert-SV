@@ -1,16 +1,14 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { hasTalentAccess } from "@/app/actions/pyme/premium";
 
 export function useTalentAccess() {
   const [hasAccess, setHasAccess] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
-  const supabase = createClient();
-  const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
 
-  const check = async () => {
+  const check = useCallback(async () => {
     const cached = sessionStorage.getItem("talent_unlocked");
     if (cached === "true") {
       setHasAccess(true);
@@ -23,17 +21,22 @@ export function useTalentAccess() {
     setLoading(false);
     if (access) sessionStorage.setItem("talent_unlocked", "true");
     return access;
-  };
+  }, []);
 
   useEffect(() => {
+    let cancelled = false;
+    let channelRef: ReturnType<ReturnType<typeof createClient>["channel"]> | null = null;
+    const supabase = createClient();
+
     const init = async () => {
       await check();
+      if (cancelled) return;
 
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user || cancelled) return;
 
       const channel = supabase
-        .channel("talent-access-realtime")
+        .channel(`talent-access-${Date.now()}`)
         .on(
           "postgres_changes",
           {
@@ -44,26 +47,29 @@ export function useTalentAccess() {
           },
           async () => {
             const access = await check();
-            if (access && channelRef.current) {
-              supabase.removeChannel(channelRef.current);
-              channelRef.current = null;
+            if (access && channelRef) {
+              supabase.removeChannel(channelRef);
+              channelRef = null;
             }
           }
         )
         .subscribe();
 
-      channelRef.current = channel;
+      if (!cancelled) {
+        channelRef = channel;
+      }
     };
 
     init();
 
     return () => {
-      if (channelRef.current) {
-        supabase.removeChannel(channelRef.current);
-        channelRef.current = null;
+      cancelled = true;
+      if (channelRef) {
+        supabase.removeChannel(channelRef);
+        channelRef = null;
       }
     };
-  }, []);
+  }, [check]);
 
   return { hasAccess, loading, refetch: check };
 }

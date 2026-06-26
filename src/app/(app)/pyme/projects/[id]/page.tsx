@@ -1,8 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect, notFound } from "next/navigation";
 import { PymeProjectDetail } from "@/features/pyme/components/PymeProjectDetail";
-// 🛠️ IMPORTS DEL TRACKER
 import { getMilestones } from "@/app/actions/milestones";
+import { getStudentAcceptanceCounts } from "@/app/actions/pyme/premium";
 import MilestoneTracker from "@/components/shared/MilestoneTracker";
 
 export default async function PymeProjectDetailPage({
@@ -45,8 +45,7 @@ export default async function PymeProjectDetailPage({
           portfolio,
           resume_url,
           avatar_url,
-          verified,
-          all_apps:applications ( status )
+          verified
         )
       )
     `
@@ -56,20 +55,19 @@ export default async function PymeProjectDetailPage({
 
   if (!project) notFound();
 
-  // 3. Transformar los datos del proyecto individual (Métricas del estudiante)
+  // 3. Obtener conteos reales de aceptación para cada estudiante
+  const studentIds = (project.applications || [])
+    .map((app: any) => app.students?.id)
+    .filter(Boolean);
+  const acceptanceCounts = await getStudentAcceptanceCounts(studentIds);
+
   if (project.applications) {
     project.applications = project.applications.map((app: any) => {
       const studentData = app.students;
-      
       if (studentData) {
-        const studentApps = studentData.all_apps || [];
-        studentData.total_applications = studentApps.length;
-        studentData.accepted_applications = studentApps.filter(
-          (a: any) => a.status === 'ACCEPTED'
-        ).length;
-        
-        // Limpiamos la propiedad temporal
-        delete studentData.all_apps;
+        const counts = acceptanceCounts[studentData.id];
+        studentData.total_applications = counts?.total ?? 0;
+        studentData.accepted_applications = counts?.accepted ?? 0;
       }
       return app;
     });

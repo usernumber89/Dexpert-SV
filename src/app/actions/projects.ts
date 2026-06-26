@@ -2,6 +2,7 @@
 
 import { createClient as createServerClient } from "@/lib/supabase/server";
 import { createClient } from "@supabase/supabase-js";
+import { revalidatePath } from "next/cache";
 
 export async function completeProject(projectId: string) {
   const supabase = await createServerClient();
@@ -64,19 +65,50 @@ export async function completeProject(projectId: string) {
       }
 
       // Insertar entrada en el portafolio del estudiante
-      const { error: portfolioErr } = await supabaseAdmin
-        .from("portfolio_entries")
-        .upsert({
-          student_id: application.student_id,
-          source_type: "real_project",
-          source_id: projectId,
-          title: project?.title || "Proyecto real",
-          description: project?.description || null,
-          hours_invested: 0,
-          score: 100,
-          is_published: true,
-          completed_at: new Date().toISOString(),
-        }, { onConflict: "source_id,source_type", ignoreDuplicates: false });
+      let portfolioErr = null;
+      try {
+        const result = await supabaseAdmin
+          .from("portfolio_entries")
+          .upsert({
+            student_id: application.student_id,
+            source_type: "real_project",
+            source_id: projectId,
+            title: project?.title || "Proyecto real",
+            description: project?.description || null,
+            hours_invested: 0,
+            score: 100,
+            is_published: true,
+            completed_at: new Date().toISOString(),
+          }, {
+            onConflict: "student_id,source_id,source_type",
+            ignoreDuplicates: true,
+          });
+        portfolioErr = result.error;
+      } catch (e) {
+        // Fallback: si la constraint no existe (migración no aplicada),
+        // intentar con insert directo y sin conflicto
+        const { data: exists } = await supabaseAdmin
+          .from("portfolio_entries")
+          .select("id")
+          .eq("student_id", application.student_id)
+          .eq("source_id", projectId)
+          .eq("source_type", "real_project")
+          .maybeSingle();
+        if (!exists) {
+          const result = await supabaseAdmin.from("portfolio_entries").insert({
+            student_id: application.student_id,
+            source_type: "real_project",
+            source_id: projectId,
+            title: project?.title || "Proyecto real",
+            description: project?.description || null,
+            hours_invested: 0,
+            score: 100,
+            is_published: true,
+            completed_at: new Date().toISOString(),
+          });
+          portfolioErr = result.error;
+        }
+      }
 
       if (portfolioErr) {
         console.error("Error al insertar entrada en portafolio:", portfolioErr);
@@ -131,6 +163,12 @@ export async function completeProject(projectId: string) {
       }
     }
 
+    revalidatePath('/student/portfolio');
+    revalidatePath('/student/dashboard');
+    revalidatePath('/student/in-progress');
+    revalidatePath('/pyme/in-progress');
+    revalidatePath('/pyme/dashboard');
+
     return { success: true, certificates };
 
   } catch (error: any) {
@@ -158,6 +196,9 @@ export async function deleteProject(projectId: string) {
   if (error) {
     return { success: false, error: error.message };
   }
+
+  revalidatePath('/pyme/dashboard');
+  revalidatePath('/pyme/in-progress');
 
   return { success: true };
 }

@@ -2,12 +2,14 @@
 
 import React, { useState, useMemo, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import {
   Search, ChevronDown, ChevronUp, Clock, CheckCircle2,
-  AlertCircle, FileText, Building2, Briefcase, Plus, X, Circle,
+  AlertCircle, FileText, Building2, Briefcase, Plus, X, Circle, Trash,
 } from "lucide-react";
 import { ActiveProject } from "@/app/actions/active-projects";
 import { createMilestone } from "@/app/actions/milestones";
+import { completeProject, deleteProject as deleteProjectAction } from "@/app/actions/projects";
 import MilestoneTracker from "./MilestoneTracker";
 
 interface ActiveProjectsHubProps {
@@ -106,6 +108,44 @@ function ActiveProjectCard({
     : stats.approved === stats.total ? CheckCircle2
     : stats.inReview > 0 ? AlertCircle
     : Clock;
+
+  const [actionPending, setActionPending] = useState(false);
+
+  const handleMarkComplete = async () => {
+    if (!confirm("¿Estás seguro de marcar este proyecto como completado? Se generarán los certificados para los estudiantes aceptados.")) return;
+    setActionPending(true);
+    try {
+      const result = await completeProject(project.id);
+      if (result.success) {
+        toast.success("Proyecto completado y certificados generados.");
+        router.refresh();
+      } else {
+        toast.error(result.error || "Error al completar el proyecto");
+      }
+    } catch {
+      toast.error("Error inesperado al conectar con el servidor.");
+    } finally {
+      setActionPending(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!confirm("¿Estás seguro de eliminar este proyecto? Esta acción no se puede deshacer.")) return;
+    setActionPending(true);
+    try {
+      const result = await deleteProjectAction(project.id);
+      if (result.success) {
+        toast.success("Proyecto eliminado exitosamente.");
+        router.refresh();
+      } else {
+        toast.error(result.error || "Error al eliminar el proyecto");
+      }
+    } catch {
+      toast.error("Error inesperado al conectar con el servidor.");
+    } finally {
+      setActionPending(false);
+    }
+  };
 
   const handleCreateMilestone = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -257,21 +297,48 @@ function ActiveProjectCard({
           </button>
 
           {role === "PYME" && (
-            <button
-              onClick={() => {
-                if (!isExpanded) onToggle();
-                setShowCreateForm(!showCreateForm);
-              }}
-              className="px-3 inline-flex items-center justify-center gap-1 text-xs font-medium py-2 rounded-lg border transition-colors"
-              style={
-                showCreateForm
-                  ? { background: "#FEF2F2", borderColor: "#FECACA", color: "#DC2626" }
-                  : { background: "white", borderColor: "#BAD8F7", color: "#38A3F1" }
-              }
-            >
-              {showCreateForm ? <X className="w-3.5 h-3.5" /> : <Plus className="w-3.5 h-3.5" />}
-              {showCreateForm ? "Cancelar" : "Hito"}
-            </button>
+            <>
+              <button
+                onClick={() => {
+                  if (!isExpanded) onToggle();
+                  setShowCreateForm(!showCreateForm);
+                }}
+                className="px-3 inline-flex items-center justify-center gap-1 text-xs font-medium py-2 rounded-lg border transition-colors"
+                style={
+                  showCreateForm
+                    ? { background: "#FEF2F2", borderColor: "#FECACA", color: "#DC2626" }
+                    : { background: "white", borderColor: "#BAD8F7", color: "#38A3F1" }
+                }
+              >
+                {showCreateForm ? <X className="w-3.5 h-3.5" /> : <Plus className="w-3.5 h-3.5" />}
+                {showCreateForm ? "Cancelar" : "Hito"}
+              </button>
+              <button
+                onClick={handleMarkComplete}
+                disabled={actionPending || stats.approved !== stats.total || stats.total === 0}
+                className="px-3 inline-flex items-center justify-center gap-1 text-xs font-medium py-2 rounded-lg border transition-colors disabled:opacity-40"
+                style={{ background: "white", borderColor: "#BFE8DA", color: "#1D9E75" }}
+                title={
+                  stats.total === 0
+                    ? "Crea al menos un hito antes de completar"
+                    : stats.approved !== stats.total
+                      ? "Todos los hitos deben estar aprobados"
+                      : "Marcar proyecto como completado"
+                }
+              >
+                <CheckCircle2 className="w-3.5 h-3.5" />
+                Completar
+              </button>
+              <button
+                onClick={handleDelete}
+                disabled={actionPending}
+                className="px-3 inline-flex items-center justify-center gap-1 text-xs font-medium py-2 rounded-lg border transition-colors disabled:opacity-40"
+                style={{ background: "white", borderColor: "#FECACA", color: "#DC2626" }}
+              >
+                <Trash className="w-3.5 h-3.5" />
+                Eliminar
+              </button>
+            </>
           )}
         </div>
       </div>

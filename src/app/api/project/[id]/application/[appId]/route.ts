@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { revalidatePath } from "next/cache";
 
 export async function PATCH(
   req: Request,
@@ -16,5 +17,11 @@ export async function PATCH(
     .single();
 
   if (error) return Response.json({ error: error.message }, { status: 500 });
+
+  revalidatePath('/student/dashboard');
+  revalidatePath('/student/profile');
+  revalidatePath('/pyme/applications');
+  revalidatePath('/pyme/dashboard');
+
   return Response.json(data);
 }

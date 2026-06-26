@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { PymeApplications } from "@/features/pyme/components/PymeApplications";
+import { getStudentAcceptanceCounts } from "@/app/actions/pyme/premium";
 
 export default async function PymeApplicationsPage() {
   const supabase = await createClient();
@@ -25,29 +26,31 @@ export default async function PymeApplicationsPage() {
           id, full_name, email, phone, location, bio,
           university, major, graduation_year,
           skills, linkedin, github, portfolio, resume_url,
-          avatar_url, verified, education,
-          all_apps:applications ( status )
+          avatar_url, verified, education
         )
       )
     `)
     .eq("pyme_id", pyme.id)
     .order("created_at", { ascending: false });
 
-  // Transformar los datos para inyectar las métricas de DExpert
+  // Collect all student IDs to fetch real acceptance counts
+  const allStudentIds = new Set<string>();
+  (projects || []).forEach(p =>
+    p.applications.forEach((app: any) => {
+      if (app.students?.id) allStudentIds.add(app.students.id);
+    })
+  );
+  const acceptanceCounts = await getStudentAcceptanceCounts(Array.from(allStudentIds));
+
+  // Transformar los datos para inyectar las métricas reales de aceptación
   const projectsWithMetrics = (projects || []).map((project) => ({
     ...project,
     applications: project.applications.map((app) => {
       const studentData = app.students as any;
-      
       if (studentData) {
-        const studentApps = studentData.all_apps || [];
-        studentData.total_applications = studentApps.length;
-        studentData.accepted_applications = studentApps.filter(
-          (a: any) => a.status === 'ACCEPTED'
-        ).length;
-        
-        // Limpiamos la propiedad temporal
-        delete studentData.all_apps;
+        const counts = acceptanceCounts[studentData.id];
+        studentData.total_applications = counts?.total ?? 0;
+        studentData.accepted_applications = counts?.accepted ?? 0;
       }
       return app;
     }),
