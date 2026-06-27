@@ -1,17 +1,17 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import {
   Award, Clock, Star,
   BookOpen, Code2, Palette, Megaphone, Building2, Compass, Wrench,
-  Sparkles, CheckCircle2, RefreshCw,
   FileText, Calendar, Building, ChevronRight,
   Briefcase,
 } from "lucide-react";
-import { getPortfolioEntries, getCertificates, CertificateEntry } from "@/app/actions/simulation";
+import { getCertificates, CertificateEntry } from "@/app/actions/simulation";
 import { CertificateActions } from "./CertificateActions";
+import { createClient } from "@/lib/supabase/client";
 
 const AREA_ICONS: Record<string, typeof Code2> = {
   "Desarrollo de Software": Code2,
@@ -24,17 +24,54 @@ const AREA_ICONS: Record<string, typeof Code2> = {
 
 export function PortfolioView() {
   const [entries, setEntries] = useState<any[]>([]);
+  const [activeProjects, setActiveProjects] = useState<any[]>([]);
   const [certificates, setCertificates] = useState<CertificateEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<"all" | "simulation" | "real_project" | "certificate">("all");
 
+  const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null);
+  if (!supabaseRef.current) supabaseRef.current = createClient();
+
   const fetchData = useCallback(async () => {
     try {
-      const [entriesData, certsData] = await Promise.all([
-        getPortfolioEntries(),
+      const supabase = supabaseRef.current!;
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: student } = await supabase
+        .from("students")
+        .select("id")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (!student) return;
+
+      const [entriesResult, activeResult, certsData] = await Promise.all([
+        supabase
+          .from("portfolio_entries")
+          .select("*")
+          .eq("student_id", student.id)
+          .order("completed_at", { ascending: false }),
+        supabase
+          .from("applications")
+          .select("id, status, created_at, project:projects(title, description, pyme:pymes(company_name))")
+          .eq("student_id", student.id)
+          .eq("status", "ACCEPTED")
+          .order("created_at", { ascending: false }),
         getCertificates(),
       ]);
-      setEntries(entriesData);
+
+      setEntries(entriesResult.data || []);
+      setActiveProjects((activeResult.data || []).map((a: any) => ({
+        id: a.id,
+        source_type: "real_project",
+        title: a.project?.title || "Proyecto activo",
+        description: a.project?.description || null,
+        score: null,
+        skills_demonstrated: [],
+        completed_at: a.created_at,
+        hours_invested: 0,
+        _isActive: true,
+      })));
       setCertificates(certsData);
     } catch (err) {
       console.error("Error fetching portfolio data:", err);
@@ -48,24 +85,62 @@ export function PortfolioView() {
   }, [fetchData]);
 
   useEffect(() => {
-    const refresh = () => { if (document.visibilityState === "visible") fetchData(); };
-    window.addEventListener("focus", refresh);
-    document.addEventListener("visibilitychange", () => {
-      if (document.visibilityState === "visible") refresh();
-    });
-    const interval = setInterval(() => {
-      if (document.visibilityState === "visible") fetchData();
-    }, 30000);
+    const supabase = supabaseRef.current!;
+    let channel: ReturnType<typeof supabase.channel> | null = null;
+    let cancelled = false;
+
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (cancelled || !user) return;
+
+      const { data: student, error: studentErr } = await supabase
+        .from("students")
+        .select("id")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (cancelled || studentErr || !student) return;
+
+      const { data: appIds } = await supabase
+        .from("applications")
+        .select("id")
+        .eq("student_id", student.id);
+      const certFilter = appIds && appIds.length > 0
+        ? `application_id=in.(${appIds.map((a: { id: string }) => a.id).join(",")})`
+        : undefined;
+
+      channel = supabase
+        .channel(`portfolio-${student.id}-${Date.now()}`)
+        .on(
+          "postgres_changes",
+          { event: "*", schema: "public", table: "portfolio_entries", filter: `student_id=eq.${student.id}` },
+          () => { if (!cancelled) fetchData(); }
+        )
+        .on(
+          "postgres_changes",
+          { event: "*", schema: "public", table: "certificates", filter: certFilter },
+          () => { if (!cancelled) fetchData(); }
+        )
+        .subscribe((status: string) => {
+          if (status === "CHANNEL_ERROR") {
+            console.error("Realtime channel error for portfolio");
+          }
+        });
+    })();
+
+    const onFocus = () => { if (!cancelled) fetchData(); };
+    window.addEventListener("focus", onFocus);
+
     return () => {
-      window.removeEventListener("focus", refresh);
-      clearInterval(interval);
+      cancelled = true;
+      window.removeEventListener("focus", onFocus);
+      if (channel) supabase.removeChannel(channel);
     };
   }, [fetchData]);
 
   const showCertificates = filter === "certificate";
 
   const totalHours = entries.reduce((sum, e) => sum + (e.hours_invested || 0), 0);
-  const totalProjects = entries.length;
+  const totalProjects = entries.length + activeProjects.length;
   const totalCertificates = certificates.length;
   const avgScore = entries.length > 0
     ? Math.round(entries.reduce((sum, e) => sum + (e.score || 0), 0) / entries.length)
@@ -182,6 +257,14 @@ export function PortfolioView() {
                 emptyMessage="No hay simulaciones aún. Completa una simulación profesional para que aparezca aquí."
               />
             )}
+            {(filter === "all" || filter === "real_project") && activeProjects.length > 0 && (
+              <Section
+                title="En curso"
+                icon={Building}
+                entries={activeProjects}
+                emptyMessage=""
+              />
+            )}
             {(filter === "all" || filter === "real_project") && (
               <Section
                 title="Proyectos reales"
@@ -222,6 +305,7 @@ function Section({ title, icon: Icon, entries, emptyMessage }: {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {entries.map((entry, i) => {
             const AreaIcon = AREA_ICONS[entry.skills_demonstrated?.[0]] || Briefcase  ;
+            const isActive = entry._isActive;
             return (
               <motion.div
                 key={entry.id}
@@ -238,11 +322,11 @@ function Section({ title, icon: Icon, entries, emptyMessage }: {
                       </div>
                       <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
                         style={{
-                          background: entry.source_type === "simulation" ? "#F0F7FF" : "#E1F5EE",
-                          color: entry.source_type === "simulation" ? "#0D5FA6" : "#1D9E75",
+                          background: isActive ? "#FFF3CD" : entry.source_type === "simulation" ? "#F0F7FF" : "#E1F5EE",
+                          color: isActive ? "#856404" : entry.source_type === "simulation" ? "#0D5FA6" : "#1D9E75",
                         }}
                       >
-                        {entry.source_type === "simulation" ? "Simulación" : "Proyecto real"}
+                        {isActive ? "En curso" : entry.source_type === "simulation" ? "Simulación" : "Proyecto real"}
                       </span>
                     </div>
                     {entry.score && (
@@ -259,7 +343,7 @@ function Section({ title, icon: Icon, entries, emptyMessage }: {
                   <h3 className="text-sm font-bold text-[#0D3A6E] line-clamp-2">{entry.title}</h3>
                   <p className="text-xs text-[#5B8DB8] line-clamp-2 leading-relaxed">{entry.description}</p>
 
-                  {entry.skills_demonstrated?.length > 0 && (
+                  {!isActive && entry.skills_demonstrated?.length > 0 && (
                     <div className="flex flex-wrap gap-1">
                       {entry.skills_demonstrated.slice(0, 4).map((skill: string, j: number) => (
                         <span key={j} className="text-[10px] bg-[#F0F7FF] text-[#0D5FA6] px-2 py-0.5 rounded-full font-medium">
@@ -270,10 +354,6 @@ function Section({ title, icon: Icon, entries, emptyMessage }: {
                   )}
 
                   <div className="flex items-center gap-3 text-[10px] text-[#93B8D4] pt-1">
-           {/* <span className="flex items-center gap-1">
-                      <Clock className="w-3 h-3" />
-                      {entry.hours_invested || 0}h
-                    </span>*/}
                     {entry.completed_at && (
                       <span className="flex items-center gap-1">
                         <Calendar className="w-3 h-3" />

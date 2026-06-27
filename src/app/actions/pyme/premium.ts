@@ -324,7 +324,7 @@ export async function getStudentAcceptanceCounts(studentIds: string[]): Promise<
     const apps = applications.filter(a => a.student_id === id);
     counts[id] = {
       total: apps.length,
-      accepted: apps.filter(a => a.status === "ACCEPTED").length,
+      accepted: apps.filter(a => a.status === "ACCEPTED" || a.status === "COMPLETED").length,
     };
   }
   return counts;

@@ -119,7 +119,7 @@ if (applications) {
   setStats({
     total: apps.length,
     pending: apps.filter(a => a.status === "PENDING").length,
-    accepted: apps.filter(a => a.status === "ACCEPTED").length,
+    accepted: apps.filter(a => a.status === "ACCEPTED" || a.status === "COMPLETED").length,
     rejected: apps.filter(a => a.status === "REJECTED").length,
   });
 }

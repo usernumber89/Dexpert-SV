@@ -1,8 +1,10 @@
 "use client";
 
-import { FolderOpen, Award, Clock, ChevronRight, MapPin, BotMessageSquare } from "lucide-react";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { FolderOpen, Award, Clock, ChevronRight, MapPin, Briefcase } from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { createClient } from "@/lib/supabase/client";
 
 // ── Tipos ────────────────────────────────────────────────────────
 type Pyme = { id: string; company_name?: string; logo_url?: string | null };
@@ -10,9 +12,8 @@ type Project = {
   id: string; title: string; description?: string | null;
   skills: string | string[]; level?: string | null; pyme?: Pyme | null;
 };
-type Certificate = { id: string; file_url?: string | null };
 type Application = {
-  id: string; status: string; project?: Project | null; certificate?: Certificate | null;
+  id: string; status: string; project?: Project | null; certificate?: { id: string; file_url?: string | null } | null;
 };
 type Student = { id: string; full_name?: string | null; avatar_url?: string | null };
 type Props = {
@@ -114,30 +115,91 @@ function DashboardProjectCard({ project }: { project: Project }) {
 
 // ── Componente principal ─────────────────────────────────────────
 export function StudentDashboard({ user, student, applications, projects }: Props) {
-  
-  // ✨ LOGICA DE CONTEO OPTIMIZADA Y DEFENSIVA PARA CERTIFICADOS
-  const stats = [
-    { label: "Postulaciones", value: applications.length, icon: FolderOpen },
-    { label: "Aceptadas", value: applications.filter(a => a.status === "ACCEPTED").length, icon: Clock },
-    { 
-      label: "Certificados", 
-      value: applications.filter(a => {
-        // Buscamos de forma segura si Supabase lo devolvió en singular o en plural
-        const certData = (a as any).certificate || (a as any).certificates;
-        
-        if (!certData) return false;
-        
-        // Si Supabase lo devolvió como un Array nativo, verificamos que tenga elementos
-        if (Array.isArray(certData)) {
-          return certData.length > 0;
-        }
-        
-        // Si viene como objeto directo, validamos que exista
-        return true;
-      }).length, 
-      icon: Award 
-    },
-  ];
+  const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null);
+  if (!supabaseRef.current) supabaseRef.current = createClient();
+
+  const [stats, setStats] = useState([
+    { label: "Postulaciones", value: 0, icon: FolderOpen },
+    { label: "Aceptadas", value: 0, icon: Clock },
+    { label: "Proyectos", value: 0, icon: Briefcase },
+    { label: "Certificados", value: 0, icon: Award },
+  ]);
+
+  const fetchStats = useCallback(async () => {
+    if (!student) return;
+    const supabase = supabaseRef.current!;
+
+    const { count: totalApps } = await supabase
+      .from("applications")
+      .select("*", { count: "exact", head: true })
+      .eq("student_id", student.id);
+
+    const { count: totalAccepted } = await supabase
+      .from("applications")
+      .select("*", { count: "exact", head: true })
+      .eq("student_id", student.id)
+      .eq("status", "ACCEPTED");
+
+    const { count: totalCompleted } = await supabase
+      .from("applications")
+      .select("*", { count: "exact", head: true })
+      .eq("student_id", student.id)
+      .eq("status", "COMPLETED");
+
+    const { data: appIds } = await supabase
+      .from("applications")
+      .select("id")
+      .eq("student_id", student.id);
+
+    let totalCerts = 0;
+    if (appIds && appIds.length > 0) {
+      const { count } = await supabase
+        .from("certificates")
+        .select("*", { count: "exact", head: true })
+        .in("application_id", appIds.map((a: { id: string }) => a.id));
+      totalCerts = count ?? 0;
+    }
+
+    setStats([
+      { label: "Postulaciones", value: totalApps ?? 0, icon: FolderOpen },
+      { label: "Aceptadas", value: totalAccepted ?? 0, icon: Clock },
+      { label: "Proyectos", value: totalCompleted ?? 0, icon: Briefcase },
+      { label: "Certificados", value: totalCerts, icon: Award },
+    ]);
+  }, [student]);
+
+  useEffect(() => {
+    fetchStats();
+  }, [fetchStats]);
+
+  useEffect(() => {
+    if (!student) return;
+    let cancelled = false;
+    const supabase = supabaseRef.current!;
+
+    const channel = supabase
+      .channel(`dashboard-apps-${student.id}-${Date.now()}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "applications", filter: `student_id=eq.${student.id}` },
+        () => { if (!cancelled) fetchStats(); }
+      )
+      .subscribe();
+
+    const onFocus = () => { if (!cancelled) fetchStats(); };
+    window.addEventListener("focus", onFocus);
+
+    const interval = setInterval(() => {
+      if (!cancelled) fetchStats();
+    }, 30000);
+
+    return () => {
+      cancelled = true;
+      supabase.removeChannel(channel);
+      window.removeEventListener("focus", onFocus);
+      clearInterval(interval);
+    };
+  }, [student, fetchStats]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#F4F9FF] via-white to-[#EEF6FF]">
@@ -149,7 +211,7 @@ export function StudentDashboard({ user, student, applications, projects }: Prop
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-3 gap-2 sm:gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4">
           {stats.map(s => (
             <div key={s.label}
               className="bg-white rounded-xl sm:rounded-2xl border border-[#E8F3FD] p-3 sm:p-5 shadow-sm hover:shadow-md transition-shadow flex flex-col sm:flex-row items-center gap-2 sm:gap-4 text-center sm:text-left">

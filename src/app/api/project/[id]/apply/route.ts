@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
+import { revalidatePath } from "next/cache";
 
 export async function POST(_: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id: projectId } = await params;
@@ -41,5 +42,10 @@ export async function POST(_: Request, { params }: { params: Promise<{ id: strin
     .single();
 
   if (error) return Response.json({ error: error.message }, { status: 500 });
+
+  revalidatePath('/student/dashboard');
+  revalidatePath('/pyme/applications');
+  revalidatePath(`/pyme/projects/${projectId}/applications`);
+
   return Response.json(data);
 }

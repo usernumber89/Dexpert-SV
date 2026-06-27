@@ -5,7 +5,7 @@ export async function PATCH(
   req: Request,
   { params }: { params: Promise<{ id: string; appId: string }> }
 ) {
-  const { appId } = await params;
+  const { id: projectId, appId } = await params;
   const supabase = await createClient();
   const { status } = await req.json();
 
@@ -22,6 +22,8 @@ export async function PATCH(
   revalidatePath('/student/profile');
   revalidatePath('/pyme/applications');
   revalidatePath('/pyme/dashboard');
+  revalidatePath(`/pyme/projects/${projectId}`);
+  revalidatePath(`/pyme/projects/${projectId}/applications`);
 
   return Response.json(data);
 }

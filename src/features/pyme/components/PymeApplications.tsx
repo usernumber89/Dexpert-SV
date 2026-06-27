@@ -414,19 +414,39 @@
       rejected: allApps.filter(a => a.status === "REJECTED").length,
     };
 
-    const handleStatusChange = (appId: string, status: "ACCEPTED" | "REJECTED") => {
+    const handleStatusChange = (appId: string, newStatus: "ACCEPTED" | "REJECTED") => {
       setLocalProjects(prev =>
         prev.map(p => ({
           ...p,
-          applications: p.applications.map(a =>
-            a.id === appId ? { ...a, status } : a
-          ),
+          applications: p.applications.map(a => {
+            if (a.id !== appId) return a;
+            const delta = (newStatus === "ACCEPTED" ? 1 : 0) - ((a.status === "ACCEPTED" || a.status === "COMPLETED") ? 1 : 0);
+            return {
+              ...a,
+              status: newStatus,
+              students: a.students ? {
+                ...a.students,
+                accepted_applications: Math.max(0, (a.students.accepted_applications ?? 0) + delta),
+              } : null,
+            };
+          }),
         }))
       );
-      // Actualiza el panel si está abierto
-      if (selectedApp?.app.id === appId) {
-        setSelectedApp(prev => prev ? { ...prev, app: { ...prev.app, status } } : null);
-      }
+      setSelectedApp(prev => {
+        if (!prev || prev.app.id !== appId) return prev;
+        const delta = (newStatus === "ACCEPTED" ? 1 : 0) - ((prev.app.status === "ACCEPTED" || prev.app.status === "COMPLETED") ? 1 : 0);
+        return {
+          ...prev,
+          app: {
+            ...prev.app,
+            status: newStatus,
+            students: prev.app.students ? {
+              ...prev.app.students,
+              accepted_applications: Math.max(0, (prev.app.students.accepted_applications ?? 0) + delta),
+            } : null,
+          },
+        };
+      });
     };
 
     const filteredProjects = useMemo(() => {
