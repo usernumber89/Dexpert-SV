@@ -340,6 +340,16 @@ export async function getStudentAcceptanceCounts(studentIds: string[]): Promise<
   return counts;
 }
 
+export async function getStudentById(studentId: string) {
+  const { data, error } = await getSupabaseAdmin()
+    .from("students")
+    .select("*")
+    .eq("id", studentId)
+    .single();
+  if (error) return null;
+  return data;
+}
+
 async function getPymeId(supabase: any, userId: string) {
   const { data } = await supabase
     .from("pymes")

@@ -20,6 +20,7 @@ type SavedStudent = {
   student: {
     id: string;
     full_name: string;
+    email: string;
     avatar_url: string | null;
     major: string | null;
     university: string | null;
@@ -134,6 +135,14 @@ export function TalentPoolPanel() {
                     ))}
                   </div>
                 )}
+
+                <a
+                  href={`mailto:${s.email}?subject=Oportunidad%20de%20Proyecto%20-%20Contacto%20desde%20la%20plataforma`}
+                  className="flex items-center justify-center gap-2 w-full bg-gradient-to-r from-[#0D3A6E] to-[#1D5A9E] text-white text-xs font-medium px-3 py-2 rounded-xl hover:shadow-lg hover:shadow-[#38A3F1]/25 transition-all mb-2"
+                >
+                  <Mail className="w-3.5 h-3.5" />
+                  Contactar
+                </a>
 
                 {item.notes && (
                   <p className="text-[11px] text-[#5B8DB8] italic border-t border-[#E8F3FD] pt-2 mt-2">
