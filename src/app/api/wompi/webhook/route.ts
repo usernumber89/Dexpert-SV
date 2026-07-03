@@ -26,28 +26,33 @@ export async function POST(req: Request) {
     const identificador = EnlacePago?.IdentificadorEnlaceComercio;
     const esAprobada = ResultadoTransaccion === "ExitosaAprobada";
 
-    // Si no es aprobada, respondemos 200 para que Wompi no reintente
     if (!esAprobada) return NextResponse.json({ success: true });
+
+    if (!identificador) {
+      console.error("Webhook sin IdentificadorEnlaceComercio");
+      return NextResponse.json({ error: "Identificador requerido" }, { status: 400 });
+    }
 
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
 
-    // IDEMPOTENCIA: si ya procesamos esta transacción, responder OK
-    const { data: existingPurchase } = await supabase
-      .from("credit_purchases")
-      .select("id")
-      .eq("stripe_id", IdTransaccion)
-      .maybeSingle();
-    if (existingPurchase) {
+    const [creditCheck, purchaseCheck] = await Promise.all([
+      supabase.from("credit_purchases").select("id").eq("stripe_id", IdTransaccion).maybeSingle(),
+      supabase.from("purchases").select("id").eq("stripe_id", IdTransaccion).maybeSingle(),
+    ]);
+    if (creditCheck.data || purchaseCheck.data) {
       console.log(`Transacción ${IdTransaccion} ya procesada, skip`);
       return NextResponse.json({ success: true, duplicate: true });
     }
 
-    // Certificate payment: DEXPERT_CERT_certificateId_studentId_timestamp
     if (identificador.startsWith("DEXPERT_CERT_")) {
       const parts = identificador.split("_");
+      if (parts.length < 4) {
+        console.error("Formato DEXPERT_CERT inválido:", identificador);
+        return NextResponse.json({ error: "Formato inválido" }, { status: 400 });
+      }
       const certificateId = parts[2];
       const studentId = parts[3];
 
@@ -57,7 +62,7 @@ export async function POST(req: Request) {
         .eq("id", certificateId);
 
       if (certErr) {
-        console.error("Error marking certificate as paid:", certErr);
+        console.error("Error marcando certificado como pagado:", certErr);
         return NextResponse.json({ error: certErr.message }, { status: 500 });
       }
 
@@ -65,12 +70,20 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: true });
     }
 
-    // Credit pack payment: DEXPERT_plan_pymeId_timestamp
     const parts = identificador.split("_");
+    if (parts.length < 3) {
+      console.error("Identificador con formato inválido:", identificador);
+      return NextResponse.json({ error: "Formato de identificador inválido" }, { status: 400 });
+    }
+
     const plan = parts[1];
     const pymeId = parts[2].trim();
 
-    // 1. Obtener pyme con company_name para la factura
+    if (plan !== "talent" && !(plan in PLAN_CREDITS)) {
+      console.error("Plan desconocido:", plan);
+      return NextResponse.json({ error: "Plan desconocido" }, { status: 400 });
+    }
+
     const { data: pyme, error: pymeErr } = await supabase
       .from("pymes")
       .select("user_id, company_name")
@@ -82,12 +95,12 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Pyme not found" }, { status: 404 });
     }
 
-    // Si es talent access, solo registrar en purchases (sin créditos ni factura)
     if (plan === "talent") {
       const { error: purchaseErr } = await supabase.from("purchases").insert({
         user_id: pyme.user_id,
         pyme_id: pymeId,
         plan: "TALENT_ACCESS",
+        stripe_id: IdTransaccion,
       });
 
       if (purchaseErr) {
@@ -101,7 +114,6 @@ export async function POST(req: Request) {
 
     const creditsToAdd = PLAN_CREDITS[plan];
 
-    // 2. Obtener los créditos actuales de pyme_credits
     const { data: creditsData } = await supabase
       .from("pyme_credits")
       .select("credits_available")
@@ -109,25 +121,34 @@ export async function POST(req: Request) {
       .maybeSingle();
 
     if (creditsData) {
-      await supabase
+      const { error: updateErr } = await supabase
         .from("pyme_credits")
-        .update({ 
+        .update({
           credits_available: creditsData.credits_available + creditsToAdd,
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
         })
         .eq("pyme_id", pymeId);
+
+      if (updateErr) {
+        console.error("Error actualizando créditos:", updateErr);
+        return NextResponse.json({ error: updateErr.message }, { status: 500 });
+      }
     } else {
-      await supabase
+      const { error: insertErr } = await supabase
         .from("pyme_credits")
         .insert({
           pyme_id: pymeId,
           credits_available: creditsToAdd,
-          credits_used: 0
+          credits_used: 0,
         });
+
+      if (insertErr) {
+        console.error("Error insertando créditos iniciales:", insertErr);
+        return NextResponse.json({ error: insertErr.message }, { status: 500 });
+      }
     }
 
-    // 3. Registrar el historial en credit_purchases
-    await supabase.from("credit_purchases").insert({
+    const { error: creditPurchaseErr } = await supabase.from("credit_purchases").insert({
       user_id: pyme.user_id,
       pyme_id: pymeId,
       plan: plan.toUpperCase(),
@@ -135,14 +156,23 @@ export async function POST(req: Request) {
       credits_granted: creditsToAdd,
     });
 
-    // 3b. Registrar también en purchases para que el sidebar detecte el plan
-    await supabase.from("purchases").insert({
+    if (creditPurchaseErr) {
+      console.error("Error insertando credit_purchases:", creditPurchaseErr);
+      return NextResponse.json({ error: creditPurchaseErr.message }, { status: 500 });
+    }
+
+    const { error: purchaseErr } = await supabase.from("purchases").insert({
       user_id: pyme.user_id,
       pyme_id: pymeId,
       plan: plan.toUpperCase(),
+      stripe_id: IdTransaccion,
     });
 
-    // 4. Generar factura
+    if (purchaseErr) {
+      console.error("Error insertando purchases:", purchaseErr);
+      return NextResponse.json({ error: purchaseErr.message }, { status: 500 });
+    }
+
     try {
       const year = new Date().getFullYear();
       const { data: seqData } = await supabase.rpc("next_invoice_number", { p_year: year });

@@ -96,10 +96,13 @@ export async function recordPurchase(transactionId: string, plan: string) {
       user_id: user.id,
       pyme_id: pyme.id,
       plan: "TALENT_ACCESS",
+      stripe_id: transactionId,
     });
     if (purchaseErr) return { error: purchaseErr.message };
     return { success: true, plan: "TALENT_ACCESS" };
   }
+
+  if (!(plan in PLAN_CREDITS)) return { error: "Plan desconocido" };
 
   const creditsToAdd = PLAN_CREDITS[plan];
   const planUpper = plan.toUpperCase();
@@ -111,32 +114,37 @@ export async function recordPurchase(transactionId: string, plan: string) {
     .maybeSingle();
 
   if (creditsData) {
-    await supabaseAdmin
+    const { error } = await supabaseAdmin
       .from("pyme_credits")
       .update({
         credits_available: creditsData.credits_available + creditsToAdd,
         updated_at: new Date().toISOString(),
       })
       .eq("pyme_id", pyme.id);
+    if (error) return { error: error.message };
   } else {
-    await supabaseAdmin
+    const { error } = await supabaseAdmin
       .from("pyme_credits")
       .insert({ pyme_id: pyme.id, credits_available: creditsToAdd, credits_used: 0 });
+    if (error) return { error: error.message };
   }
 
-  await supabaseAdmin.from("credit_purchases").insert({
+  const { error: creditPurchaseErr } = await supabaseAdmin.from("credit_purchases").insert({
     user_id: user.id,
     pyme_id: pyme.id,
     plan: planUpper,
     stripe_id: transactionId,
     credits_granted: creditsToAdd,
   });
+  if (creditPurchaseErr) return { error: creditPurchaseErr.message };
 
-  await supabaseAdmin.from("purchases").insert({
+  const { error: purchaseErr } = await supabaseAdmin.from("purchases").insert({
     user_id: user.id,
     pyme_id: pyme.id,
     plan: planUpper,
+    stripe_id: transactionId,
   });
+  if (purchaseErr) return { error: purchaseErr.message };
 
   try {
     const year = new Date().getFullYear();
