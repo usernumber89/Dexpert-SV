@@ -463,8 +463,8 @@ export function PymeDashboard({ user, pyme, projects,credits }: Props) {
                     <div className="flex items-center gap-1 flex-shrink-0">
                       <Link
                         href={`/pyme/projects/${project.id}`}
-                        className="p-2 rounded-lg text-[#5B8DB8] hover:bg-[#F0F7FF] hover:text-[#0D3A6E] transition opacity-0 group-hover:opacity-100"
-                        title="View project"
+                        className="p-2 rounded-lg text-[#5B8DB8] hover:bg-[#F0F7FF] hover:text-[#0D3A6E] transition sm:opacity-0 sm:group-hover:opacity-100"
+                        title="Ver proyecto"
                       >
                         <Eye className="w-4 h-4" />
                       </Link>
@@ -472,7 +472,7 @@ export function PymeDashboard({ user, pyme, projects,credits }: Props) {
                       <Link
                         href={`/pyme/projects/${project.id}`}
                         className="p-2 rounded-lg text-[#5B8DB8] hover:bg-[#F0F7FF] hover:text-[#0D3A6E] transition"
-                        title="Edit project"
+                        title="Editar proyecto"
                       >
                         <Edit className="w-4 h-4" />
                       </Link>
@@ -565,7 +565,7 @@ export function PymeDashboard({ user, pyme, projects,credits }: Props) {
                     </Link>
                     
                     <p className="text-xs text-[#5B8DB8] mb-3 line-clamp-2">
-                      {project.description || "No description provided"}
+                      {project.description || "Sin descripción"}
                     </p>
 
                     <div className="flex items-center gap-3 mb-3">

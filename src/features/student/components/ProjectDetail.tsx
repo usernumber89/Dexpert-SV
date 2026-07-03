@@ -58,7 +58,7 @@ export function ProjectDetail({ project, hasApplied: initialApplied, studentId, 
 
   const handleApply = async () => {
     if (!studentId) {
-      toast.error("Complete your profile first");
+      toast.error("Completa tu perfil primero");
       router.push("/student/profile");
       return;
     }
@@ -67,13 +67,13 @@ export function ProjectDetail({ project, hasApplied: initialApplied, studentId, 
       const res = await fetch(`/api/project/${project.id}/apply`, { method: "POST" });
       if (!res.ok) {
         const data = await res.json();
-        toast.error(data.error ?? "Error applying");
+        toast.error(data.error ?? "Error al postular");
         return;
       }
       setHasApplied(true);
-      toast.success("Application sent successfully!");
+      toast.success("¡Postulación enviada con éxito!");
     } catch {
-      toast.error("Error applying");
+      toast.error("Error al postular");
     } finally {
       setLoading(false);
     }
@@ -105,10 +105,10 @@ export function ProjectDetail({ project, hasApplied: initialApplied, studentId, 
                   </div>
                 )}
                 <div>
-                  <p className="text-sm font-medium text-[#0D3A6E]">{project.pyme?.company_name ?? "Company"}</p>
+                  <p className="text-sm font-medium text-[#0D3A6E]">{project.pyme?.company_name ?? "Empresa"}</p>
                   <div className="flex items-center gap-1">
                     <MapPin className="w-3 h-3 text-[#93B8D4]" />
-                    <p className="text-xs text-[#93B8D4]">Remote</p>
+                    <p className="text-xs text-[#93B8D4]">Remoto</p>
                   </div>
                 </div>
               </div>
@@ -120,7 +120,7 @@ export function ProjectDetail({ project, hasApplied: initialApplied, studentId, 
                     <Zap className={`w-4 h-4 ${matchColor.text}`} />
                     <span className={`text-lg font-bold ${matchColor.text}`}>{matchScore}%</span>
                   </div>
-                  <span className={`text-[10px] ${matchColor.text}`}>match</span>
+                  <span className={`text-[10px] ${matchColor.text}`}>compatibilidad</span>
                   <div className="w-16 h-1 bg-gray-100 rounded-full mt-1">
                     <div
                       className={`h-1 rounded-full ${matchColor.bar} transition-all`}
@@ -150,16 +150,16 @@ export function ProjectDetail({ project, hasApplied: initialApplied, studentId, 
           {/* Body */}
           <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
             <div>
-              <p className="text-xs font-medium uppercase tracking-widest text-[#93B8D4] mb-2">Description</p>
-              <p className="text-sm text-[#5B8DB8] leading-relaxed">{project.description ?? "No description provided"}</p>
+              <p className="text-xs font-medium uppercase tracking-widest text-[#93B8D4] mb-2">Descripción</p>
+              <p className="text-sm text-[#5B8DB8] leading-relaxed">{project.description ?? "Sin descripción"}</p>
             </div>
 
             <div>
               <div className="flex items-center justify-between mb-2">
-                <p className="text-xs font-medium uppercase tracking-widest text-[#93B8D4]">Required skills</p>
+                <p className="text-xs font-medium uppercase tracking-widest text-[#93B8D4]">Habilidades requeridas</p>
                 {studentSkills.length > 0 && (
                   <span className="text-[10px] text-[#93B8D4]">
-                    ✓ = you have this skill
+                    ✓ = tienes esta habilidad
                   </span>
                 )}
               </div>
@@ -180,15 +180,15 @@ export function ProjectDetail({ project, hasApplied: initialApplied, studentId, 
 
               {/* Skills summary */}
               {studentSkills.length > 0 && (
-                <p className="text-xs text-[#93B8D4] mt-2">
-                  You match {project.skills.split(",").filter(s => isMatchedSkill(s.trim())).length} of {project.skills.split(",").length} required skills
+              <p className="text-xs text-[#93B8D4] mt-2">
+                    Coincidís con {project.skills.split(",").filter(s => isMatchedSkill(s.trim())).length} de {project.skills.split(",").length} habilidades requeridas
                 </p>
               )}
             </div>
 
             {project.pyme?.description && (
               <div>
-                <p className="text-xs font-medium uppercase tracking-widest text-[#93B8D4] mb-2">About the company</p>
+                <p className="text-xs font-medium uppercase tracking-widest text-[#93B8D4] mb-2">Sobre la empresa</p>
                 <p className="text-sm text-[#5B8DB8] leading-relaxed">{project.pyme.description}</p>
               </div>
             )}
@@ -199,7 +199,7 @@ export function ProjectDetail({ project, hasApplied: initialApplied, studentId, 
             {hasApplied ? (
               <div className="flex items-center gap-2 text-sm font-medium text-[#1D9E75]">
                 <CheckCircle className="w-4 h-4" />
-                You have already applied to this project
+                Ya te postulaste a este proyecto
               </div>
             ) : (
               <button
@@ -207,7 +207,7 @@ export function ProjectDetail({ project, hasApplied: initialApplied, studentId, 
                 disabled={loading}
                 className="w-full bg-[#38A3F1] text-white text-sm font-medium py-3 rounded-xl hover:bg-[#0D5FA6] transition disabled:opacity-50"
               >
-                {loading ? "Sending application..." : "Apply to this project"}
+                {loading ? "Enviando postulación..." : "Postularme a este proyecto"}
               </button>
             )}
           </div>

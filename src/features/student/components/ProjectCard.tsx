@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronRight, CheckCircle, MapPin, Calendar, Zap, Star } from "lucide-react";
+import { ChevronRight, CheckCircle, XCircle, MapPin, Calendar, Zap, Star, Clock } from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 
@@ -25,7 +25,7 @@ type Project = {
 
 type Props = {
   project: Project;
-  hasApplied: boolean;
+  applicationStatus: string | null;
   studentSkills: string[];
 };
 
@@ -71,7 +71,7 @@ function MatchBadge({ score }: { score: number }) {
   );
 }
 
-export function ProjectCard({ project, hasApplied, studentSkills }: Props) {
+export function ProjectCard({ project, applicationStatus, studentSkills }: Props) {
   const skillsList = project.skills?.split(",").filter(Boolean) ?? [];
   const matchScore = calcMatch(project.skills, studentSkills);
   const daysAgo = Math.floor(
@@ -83,6 +83,13 @@ export function ProjectCard({ project, hasApplied, studentSkills }: Props) {
     studentSkillsLower.some(
       s => s.includes(skill.toLowerCase()) || skill.toLowerCase().includes(s)
     );
+
+  const appStatusLabel: Record<string, { label: string; icon: typeof CheckCircle; color: string; bg: string; border: string }> = {
+    PENDING:   { label: "Pendiente",   icon: Clock,       color: "text-amber-600",  bg: "bg-amber-50",  border: "border-amber-100" },
+    ACCEPTED:  { label: "Aceptado",    icon: CheckCircle, color: "text-emerald-600", bg: "bg-emerald-50", border: "border-emerald-100" },
+    REJECTED:  { label: "Rechazado",   icon: XCircle,     color: "text-red-500",    bg: "bg-red-50",    border: "border-red-100" },
+    COMPLETED: { label: "Completado",  icon: CheckCircle, color: "text-sky-600",   bg: "bg-sky-50",    border: "border-sky-100" },
+  };
 
   return (
     <motion.div
@@ -116,7 +123,7 @@ export function ProjectCard({ project, hasApplied, studentSkills }: Props) {
               )}
               <div className="min-w-0">
                 <p className="text-xs font-semibold text-[#0D3A6E] truncate">
-                  {project.pyme?.company_name ?? "Company"}
+                  {project.pyme?.company_name ?? "Empresa"}
                 </p>
               <div className="flex items-center gap-1 mt-0.5">
                 <MapPin className="w-3 h-3 text-[#93B8D4]" />
@@ -125,10 +132,16 @@ export function ProjectCard({ project, hasApplied, studentSkills }: Props) {
             </div>
           </div>
 
-          {hasApplied ? (
-            <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-100 flex-shrink-0">
-              <CheckCircle className="w-3.5 h-3.5" /> Applied
-            </span>
+          {applicationStatus && appStatusLabel[applicationStatus] ? (
+            (() => {
+              const cfg = appStatusLabel[applicationStatus];
+              const StatusIcon = cfg.icon;
+              return (
+                <span className={`inline-flex items-center gap-1 text-[11px] font-semibold ${cfg.color} ${cfg.bg} px-2.5 py-1 rounded-full border ${cfg.border} flex-shrink-0`}>
+                  <StatusIcon className="w-3.5 h-3.5" /> {cfg.label}
+                </span>
+              );
+            })()
           ) : matchScore > 0 ? (
             <MatchBadge score={matchScore} />
           ) : (

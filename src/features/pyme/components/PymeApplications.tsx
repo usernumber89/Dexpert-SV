@@ -100,7 +100,7 @@
       onStatusChange(app.id, status);
       toast.success(status === "ACCEPTED" ? "Aplicante aceptado!" : "Aplicante rechazado!");
     } catch {
-      toast.error("Error updating status");
+      toast.error("Error al actualizar el estado");
     } finally {
       setUpdating(false);
     }
@@ -380,7 +380,7 @@
 
                       {/* Right */}
                       <div className="flex items-center gap-2 flex-shrink-0">
-                        <span className="text-[10px] text-[#93B8D4]">{daysAgo === 0 ? "Hoy" : `${daysAgo}d ago`}</span>
+                        <span className="text-[10px] text-[#93B8D4]">{daysAgo === 0 ? "Hoy" : `Hace ${daysAgo}d`}</span>
                         <span className={`inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-1 rounded-full border ${cfg.bg} ${cfg.text} ${cfg.border}`}>
                           <StatusIcon className="w-3 h-3" />
                           {cfg.label}
@@ -408,10 +408,11 @@
     // Métricas
     const allApps = localProjects.flatMap(p => p.applications);
     const metrics = {
-      total:    allApps.length,
-      pending:  allApps.filter(a => a.status === "PENDING").length,
-      accepted: allApps.filter(a => a.status === "ACCEPTED").length,
-      rejected: allApps.filter(a => a.status === "REJECTED").length,
+      total:     allApps.length,
+      pending:   allApps.filter(a => a.status === "PENDING").length,
+      accepted:  allApps.filter(a => a.status === "ACCEPTED").length,
+      rejected:  allApps.filter(a => a.status === "REJECTED").length,
+      completed: allApps.filter(a => a.status === "COMPLETED").length,
     };
 
     const handleStatusChange = (appId: string, newStatus: "ACCEPTED" | "REJECTED") => {
@@ -460,10 +461,11 @@
     }, [localProjects, search]);
 
     const statusFilters = [
-      { key: "ALL",      label: "All",      count: metrics.total },
-      { key: "PENDING",  label: "Pending",  count: metrics.pending },
-      { key: "ACCEPTED", label: "Accepted", count: metrics.accepted },
-      { key: "REJECTED", label: "Rejected", count: metrics.rejected },
+      { key: "ALL",       label: "Todos",      count: metrics.total },
+      { key: "PENDING",   label: "Pendiente",  count: metrics.pending },
+      { key: "ACCEPTED",  label: "Aceptado",   count: metrics.accepted },
+      { key: "REJECTED",  label: "Rechazado",  count: metrics.rejected },
+      { key: "COMPLETED", label: "Completado", count: metrics.completed },
     ];
 
     return (
@@ -481,10 +483,10 @@
             {/* Metrics */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3">
               {[
-                { label: "Total",    value: metrics.total,    icon: Users,       color: "text-[#38A3F1]", bg: "bg-[#F0F7FF]" },
-                { label: "Pendiente",  value: metrics.pending,  icon: Clock,       color: "text-[#1D5A9E]", bg: "bg-[#F0F7FF]" },
-                { label: "Aceptado", value: metrics.accepted, icon: CheckCircle, color: "text-[#38A3F1]", bg: "bg-[#F0F7FF]" },
-                { label: "Rechazado", value: metrics.rejected, icon: XCircle,     color: "text-[#1D5A9E]", bg: "bg-[#F0F7FF]" },
+                { label: "Total",     value: metrics.total,     icon: Users,       color: "text-[#38A3F1]", bg: "bg-[#F0F7FF]" },
+                { label: "Pendiente", value: metrics.pending,   icon: Clock,       color: "text-[#1D5A9E]", bg: "bg-[#F0F7FF]" },
+                { label: "Aceptado",  value: metrics.accepted,  icon: CheckCircle, color: "text-[#38A3F1]", bg: "bg-[#F0F7FF]" },
+                { label: "Rechazado", value: metrics.rejected,  icon: XCircle,     color: "text-[#1D5A9E]", bg: "bg-[#F0F7FF]" },
               ].map((m, i) => {
                 const Icon = m.icon;
                 return (
@@ -526,14 +528,18 @@
                   {metrics.accepted > 0 && (
                     <div className="bg-[#38A3F1] rounded-full transition-all" style={{ width: `${(metrics.accepted / metrics.total) * 100}%` }} />
                   )}
+                  {metrics.completed > 0 && (
+                    <div className="bg-green-500 rounded-full transition-all" style={{ width: `${(metrics.completed / metrics.total) * 100}%` }} />
+                  )}
                   {metrics.rejected > 0 && (
                     <div className="bg-[#1D5A9E]/60 rounded-full transition-all" style={{ width: `${(metrics.rejected / metrics.total) * 100}%` }} />
                   )}
                 </div>
-                <div className="flex gap-4 mt-2">
+                <div className="flex flex-wrap gap-x-4 gap-y-1.5 mt-2.5">
                   {[
                     { color: "bg-[#1D5A9E]", label: "Pendiente" },
                     { color: "bg-[#38A3F1]", label: "Aceptado" },
+                    { color: "bg-green-500", label: "Completado" },
                     { color: "bg-[#1D5A9E]/60",   label: "Rechazado" },
                   ].map(l => (
                     <div key={l.label} className="flex items-center gap-1.5">
@@ -553,8 +559,16 @@
                   value={search}
                   onChange={e => setSearch(e.target.value)}
                   placeholder="Buscar por proyecto o nombre del estudiante..."
-                  className="w-full pl-10 pr-4 py-2.5 rounded-lg sm:rounded-xl border border-[#BAD8F7] text-xs sm:text-sm bg-white focus:outline-none focus:border-[#38A3F1] focus:ring-2 focus:ring-[#38A3F1]/10 transition min-h-[44px]"
+                  className="w-full pl-10 pr-10 py-2.5 rounded-lg sm:rounded-xl border border-[#BAD8F7] text-xs sm:text-sm bg-white focus:outline-none focus:border-[#38A3F1] focus:ring-2 focus:ring-[#38A3F1]/10 transition min-h-[44px]"
                 />
+                {search && (
+                  <button
+                    onClick={() => setSearch("")}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-[#F0F7FF] transition min-h-[32px] min-w-[32px] flex items-center justify-center"
+                  >
+                    <X className="w-3.5 h-3.5 text-[#93B8D4]" />
+                  </button>
+                )}
               </div>
               <div className="flex gap-1 bg-white border border-[#BAD8F7] rounded-lg sm:rounded-xl p-1 overflow-x-auto">
                 {statusFilters.map(f => (

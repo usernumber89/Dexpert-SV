@@ -92,11 +92,12 @@ export async function recordPurchase(transactionId: string, plan: string) {
   );
 
   if (plan === "talent") {
-    await supabaseAdmin.from("purchases").insert({
+    const { error: purchaseErr } = await supabaseAdmin.from("purchases").insert({
       user_id: user.id,
       pyme_id: pyme.id,
       plan: "TALENT_ACCESS",
     });
+    if (purchaseErr) return { error: purchaseErr.message };
     return { success: true, plan: "TALENT_ACCESS" };
   }
 
@@ -139,13 +140,9 @@ export async function recordPurchase(transactionId: string, plan: string) {
 
   try {
     const year = new Date().getFullYear();
-    const { count } = await supabaseAdmin
-      .from("invoices")
-      .select("*", { count: "exact", head: true })
-      .gte("created_at", `${year}-01-01`)
-      .lte("created_at", `${year}-12-31`);
-
-    const invoiceNumber = `FACT-${year}-${String((count || 0) + 1).padStart(6, "0")}`;
+    const { data: seqData } = await supabaseAdmin.rpc("next_invoice_number", { p_year: year });
+    const seq = seqData || 1;
+    const invoiceNumber = `FACT-${year}-${String(seq).padStart(6, "0")}`;
 
     await supabaseAdmin.from("invoices").insert({
       pyme_id: pyme.id,
@@ -297,14 +294,19 @@ export async function trackProjectView(projectId: string) {
     process.env.NEXT_PUBLIC_SUPABASE_URL,
     process.env.SUPABASE_SERVICE_ROLE_KEY
   );
-  await supabaseAdmin.rpc("increment_project_views", { p_project_id: projectId });
+  const { error } = await supabaseAdmin.rpc("increment_project_views", { p_project_id: projectId });
+  if (error) console.error("Error tracking view:", error);
 }
 
 export async function getStudents() {
-  const { data } = await getSupabaseAdmin()
+  const { data, error } = await getSupabaseAdmin()
     .from("students")
     .select("*")
     .order("full_name", { ascending: true });
+  if (error) {
+    console.error("Error fetching students:", error);
+    return [];
+  }
   return data || [];
 }
 

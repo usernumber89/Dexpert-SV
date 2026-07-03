@@ -12,7 +12,6 @@ import {
 } from "lucide-react";
 
 import { toast } from "sonner";
-import { recordPurchase } from "@/app/actions/pyme/premium";
 
 const processedKeys = new Set<string>();
 
@@ -61,17 +60,8 @@ export function PaymentFeedback() {
     setTransactionId(txnId);
     setShowSuccess(true);
 
-    if (resolvedPlan === "talent") {
-      sessionStorage.setItem("talent_unlocked", "true");
-    }
-
-    recordPurchase(txnId, resolvedPlan).then((res) => {
-      if (res?.success) {
-        console.log("Plan registrado:", res.plan);
-      } else {
-        console.error("Error registrando compra:", res?.error);
-      }
-    });
+    // El webhook se encarga de registrar la compra.
+    // No llamamos recordPurchase desde el client para evitar duplicación.
   }, [params, pathname]);
 
   if (!showSuccess) return null;

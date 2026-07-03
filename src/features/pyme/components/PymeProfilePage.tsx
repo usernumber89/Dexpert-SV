@@ -92,7 +92,7 @@ if (projectsData) {
   setStats({
     total: projectsData.length,
     active: projectsData.filter(p => p.status === "active" && p.is_published).length,
-    completed: projectsData.filter(p => p.status === "closed").length,
+    completed: projectsData.filter(p => p.status === "completed").length,
     totalApplications: projectsData.reduce((acc, p) => acc + (p.applications?.length || 0), 0),
   });
 }
@@ -403,7 +403,7 @@ if (projectsData) {
                                 Descripción de la Empresa
                             </h3>
                             <p className="text-sm text-[#5B8DB8] leading-relaxed">
-                              {profile.description || "No description provided yet. Add a description to help students understand your business better."}
+                              {profile.description || "Sin descripción. Agregá una descripción para que los estudiantes conozcan tu empresa."}
                             </p>
                           </div>
 

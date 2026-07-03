@@ -34,6 +34,17 @@ export async function POST(req: Request) {
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
 
+    // IDEMPOTENCIA: si ya procesamos esta transacción, responder OK
+    const { data: existingPurchase } = await supabase
+      .from("credit_purchases")
+      .select("id")
+      .eq("stripe_id", IdTransaccion)
+      .maybeSingle();
+    if (existingPurchase) {
+      console.log(`Transacción ${IdTransaccion} ya procesada, skip`);
+      return NextResponse.json({ success: true, duplicate: true });
+    }
+
     // Certificate payment: DEXPERT_CERT_certificateId_studentId_timestamp
     if (identificador.startsWith("DEXPERT_CERT_")) {
       const parts = identificador.split("_");
@@ -73,11 +84,16 @@ export async function POST(req: Request) {
 
     // Si es talent access, solo registrar en purchases (sin créditos ni factura)
     if (plan === "talent") {
-      await supabase.from("purchases").insert({
+      const { error: purchaseErr } = await supabase.from("purchases").insert({
         user_id: pyme.user_id,
         pyme_id: pymeId,
         plan: "TALENT_ACCESS",
       });
+
+      if (purchaseErr) {
+        console.error("Error insertando TALENT_ACCESS:", purchaseErr);
+        return NextResponse.json({ error: purchaseErr.message }, { status: 500 });
+      }
 
       console.log(`Talento desbloqueado para PYME ${pymeId}`);
       return NextResponse.json({ success: true });
@@ -129,13 +145,9 @@ export async function POST(req: Request) {
     // 4. Generar factura
     try {
       const year = new Date().getFullYear();
-      const { count } = await supabase
-        .from("invoices")
-        .select("*", { count: "exact", head: true })
-        .gte("created_at", `${year}-01-01`)
-        .lte("created_at", `${year}-12-31`);
-
-      const invoiceNumber = `FACT-${year}-${String((count || 0) + 1).padStart(6, "0")}`;
+      const { data: seqData } = await supabase.rpc("next_invoice_number", { p_year: year });
+      const seq = seqData || 1;
+      const invoiceNumber = `FACT-${year}-${String(seq).padStart(6, "0")}`;
 
       await supabase.from("invoices").insert({
         pyme_id: pymeId,

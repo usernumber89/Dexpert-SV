@@ -48,12 +48,17 @@ export async function POST(req: Request) {
     const accessToken = await getWompiToken();
     const comercioId = `DEXPERT_${plan}_${pyme.id}_${Date.now()}`;
 
+    const isTalent = plan === "talent";
+    const redirectBase = isTalent
+      ? `${process.env.NEXT_PUBLIC_APP_URL}/pyme/talent`
+      : `${process.env.NEXT_PUBLIC_APP_URL}/pyme/pricing`;
+
     const payload = {
       identificadorEnlaceComercio: comercioId,
       monto: selectedPlan.amount,
       nombreProducto: selectedPlan.name,
       configuracion: {
-        urlRedirect: `${process.env.NEXT_PUBLIC_APP_URL}/pyme/dashboard?success=true&plan=${plan}`,
+        urlRedirect: `${redirectBase}?success=true&plan=${plan}`,
         urlWebhook: `${process.env.NEXT_PUBLIC_APP_URL}/api/wompi/webhook`,
         notificarTransaccionCliente: true,
       },

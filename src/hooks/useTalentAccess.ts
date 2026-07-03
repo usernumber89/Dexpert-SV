@@ -10,7 +10,8 @@ export function useTalentAccess() {
 
   const check = useCallback(async () => {
     const cached = sessionStorage.getItem("talent_unlocked");
-    if (cached === "true") {
+    const cacheTime = sessionStorage.getItem("talent_unlocked_at");
+    if (cached === "true" && cacheTime && Date.now() - Number(cacheTime) < 300_000) {
       setHasAccess(true);
       setLoading(false);
       return true;
@@ -19,7 +20,10 @@ export function useTalentAccess() {
     const access = await hasTalentAccess();
     setHasAccess(access);
     setLoading(false);
-    if (access) sessionStorage.setItem("talent_unlocked", "true");
+    if (access) {
+      sessionStorage.setItem("talent_unlocked", "true");
+      sessionStorage.setItem("talent_unlocked_at", String(Date.now()));
+    }
     return access;
   }, []);
 

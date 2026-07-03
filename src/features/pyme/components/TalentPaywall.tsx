@@ -31,7 +31,7 @@ export function TalentPaywall() {
   const handlePurchase = async () => {
     setLoading(true);
     try {
-      sessionStorage.setItem("talent_unlocked", "true");
+      
 
       const res = await fetch("/api/wompi/checkout", {
         method: "POST",
@@ -77,7 +77,6 @@ export function TalentPaywall() {
       const res = await recordPurchase(`manual_${Date.now()}`, plan);
       if (res?.success) {
         document.cookie = `${PENDING_COOKIE}=; path=/; max-age=0`;
-        sessionStorage.setItem("talent_unlocked", "true");
         toast.success("¡Acceso verificado! Redirigiendo...");
         setTimeout(() => window.location.reload(), 1000);
       } else {

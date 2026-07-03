@@ -25,7 +25,7 @@ type Project = {
 
 type Props = {
   projects: Project[];
-  appliedProjectIds: string[];
+  appliedProjectIds: Record<string, string>;
   studentSkills: string[];
   pymeFilter?: string;
   pymeName?: string;
@@ -206,7 +206,7 @@ export function StudentProjects({ projects, appliedProjectIds, studentSkills, py
                     ? { ...project.pyme, company_name: project.pyme.company_name }
                     : null,
                 }}
-                hasApplied={appliedProjectIds.includes(project.id)}
+                applicationStatus={appliedProjectIds[project.id] ?? null}
                 studentSkills={studentSkills}
               />
             ))}

@@ -35,15 +35,15 @@ export default async function StudentProjectsPage(props: { searchParams?: Promis
     pymeName = projects[0].pyme?.company_name || "";
   }
 
-  const appliedProjectIds: string[] = [];
+  const appliedProjectIds: Record<string, string> = {};
 
   if (student) {
     const { data: applications } = await supabase
       .from("applications")
-      .select("project_id")
+      .select("project_id, status")
       .eq("student_id", student.id);
 
-    applications?.forEach(a => appliedProjectIds.push(a.project_id));
+    applications?.forEach(a => { appliedProjectIds[a.project_id] = a.status; });
   }
 
   return (

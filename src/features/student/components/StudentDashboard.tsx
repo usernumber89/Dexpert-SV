@@ -16,11 +16,18 @@ type Application = {
   id: string; status: string; project?: Project | null; certificate?: { id: string; file_url?: string | null } | null;
 };
 type Student = { id: string; full_name?: string | null; avatar_url?: string | null };
+type ServerStats = {
+  totalApps: number;
+  totalAccepted: number;
+  totalCompleted: number;
+  totalCerts: number;
+};
 type Props = {
   user: { name: string; avatarUrl?: string | null };
   student: Student | null;
   applications: Application[];
   projects: Project[];
+  serverStats: ServerStats;
 };
 
 const statusConfig: Record<string, { label: string; bg: string; text: string; dot: string }> = {
@@ -114,56 +121,38 @@ function DashboardProjectCard({ project }: { project: Project }) {
 }
 
 // ── Componente principal ─────────────────────────────────────────
-export function StudentDashboard({ user, student, applications, projects }: Props) {
+export function StudentDashboard({ user, student, applications, projects, serverStats }: Props) {
   const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null);
   if (!supabaseRef.current) supabaseRef.current = createClient();
 
   const [stats, setStats] = useState([
-    { label: "Postulaciones", value: 0, icon: FolderOpen },
-    { label: "Aceptadas", value: 0, icon: Clock },
-    { label: "Proyectos", value: 0, icon: Briefcase },
-    { label: "Certificados", value: 0, icon: Award },
+    { label: "Postulaciones", value: serverStats.totalApps, icon: FolderOpen },
+    { label: "Aceptadas", value: serverStats.totalAccepted, icon: Clock },
+    { label: "Completados", value: serverStats.totalCompleted, icon: Briefcase },
+    { label: "Certificados", value: serverStats.totalCerts, icon: Award },
   ]);
 
   const fetchStats = useCallback(async () => {
     if (!student) return;
     const supabase = supabaseRef.current!;
 
-    const { count: totalApps } = await supabase
-      .from("applications")
-      .select("*", { count: "exact", head: true })
-      .eq("student_id", student.id);
+    const [{ count: totalApps }, { count: totalAccepted }, { count: totalCompleted }] = await Promise.all([
+      supabase.from("applications").select("*", { count: "exact", head: true }).eq("student_id", student.id),
+      supabase.from("applications").select("*", { count: "exact", head: true }).eq("student_id", student.id).in("status", ["ACCEPTED", "COMPLETED"]),
+      supabase.from("applications").select("*", { count: "exact", head: true }).eq("student_id", student.id).eq("status", "COMPLETED"),
+    ]);
 
-    const { count: totalAccepted } = await supabase
-      .from("applications")
-      .select("*", { count: "exact", head: true })
-      .eq("student_id", student.id)
-      .eq("status", "ACCEPTED");
-
-    const { count: totalCompleted } = await supabase
-      .from("applications")
-      .select("*", { count: "exact", head: true })
-      .eq("student_id", student.id)
-      .eq("status", "COMPLETED");
-
-    const { data: appIds } = await supabase
-      .from("applications")
-      .select("id")
-      .eq("student_id", student.id);
-
+    const { data: appIds } = await supabase.from("applications").select("id").eq("student_id", student.id);
     let totalCerts = 0;
     if (appIds && appIds.length > 0) {
-      const { count } = await supabase
-        .from("certificates")
-        .select("*", { count: "exact", head: true })
-        .in("application_id", appIds.map((a: { id: string }) => a.id));
+      const { count } = await supabase.from("certificates").select("*", { count: "exact", head: true }).in("application_id", appIds.map((a: { id: string }) => a.id));
       totalCerts = count ?? 0;
     }
 
     setStats([
       { label: "Postulaciones", value: totalApps ?? 0, icon: FolderOpen },
       { label: "Aceptadas", value: totalAccepted ?? 0, icon: Clock },
-      { label: "Proyectos", value: totalCompleted ?? 0, icon: Briefcase },
+      { label: "Completados", value: totalCompleted ?? 0, icon: Briefcase },
       { label: "Certificados", value: totalCerts, icon: Award },
     ]);
   }, [student]);
@@ -214,8 +203,8 @@ export function StudentDashboard({ user, student, applications, projects }: Prop
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4">
           {stats.map(s => (
             <div key={s.label}
-              className="bg-white rounded-xl sm:rounded-2xl border border-[#E8F3FD] p-3 sm:p-5 shadow-sm hover:shadow-md transition-shadow flex flex-col sm:flex-row items-center gap-2 sm:gap-4 text-center sm:text-left">
-              <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl bg-[#F0F7FF] flex items-center justify-center flex-shrink-0">
+              className="bg-white rounded-xl sm:rounded-2xl border border-[#E8F3FD] p-3 sm:p-5 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 flex flex-col sm:flex-row items-center gap-2 sm:gap-4 text-center sm:text-left group">
+              <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl bg-[#F0F7FF] flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
                 <s.icon className="w-4 h-4 sm:w-6 sm:h-6 text-[#38A3F1]" />
               </div>
               <div>

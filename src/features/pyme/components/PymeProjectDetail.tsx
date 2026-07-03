@@ -359,8 +359,10 @@ export function PymeProjectDetail({ project }: Props) {
     }
   };
 
-  const accepted = applications.filter(a => a.status === "ACCEPTED").length;
-  const pending  = applications.filter(a => a.status === "PENDING").length;
+  const accepted   = applications.filter(a => a.status === "ACCEPTED").length;
+  const pending    = applications.filter(a => a.status === "PENDING").length;
+  const completed  = applications.filter(a => a.status === "COMPLETED").length;
+  const rejected   = applications.filter(a => a.status === "REJECTED").length;
 
   return (
     <div className="min-h-screen bg-[#F0F7FF] p-6">
@@ -434,6 +436,14 @@ export function PymeProjectDetail({ project }: Props) {
             <div className="text-center">
               <p className="text-lg font-bold text-green-500">{accepted}</p>
               <p className="text-[10px] text-[#93B8D4] uppercase tracking-wide">Aceptado</p>
+            </div>
+            <div className="text-center">
+              <p className="text-lg font-bold text-sky-500">{completed}</p>
+              <p className="text-[10px] text-[#93B8D4] uppercase tracking-wide">Completado</p>
+            </div>
+            <div className="text-center">
+              <p className="text-lg font-bold text-red-400">{rejected}</p>
+              <p className="text-[10px] text-[#93B8D4] uppercase tracking-wide">Rechazado</p>
             </div>
           </div>
         </div>
