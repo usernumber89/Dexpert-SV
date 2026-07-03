@@ -5,6 +5,7 @@ import "./globals.css";
 import {AuthProvider} from "@/providers/AuthProvider";
 import {Briefcase, User} from "lucide-react";
 import { outfit } from "@/lib/fonts";
+import { OfflineDetector } from "@/components/shared/OfflineDetector";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -32,6 +33,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className={outfit.className}>
 
        <AuthProvider>{children}</AuthProvider> 
+        <OfflineDetector />
         <Toaster position="top-right" richColors />
       </body>
     </html>
