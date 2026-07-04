@@ -13,6 +13,7 @@ import {
   hasTalentAccess,
 } from "@/app/actions/pyme/premium";
 import { TalentPaywall } from "@/features/pyme/components/TalentPaywall";
+import { ProfileGallery } from "@/components/ProfileGallery";
 import { toast } from "sonner";
 import Link from "next/link";
 
@@ -235,6 +236,19 @@ export default function StudentDetailPage() {
                   Portafolio
                 </a>
               )}
+            </div>
+
+            {/* Student Portfolio Gallery */}
+            <div className="pt-4 border-t border-[#E8F3FD]">
+              <h3 className="text-base font-semibold text-[#0D3A6E] mb-4 flex items-center gap-2">
+                <span className="w-1 h-5 bg-[#38A3F1] rounded-full" />
+                Portafolio
+              </h3>
+              <ProfileGallery
+                ownerId={student.id}
+                type="student"
+                isOwner={false}
+              />
             </div>
           </div>
         </motion.div>

@@ -11,7 +11,7 @@ export async function POST(_: Request, { params }: { params: Promise<{ id: strin
 
   const { data: student } = await supabase
     .from("students")
-    .select("id")
+    .select("id, full_name")
     .eq("user_id", user.id)
     .single();
 
@@ -42,6 +42,35 @@ export async function POST(_: Request, { params }: { params: Promise<{ id: strin
     .single();
 
   if (error) return Response.json({ error: error.message }, { status: 500 });
+
+  // Get project info for notification
+  const { data: project } = await supabaseAdmin
+    .from("projects")
+    .select("title, pyme_id, pyme:pymes(user_id)")
+    .eq("id", projectId)
+    .single();
+
+  if (project) {
+    const pymeUserId = (project.pyme as any)?.user_id;
+    // Check if pyme wants notifications
+    const { data: settings } = await supabaseAdmin
+      .from("pyme_settings")
+      .select("notify_new_applicants")
+      .eq("pyme_id", project.pyme_id)
+      .single();
+
+    const shouldNotify = settings ? settings.notify_new_applicants : true;
+
+    if (pymeUserId && shouldNotify) {
+      await supabaseAdmin.from("notifications").insert({
+        user_id: pymeUserId,
+        title: "Nuevo solicitante",
+        message: `${student.full_name || "Un estudiante"} se ha postulado a "${project.title}"`,
+        type: "info",
+        link: "/pyme/applications",
+      });
+    }
+  }
 
   revalidatePath('/student/dashboard');
   revalidatePath('/pyme/applications');

@@ -5,11 +5,13 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
+import type { LucideIcon } from "lucide-react";
 import {
-  Building2, Mail, Phone, Globe, MapPin, Save, X,
+  Mail, Phone, Globe, MapPin, Save, X,
   Camera, AlertCircle, Edit, LogOut, ChevronRight,
-  Bell, Lock, Users, CreditCard, Sparkles,
-  Briefcase, TrendingUp, CheckCircle, Calendar, MessageSquareCheck
+  Bell, Lock, Users, CreditCard,
+  Briefcase, TrendingUp, CheckCircle, Calendar, MessageSquareCheck,
+  Eye, EyeOff, UserPlus, UserMinus, Receipt, Ticket, ExternalLink, Shield
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -41,6 +43,39 @@ type ProjectStats = {
   totalApplications: number;
 };
 
+type PymeSettings = {
+  notify_new_applicants: boolean;
+  notify_project_updates: boolean;
+  notify_weekly_summary: boolean;
+};
+
+type TeamMember = {
+  id: string;
+  pyme_id: string;
+  email: string;
+  name: string | null;
+  role: string;
+  invited_by: string;
+  status: string;
+  created_at: string;
+};
+
+type Invoice = {
+  id: string;
+  invoice_number: string;
+  plan: string;
+  plan_name: string;
+  amount: number;
+  status: string;
+  created_at: string;
+};
+
+const defaultSettings: PymeSettings = {
+  notify_new_applicants: true,
+  notify_project_updates: true,
+  notify_weekly_summary: false,
+};
+
 export default function PymeProfilePage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
@@ -56,6 +91,31 @@ export default function PymeProfilePage() {
 
   const logoInputRef = useRef<HTMLInputElement>(null);
   const supabase = useRef(createClient());
+
+  // Settings tab state
+  const [expandedSetting, setExpandedSetting] = useState<string | null>(null);
+  const [settings, setSettings] = useState<PymeSettings>(defaultSettings);
+  const [loadingSettings, setLoadingSettings] = useState(false);
+  const [savingSettings, setSavingSettings] = useState(false);
+
+  // Security sub-tab
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [changingPassword, setChangingPassword] = useState(false);
+
+  // Team sub-tab
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
+  const [loadingTeam, setLoadingTeam] = useState(false);
+  const [newMemberEmail, setNewMemberEmail] = useState("");
+  const [newMemberName, setNewMemberName] = useState("");
+  const [addingMember, setAddingMember] = useState(false);
+
+  // Billing tab state
+  const [creditsAvailable, setCreditsAvailable] = useState(0);
+  const [creditsUsed, setCreditsUsed] = useState(0);
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [loadingBilling, setLoadingBilling] = useState(false);
 
   useEffect(() => { loadProfile(); }, []);
 
@@ -74,28 +134,21 @@ export default function PymeProfilePage() {
       setProfile(profileData);
       setEditedProfile(profileData);
 
-      type ProjectStatsItem = {
-  id: string;
-  status: string;
-  is_published: boolean;
-  applications: { id: string }[];
-};
+      const { data: projects } = await supabase.current
+        .from("projects")
+        .select("id, status, is_published, applications(id)")
+        .eq("pyme_id", profileData.id);
 
-const { data: projects } = await supabase.current
-  .from("projects")
-  .select("id, status, is_published, applications(id)")
-  .eq("pyme_id", profileData.id);
+      const projectsData = projects as { id: string; status: string; is_published: boolean; applications: { id: string }[] }[] | null;
 
-const projectsData = projects as ProjectStatsItem[] | null;
-
-if (projectsData) {
-  setStats({
-    total: projectsData.length,
-    active: projectsData.filter(p => p.status === "active" && p.is_published).length,
-    completed: projectsData.filter(p => p.status === "completed").length,
-    totalApplications: projectsData.reduce((acc, p) => acc + (p.applications?.length || 0), 0),
-  });
-}
+      if (projectsData) {
+        setStats({
+          total: projectsData.length,
+          active: projectsData.filter(p => p.status === "active" && p.is_published).length,
+          completed: projectsData.filter(p => p.status === "completed").length,
+          totalApplications: projectsData.reduce((acc, p) => acc + (p.applications?.length || 0), 0),
+        });
+      }
     } catch (error) {
       console.error(error);
       toast.error("Error cargando el perfil. Por favor, inténtalo de nuevo.");
@@ -155,6 +208,193 @@ if (projectsData) {
     router.refresh();
   };
 
+  // --- Settings Handlers ---
+
+  const loadSettings = async () => {
+    if (!profile) return;
+    setLoadingSettings(true);
+    try {
+      const { data } = await supabase.current
+        .from("pyme_settings")
+        .select("*")
+        .eq("pyme_id", profile.id)
+        .single();
+
+      if (data) {
+        setSettings({
+          notify_new_applicants: data.notify_new_applicants,
+          notify_project_updates: data.notify_project_updates,
+          notify_weekly_summary: data.notify_weekly_summary,
+        });
+      }
+    } catch {
+      // Table might not exist yet, use defaults
+    } finally {
+      setLoadingSettings(false);
+    }
+  };
+
+  const saveSettings = async () => {
+    if (!profile) return;
+    setSavingSettings(true);
+    try {
+      const { error } = await supabase.current
+        .from("pyme_settings")
+        .upsert({
+          pyme_id: profile.id,
+          notify_new_applicants: settings.notify_new_applicants,
+          notify_project_updates: settings.notify_project_updates,
+          notify_weekly_summary: settings.notify_weekly_summary,
+          updated_at: new Date().toISOString(),
+        }, { onConflict: "pyme_id" });
+
+      if (error) throw error;
+      toast.success("Preferencias guardadas!");
+    } catch {
+      toast.error("Error guardando preferencias.");
+    } finally {
+      setSavingSettings(false);
+    }
+  };
+
+  const handleChangePassword = async () => {
+    if (newPassword !== confirmPassword) {
+      toast.error("Las contraseñas no coinciden.");
+      return;
+    }
+    if (newPassword.length < 6) {
+      toast.error("La contraseña debe tener al menos 6 caracteres.");
+      return;
+    }
+    setChangingPassword(true);
+    try {
+      const { error } = await supabase.current.auth.updateUser({ password: newPassword });
+      if (error) throw error;
+      toast.success("Contraseña actualizada!");
+      setNewPassword("");
+      setConfirmPassword("");
+      setExpandedSetting(null);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Error al cambiar la contraseña.");
+    } finally {
+      setChangingPassword(false);
+    }
+  };
+
+  const loadTeam = async () => {
+    if (!profile) return;
+    setLoadingTeam(true);
+    try {
+      const { data } = await supabase.current
+        .from("pyme_team_members")
+        .select("*")
+        .eq("pyme_id", profile.id)
+        .order("created_at", { ascending: true });
+
+      setTeamMembers(data || []);
+    } catch {
+      setTeamMembers([]);
+    } finally {
+      setLoadingTeam(false);
+    }
+  };
+
+  const handleAddMember = async () => {
+    if (!profile || !newMemberEmail.trim()) return;
+    setAddingMember(true);
+    try {
+      const { error } = await supabase.current
+        .from("pyme_team_members")
+        .insert({
+          pyme_id: profile.id,
+          email: newMemberEmail.trim(),
+          name: newMemberName.trim() || null,
+          role: "member",
+          invited_by: profile.user_id,
+          status: "active",
+        });
+
+      if (error) {
+        if (error.code === "23505") {
+          toast.error("Este miembro ya existe en el equipo.");
+        } else {
+          throw error;
+        }
+        return;
+      }
+
+      toast.success("Miembro añadido!");
+      setNewMemberEmail("");
+      setNewMemberName("");
+      loadTeam();
+    } catch {
+      toast.error("Error al añadir miembro.");
+    } finally {
+      setAddingMember(false);
+    }
+  };
+
+  const handleRemoveMember = async (memberId: string) => {
+    if (!profile) return;
+    try {
+      const { error } = await supabase.current
+        .from("pyme_team_members")
+        .delete()
+        .eq("id", memberId)
+        .eq("pyme_id", profile.id);
+
+      if (error) throw error;
+      toast.success("Miembro eliminado.");
+      loadTeam();
+    } catch {
+      toast.error("Error al eliminar miembro.");
+    }
+  };
+
+  // --- Billing Handlers ---
+
+  const loadBilling = async () => {
+    if (!profile) return;
+    setLoadingBilling(true);
+    try {
+      const { data: credits } = await supabase.current
+        .from("pyme_credits")
+        .select("credits_available, credits_used")
+        .eq("pyme_id", profile.id)
+        .single();
+
+      if (credits) {
+        setCreditsAvailable(credits.credits_available);
+        setCreditsUsed(credits.credits_used);
+      }
+
+      const { data: invoiceData } = await supabase.current
+        .from("invoices")
+        .select("*")
+        .eq("pyme_id", profile.id)
+        .order("created_at", { ascending: false })
+        .limit(5);
+
+      setInvoices(invoiceData || []);
+    } catch {
+      // Tables may not exist yet
+    } finally {
+      setLoadingBilling(false);
+    }
+  };
+
+  const handleTabChange = (tab: "perfil" | "configuración" | "cuenta") => {
+    setActiveTab(tab);
+    setExpandedSetting(null);
+    if (tab === "configuración") {
+      loadSettings();
+      loadTeam();
+    }
+    if (tab === "cuenta") {
+      loadBilling();
+    }
+  };
+
   if (loading) return (
     <div className="min-h-screen bg-gradient-to-br from-[#F4F9FF] via-white to-[#EEF6FF] flex items-center justify-center">
       <div className="text-center">
@@ -207,7 +447,6 @@ if (projectsData) {
               transition={{ duration: 0.3 }}
               className="bg-white rounded-3xl border border-[#E8F3FD] shadow-xl overflow-hidden"
             >
-              {/* Logo Section */}
               <div className="relative pt-8 pb-4 px-6">
                 <div className="relative w-28 h-28 mx-auto">
                   {profile.logo_url ? (
@@ -242,7 +481,6 @@ if (projectsData) {
                   onChange={e => { const f = e.target.files?.[0]; if (f) handleLogoUpload(f); }} />
               </div>
 
-              {/* Company Info */}
               <div className="text-center px-6 pb-4">
                 <h2 className="text-xl font-bold text-[#0D3A6E] mb-1">{profile.company_name}</h2>
                 {profile.industry && (
@@ -252,15 +490,13 @@ if (projectsData) {
                 )}
               </div>
 
-              {/* Stats Grid */}
               <div className="grid grid-cols-2 gap-2 p-4 bg-[#F8FBFE] border-y border-[#E8F3FD]">
                 <StatItem icon={Briefcase} value={stats.total} label="Proyectos" color="text-[#38A3F1]" bg="bg-[#F0F7FF]" />
-                <StatItem icon={Users} value={stats.totalApplications} label="Aplicantes / Solicitudes" color="text-[#1D5A9E]" bg="bg-[#F0F7FF]" />
+                <StatItem icon={Users} value={stats.totalApplications} label="Aplicantes" color="text-[#1D5A9E]" bg="bg-[#F0F7FF]" />
                 <StatItem icon={TrendingUp} value={stats.active} label="Activos" color="text-[#38A3F1]" bg="bg-[#F0F7FF]" />
                 <StatItem icon={CheckCircle} value={stats.completed} label="Completados" color="text-[#1D5A9E]" bg="bg-[#F0F7FF]" />
               </div>
 
-              {/* Contact Information */}
               <div className="p-6 space-y-3">
                 <h3 className="text-xs font-semibold text-[#0D3A6E] uppercase tracking-wider mb-3">Información de Contacto</h3>
                 {profile.email && <ContactItem icon={Mail} value={profile.email} />}
@@ -279,7 +515,6 @@ if (projectsData) {
                 {profile.location && <ContactItem icon={MapPin} value={profile.location} />}
               </div>
 
-              {/* Edit / Save Buttons */}
               <div className="p-6 pt-0">
                 {!isEditing ? (
                   <motion.button
@@ -319,19 +554,18 @@ if (projectsData) {
               transition={{ duration: 0.3, delay: 0.1 }}
               className="bg-white rounded-3xl border border-[#E8F3FD] shadow-xl overflow-hidden"
             >
-              {/* Tabs */}
               <div className="flex p-1.5 bg-[#F0F7FF] m-4 rounded-xl">
                 {(["perfil", "configuración", "cuenta"] as const).map(tab => (
                   <button
                     key={tab}
-                    onClick={() => setActiveTab(tab)}
+                    onClick={() => handleTabChange(tab)}
                     className={`flex-1 py-3 text-sm font-medium rounded-lg capitalize transition-all duration-200 ${
                       activeTab === tab
                         ? "bg-white text-[#0D3A6E] shadow-md"
                         : "text-[#93B8D4] hover:text-[#0D3A6E] hover:bg-white/50"
                     }`}
                   >
-                    {tab === "perfil" ? "Perfil de la Empresa" : tab}
+                    {tab === "perfil" ? "Perfil de la Empresa" : tab === "cuenta" ? "Facturación" : "Configuración"}
                   </button>
                 ))}
               </div>
@@ -366,7 +600,7 @@ if (projectsData) {
                                   value={(editedProfile as any)[f.key] ?? ""}
                                   onChange={e => setEditedProfile({ ...editedProfile, [f.key]: e.target.value })}
                                   className="w-full px-4 py-3 rounded-xl border border-[#BAD8F7] bg-white/50 text-sm focus:outline-none focus:border-[#38A3F1] focus:ring-2 focus:ring-[#38A3F1]/20 transition-all"
-                                  placeholder={`Enter ${f.label.toLowerCase()}`}
+                                  placeholder={`Ingresa tu ${f.label.toLowerCase()}`}
                                 />
                               </div>
                             ))}
@@ -425,7 +659,7 @@ if (projectsData) {
                               <div className="bg-gradient-to-br from-[#F0F7FF] to-white rounded-xl p-4 border border-[#E8F3FD]">
                                 <div className="flex items-center gap-2 mb-2">
                                   <Users className="w-4 h-4 text-[#38A3F1]" />
-                                  <p className="text-xs text-[#93B8D4] uppercase tracking-wider">Cantidad de Empleados</p>
+                                  <p className="text-xs text-[#93B8D4] uppercase tracking-wider">Empleados</p>
                                 </div>
                                 <p className="text-lg font-semibold text-[#0D3A6E]">
                                   {profile.employee_count || "—"}
@@ -458,7 +692,6 @@ if (projectsData) {
                             </div>
                           </div>
 
-                          {/* Profile Gallery */}
                           <div className="pt-4">
                             <h3 className="text-base font-semibold text-[#0D3A6E] mb-4 flex items-center gap-2">
                               <span className="w-1 h-5 bg-[#1D5A9E] rounded-full" />
@@ -484,29 +717,183 @@ if (projectsData) {
                       className="space-y-3"
                     >
                       <h3 className="text-base font-semibold text-[#0D3A6E] mb-4">Configuración de la Cuenta</h3>
-                      {[
-                        { icon: Bell, label: "Notificaciones", desc: "Gestiona cómo recibes alertas y actualizaciones" },
-                        { icon: Lock, label: "Seguridad", desc: "Actualiza tu contraseña y preferencias de seguridad" },
-                        { icon: Users, label: "Equipo", desc: "Añade o elimina miembros del equipo" },
-                      ].map((item, index) => (
-                        <motion.div
-                          key={item.label}
-                          initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: index * 0.05 }}
-                          className="flex items-center justify-between p-4 bg-[#F8FBFE] rounded-xl hover:bg-[#F0F7FF] border border-[#E8F3FD] hover:border-[#38A3F1] transition-all group cursor-pointer"
-                        >
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm group-hover:shadow transition-all">
-                              <item.icon className="w-5 h-5 text-[#38A3F1]" />
-                            </div>
-                            <div>
-                              <p className="text-sm font-semibold text-[#0D3A6E]">{item.label}</p>
-                              <p className="text-xs text-[#93B8D4]">{item.desc}</p>
+
+                      {/* Notificaciones */}
+                      <SettingsItem
+                        icon={Bell}
+                        label="Notificaciones"
+                        desc="Gestiona cómo recibes alertas y actualizaciones"
+                        isExpanded={expandedSetting === "notificaciones"}
+                        onToggle={() => setExpandedSetting(expandedSetting === "notificaciones" ? null : "notificaciones")}
+                      >
+                        <div className="space-y-4">
+                          {loadingSettings ? (
+                            <p className="text-sm text-[#93B8D4]">Cargando preferencias...</p>
+                          ) : (
+                            <>
+                              {[
+                                { key: "notify_new_applicants" as const, label: "Nuevos solicitantes", desc: "Notificar cuando un estudiante se postule a un proyecto" },
+                                { key: "notify_project_updates" as const, label: "Actualizaciones de proyectos", desc: "Notificar cuando un proyecto cambie de estado" },
+                                { key: "notify_weekly_summary" as const, label: "Resumen semanal", desc: "Recibir un resumen semanal de actividad" },
+                              ].map(item => (
+                                <div key={item.key} className="flex items-center justify-between py-2">
+                                  <div>
+                                    <p className="text-sm font-medium text-[#0D3A6E]">{item.label}</p>
+                                    <p className="text-xs text-[#93B8D4]">{item.desc}</p>
+                                  </div>
+                                  <button
+                                    onClick={() => setSettings({ ...settings, [item.key]: !settings[item.key] })}
+                                    className={`relative w-11 h-6 rounded-full transition-colors ${
+                                      settings[item.key] ? "bg-[#38A3F1]" : "bg-gray-200"
+                                    }`}
+                                  >
+                                    <div className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${
+                                      settings[item.key] ? "translate-x-5" : "translate-x-0"
+                                    }`} />
+                                  </button>
+                                </div>
+                              ))}
+                              <button
+                                onClick={saveSettings}
+                                disabled={savingSettings}
+                                className="w-full py-2.5 bg-[#38A3F1] text-white text-sm font-semibold rounded-xl hover:bg-[#0D5FA6] transition disabled:opacity-50"
+                              >
+                                {savingSettings ? "Guardando..." : "Guardar preferencias"}
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </SettingsItem>
+
+                      {/* Seguridad */}
+                      <SettingsItem
+                        icon={Lock}
+                        label="Seguridad"
+                        desc="Actualiza tu contraseña y preferencias de seguridad"
+                        isExpanded={expandedSetting === "seguridad"}
+                        onToggle={() => setExpandedSetting(expandedSetting === "seguridad" ? null : "seguridad")}
+                      >
+                        <div className="space-y-4">
+                          <div>
+                            <label className="text-xs font-semibold text-[#0D3A6E] mb-1.5 block">Nueva contraseña</label>
+                            <div className="relative">
+                              <input
+                                type={showNewPassword ? "text" : "password"}
+                                value={newPassword}
+                                onChange={e => setNewPassword(e.target.value)}
+                                className="w-full px-4 py-3 pr-10 rounded-xl border border-[#BAD8F7] bg-white/50 text-sm focus:outline-none focus:border-[#38A3F1] focus:ring-2 focus:ring-[#38A3F1]/20 transition-all"
+                                placeholder="Mínimo 6 caracteres"
+                              />
+                              <button
+                                onClick={() => setShowNewPassword(!showNewPassword)}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#93B8D4] hover:text-[#0D3A6E]"
+                              >
+                                {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                              </button>
                             </div>
                           </div>
-                          <ChevronRight className="w-4 h-4 text-[#93B8D4] group-hover:translate-x-1 group-hover:text-[#38A3F1] transition-all" />
-                        </motion.div>
-                      ))}
+                          <div>
+                            <label className="text-xs font-semibold text-[#0D3A6E] mb-1.5 block">Confirmar contraseña</label>
+                            <input
+                              type="password"
+                              value={confirmPassword}
+                              onChange={e => setConfirmPassword(e.target.value)}
+                              className="w-full px-4 py-3 rounded-xl border border-[#BAD8F7] bg-white/50 text-sm focus:outline-none focus:border-[#38A3F1] focus:ring-2 focus:ring-[#38A3F1]/20 transition-all"
+                              placeholder="Repite la nueva contraseña"
+                            />
+                          </div>
+                          <button
+                            onClick={handleChangePassword}
+                            disabled={changingPassword || !newPassword || !confirmPassword}
+                            className="w-full py-2.5 bg-[#38A3F1] text-white text-sm font-semibold rounded-xl hover:bg-[#0D5FA6] transition disabled:opacity-50"
+                          >
+                            {changingPassword ? "Actualizando..." : "Cambiar contraseña"}
+                          </button>
+                        </div>
+                      </SettingsItem>
+
+                      {/* Equipo */}
+                      <SettingsItem
+                        icon={Users}
+                        label="Equipo"
+                        desc="Añade o elimina miembros del equipo"
+                        isExpanded={expandedSetting === "equipo"}
+                        onToggle={() => setExpandedSetting(expandedSetting === "equipo" ? null : "equipo")}
+                      >
+                        <div className="space-y-4">
+                          {/* Add member form */}
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                            <input
+                              value={newMemberName}
+                              onChange={e => setNewMemberName(e.target.value)}
+                              placeholder="Nombre (opcional)"
+                              className="px-4 py-2.5 rounded-xl border border-[#BAD8F7] bg-white/50 text-sm focus:outline-none focus:border-[#38A3F1]"
+                            />
+                            <input
+                              value={newMemberEmail}
+                              onChange={e => setNewMemberEmail(e.target.value)}
+                              placeholder="Email del miembro"
+                              className="px-4 py-2.5 rounded-xl border border-[#BAD8F7] bg-white/50 text-sm focus:outline-none focus:border-[#38A3F1]"
+                            />
+                            <button
+                              onClick={handleAddMember}
+                              disabled={addingMember || !newMemberEmail.trim()}
+                              className="flex items-center justify-center gap-2 py-2.5 bg-[#38A3F1] text-white text-sm font-semibold rounded-xl hover:bg-[#0D5FA6] transition disabled:opacity-50"
+                            >
+                              <UserPlus className="w-4 h-4" />
+                              {addingMember ? "Añadiendo..." : "Añadir"}
+                            </button>
+                          </div>
+
+                          {/* Members list */}
+                          {loadingTeam ? (
+                            <p className="text-sm text-[#93B8D4]">Cargando miembros...</p>
+                          ) : teamMembers.length === 0 ? (
+                            <div className="text-center py-8 bg-[#F8FBFE] rounded-xl">
+                              <Users className="w-8 h-8 text-[#BAD8F7] mx-auto mb-2" />
+                              <p className="text-sm text-[#5B8DB8]">Aún no hay miembros en el equipo</p>
+                              <p className="text-xs text-[#93B8D4]">Añade miembros para gestionar tu empresa juntos</p>
+                            </div>
+                          ) : (
+                            <div className="space-y-2">
+                              {teamMembers.map(member => (
+                                <div
+                                  key={member.id}
+                                  className="flex items-center justify-between p-3 bg-[#F8FBFE] rounded-xl border border-[#E8F3FD]"
+                                >
+                                  <div className="flex items-center gap-3">
+                                    <div className="w-9 h-9 bg-[#F0F7FF] rounded-lg flex items-center justify-center">
+                                      <span className="text-sm font-bold text-[#1D5A9E]">
+                                        {(member.name || member.email).charAt(0).toUpperCase()}
+                                      </span>
+                                    </div>
+                                    <div>
+                                      <p className="text-sm font-medium text-[#0D3A6E]">
+                                        {member.name || member.email}
+                                      </p>
+                                      {member.name && (
+                                        <p className="text-xs text-[#93B8D4]">{member.email}</p>
+                                      )}
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-xs px-2 py-0.5 bg-[#F0F7FF] text-[#38A3F1] rounded-full capitalize">
+                                      {member.role}
+                                    </span>
+                                    <button
+                                      onClick={() => handleRemoveMember(member.id)}
+                                      className="p-1.5 text-[#93B8D4] hover:text-red-400 hover:bg-red-50 rounded-lg transition"
+                                    >
+                                      <UserMinus className="w-4 h-4" />
+                                    </button>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </SettingsItem>
+
                       <div className="pt-4 mt-4 border-t border-[#E8F3FD]">
                         <motion.button
                           whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}
@@ -518,8 +905,8 @@ if (projectsData) {
                               <LogOut className="w-5 h-5 text-red-400" />
                             </div>
                             <div className="text-left">
-                              <p className="text-sm font-semibold text-red-600">Sign Out</p>
-                              <p className="text-xs text-red-400">Log out of your account</p>
+                              <p className="text-sm font-semibold text-red-600">Cerrar sesión</p>
+                              <p className="text-xs text-red-400">Salir de tu cuenta</p>
                             </div>
                           </div>
                           <ChevronRight className="w-4 h-4 text-red-400 group-hover:translate-x-1 transition-transform" />
@@ -534,15 +921,134 @@ if (projectsData) {
                       key="billing"
                       initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }}
                       transition={{ duration: 0.2 }}
-                      className="text-center py-16"
                     >
-                      <div className="w-24 h-24 bg-[#F0F7FF] rounded-3xl flex items-center justify-center mx-auto mb-6">
-                        <CreditCard className="w-12 h-12 text-[#BAD8F7]" />
-                      </div>
-                      <h3 className="text-xl font-bold text-[#0D3A6E] mb-3">Facturación Próximamente</h3>
-                      <p className="text-sm text-[#5B8DB8] max-w-sm mx-auto">
-                        We're working on bringing you powerful billing features. Stay tuned!
-                      </p>
+                      {loadingBilling ? (
+                        <div className="text-center py-16">
+                          <div className="w-12 h-12 border-4 border-[#BAD8F7] border-t-[#38A3F1] rounded-full animate-spin mx-auto" />
+                          <p className="text-sm text-[#93B8D4] mt-4">Cargando información de facturación...</p>
+                        </div>
+                      ) : (
+                        <div className="space-y-6">
+                          {/* Credit Balance */}
+                          <div>
+                            <h3 className="text-base font-semibold text-[#0D3A6E] mb-4 flex items-center gap-2">
+                              <span className="w-1 h-5 bg-[#1D5A9E] rounded-full" />
+                              Créditos Disponibles
+                            </h3>
+                            <div className="bg-[#0D3A6E] rounded-xl p-6">
+                              <div className="flex items-center justify-between mb-4">
+                                <div className="flex items-center gap-2">
+                                  <Ticket className="w-5 h-5 text-[#38A3F1]" />
+                                  <span className="text-sm font-medium text-[#38A3F1] uppercase tracking-widest">Créditos</span>
+                                </div>
+                                <Link
+                                  href="/pyme/pricing"
+                                  className="flex items-center gap-1.5 text-xs font-medium text-white bg-[#38A3F1] px-3 py-1.5 rounded-lg hover:bg-[#0D5FA6] transition"
+                                >
+                                  <CreditCard className="w-4 h-4" /> Comprar más
+                                </Link>
+                              </div>
+                              <div className="flex items-end gap-2 mb-3">
+                                <span className="text-3xl font-bold text-white">{creditsAvailable}</span>
+                                <span className="text-[#BAD8F7] text-sm mb-1">créditos disponibles</span>
+                              </div>
+                              <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
+                                <div
+                                  className="h-full bg-[#38A3F1] rounded-full transition-all"
+                                  style={{ width: `${(creditsAvailable + creditsUsed) > 0 ? (creditsAvailable / (creditsAvailable + creditsUsed)) * 100 : 0}%` }}
+                                />
+                              </div>
+                              <div className="flex justify-between mt-2">
+                                <span className="text-xs text-[#BAD8F7]">{creditsUsed} usados</span>
+                                <span className="text-xs text-[#BAD8F7]">{creditsAvailable + creditsUsed} total</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Recent Invoices */}
+                          <div>
+                            <h3 className="text-base font-semibold text-[#0D3A6E] mb-4 flex items-center gap-2">
+                              <span className="w-1 h-5 bg-[#1D5A9E] rounded-full" />
+                              Facturas Recientes
+                            </h3>
+                            {invoices.length === 0 ? (
+                              <div className="text-center py-10 bg-[#F8FBFE] rounded-xl border border-[#E8F3FD]">
+                                <Receipt className="w-10 h-10 text-[#BAD8F7] mx-auto mb-3" />
+                                <p className="text-sm text-[#5B8DB8]">Sin facturas aún</p>
+                                <p className="text-xs text-[#93B8D4] mt-1">
+                                  Las facturas se generan después de cada compra de créditos
+                                </p>
+                                <Link
+                                  href="/pyme/pricing"
+                                  className="inline-flex items-center gap-1.5 mt-4 text-sm font-medium text-[#38A3F1] hover:text-[#0D5FA6] transition"
+                                >
+                                  <CreditCard className="w-4 h-4" /> Comprar créditos
+                                </Link>
+                              </div>
+                            ) : (
+                              <div className="space-y-2">
+                                {invoices.map(inv => (
+                                  <Link
+                                    key={inv.id}
+                                    href="/pyme/invoices"
+                                    className="flex items-center justify-between p-4 bg-[#F8FBFE] rounded-xl border border-[#E8F3FD] hover:border-[#BAD8F7] hover:bg-[#F0F7FF] transition-all group"
+                                  >
+                                    <div className="flex items-center gap-3">
+                                      <div className="w-9 h-9 bg-[#F0F7FF] rounded-lg flex items-center justify-center">
+                                        <Receipt className="w-4 h-4 text-[#38A3F1]" />
+                                      </div>
+                                      <div>
+                                        <p className="text-sm font-medium text-[#0D3A6E]">{inv.invoice_number}</p>
+                                        <p className="text-xs text-[#93B8D4]">
+                                          {new Date(inv.created_at).toLocaleDateString("es-SV", { day: "2-digit", month: "short", year: "numeric" })}
+                                          {" · "}{inv.plan_name}
+                                        </p>
+                                      </div>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-sm font-semibold text-[#0D3A6E]">${Number(inv.amount).toFixed(2)}</span>
+                                      <ExternalLink className="w-4 h-4 text-[#93B8D4] group-hover:text-[#38A3F1] transition-colors" />
+                                    </div>
+                                  </Link>
+                                ))}
+                                <Link
+                                  href="/pyme/invoices"
+                                  className="block text-center text-sm text-[#38A3F1] hover:text-[#0D5FA6] transition pt-2 font-medium"
+                                >
+                                  Ver todas las facturas →
+                                </Link>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Payment Methods */}
+                          <div>
+                            <h3 className="text-base font-semibold text-[#0D3A6E] mb-4 flex items-center gap-2">
+                              <span className="w-1 h-5 bg-[#1D5A9E] rounded-full" />
+                              Método de Pago
+                            </h3>
+                            <div className="bg-[#F8FBFE] rounded-xl border border-[#E8F3FD] p-5">
+                              <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 bg-[#F0F7FF] rounded-xl flex items-center justify-center">
+                                  <Shield className="w-5 h-5 text-[#38A3F1]" />
+                                </div>
+                                <div className="flex-1">
+                                  <p className="text-sm font-medium text-[#0D3A6E]">Pagos seguros con Wompi</p>
+                                  <p className="text-xs text-[#93B8D4]">
+                                    Los pagos se procesan de forma segura a través de Wompi. No almacenamos información de tarjetas.
+                                  </p>
+                                </div>
+                                <Link
+                                  href="/pyme/pricing"
+                                  className="text-sm font-medium text-[#38A3F1] hover:text-[#0D5FA6] transition whitespace-nowrap"
+                                >
+                                  Comprar créditos
+                                </Link>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -555,9 +1061,53 @@ if (projectsData) {
   );
 }
 
+// ── Settings Item Component ─────────────────────────────
+function SettingsItem({
+  icon: Icon, label, desc, isExpanded, onToggle, children
+}: {
+  icon: LucideIcon; label: string; desc: string; isExpanded: boolean; onToggle: () => void; children: React.ReactNode;
+}) {
+  return (
+    <div className="bg-[#F8FBFE] rounded-xl border border-[#E8F3FD] overflow-hidden transition-all">
+      <button
+        onClick={onToggle}
+        className="w-full flex items-center justify-between p-4 hover:bg-[#F0F7FF] transition-all group"
+      >
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm group-hover:shadow transition-all">
+            <Icon className="w-5 h-5 text-[#38A3F1]" />
+          </div>
+          <div className="text-left">
+            <p className="text-sm font-semibold text-[#0D3A6E]">{label}</p>
+            <p className="text-xs text-[#93B8D4]">{desc}</p>
+          </div>
+        </div>
+        <ChevronRight className={`w-4 h-4 text-[#93B8D4] transition-all ${
+          isExpanded ? "rotate-90" : "group-hover:translate-x-1"
+        }`} />
+      </button>
+      <AnimatePresence>
+        {isExpanded && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="overflow-hidden"
+          >
+            <div className="px-4 pb-4 pt-2 border-t border-[#E8F3FD]">
+              {children}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
 // ── Pequeños componentes utilitarios ─────────────────────────────
 function StatItem({ icon: Icon, value, label, color, bg }: {
-  icon: any; value: number; label: string; color: string; bg: string;
+  icon: LucideIcon; value: number; label: string; color: string; bg: string;
 }) {
   return (
     <div className="bg-white rounded-xl p-3 text-center shadow-sm">
@@ -570,7 +1120,7 @@ function StatItem({ icon: Icon, value, label, color, bg }: {
   );
 }
 
-function ContactItem({ icon: Icon, value }: { icon: any; value: string }) {
+function ContactItem({ icon: Icon, value }: { icon: LucideIcon; value: string }) {
   return (
     <div className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-[#F0F7FF] transition-colors group">
       <div className="w-8 h-8 bg-[#F0F7FF] rounded-lg flex items-center justify-center group-hover:bg-white transition-colors">

@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { ContactPyMEModal } from "./ContactPyMEModal";
+import { PymeGalleryModal } from "./PymeGalleryModal";
 
 type Pyme = {
   id: string;
@@ -35,6 +36,7 @@ export function StudentPyMEs({ pymes, activeProjectCounts }: Props) {
   const [search, setSearch] = useState("");
   const [industry, setIndustry] = useState("All");
   const [contactPyme, setContactPyme] = useState<typeof pymes[0] | null>(null);
+  const [galleryPyme, setGalleryPyme] = useState<typeof pymes[0] | null>(null);
 
   const filtered = useMemo(() => {
     return pymes
@@ -242,8 +244,14 @@ export function StudentPyMEs({ pymes, activeProjectCounts }: Props) {
                       <span>Proyectos</span>
                     </Link>
                     <button
+                      onClick={() => setGalleryPyme(pyme)}
+                      className="flex items-center justify-center gap-1 text-[11px] font-semibold text-[#0D3A6E] bg-[#F0F7FF] py-2 px-3 rounded-lg hover:bg-[#E8F3FD] transition-colors"
+                    >
+                      <Building2 className="w-3.5 h-3.5" />
+                      <span>Ver Galería</span>
+                    </button>
+                    <button
                       onClick={() => setContactPyme(pyme)}
-                      style={{ cursor: "pointer" }}
                       className="flex items-center justify-center gap-1 text-[11px] font-semibold text-[#0D3A6E] bg-[#F0F7FF] py-2 px-3 rounded-lg hover:bg-[#E8F3FD] transition-colors"
                     >
                       <Phone className="w-3.5 h-3.5" />
@@ -267,6 +275,14 @@ export function StudentPyMEs({ pymes, activeProjectCounts }: Props) {
             website: contactPyme.website,
           }}
           onClose={() => setContactPyme(null)}
+        />
+      )}
+
+      {galleryPyme && (
+        <PymeGalleryModal
+          pyme={galleryPyme}
+          activeProjectCount={activeProjectCounts[galleryPyme.id] || 0}
+          onClose={() => setGalleryPyme(null)}
         />
       )}
     </div>

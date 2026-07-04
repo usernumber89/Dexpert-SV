@@ -5,11 +5,12 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
+import type { LucideIcon } from "lucide-react";
 import {
-  User, Mail, Phone, Globe, MapPin, Save, X, Upload,
+  Mail, Phone, Globe, MapPin, Save, X, Upload,
   Camera, AlertCircle, Edit, LogOut, ChevronRight,
-  Shield, Bell, Lock, FileText, Target,
-  Briefcase, Clock, CheckCircle, Calendar
+  Bell, Lock, Shield, FileText, Target,
+  Briefcase, Clock, CheckCircle, Calendar, Eye, EyeOff
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -24,7 +25,7 @@ type StudentProfile = {
   location: string | null;
   bio: string | null;
   avatar_url: string | null;
-  banner_url: string | null; // aún puede existir en BD pero no lo usamos
+  banner_url: string | null;
   university: string | null;
   major: string | null;
   graduation_year: string | null;
@@ -70,7 +71,7 @@ export default function StudentProfilePage() {
   const [stats, setStats] = useState<ApplicationStats>({ total: 0, pending: 0, accepted: 0, rejected: 0 });
   const [isEditing, setIsEditing] = useState(false);
   const [editedProfile, setEditedProfile] = useState<Partial<StudentProfile>>({});
-  const [activeTab, setActiveTab] = useState<"profile"  | "applications">("profile");
+  const [activeTab, setActiveTab] = useState<"profile" | "applications" | "settings">("profile");
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [uploadingResume, setUploadingResume] = useState(false);
   const [skillInput, setSkillInput] = useState("");
@@ -78,6 +79,20 @@ export default function StudentProfilePage() {
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const resumeInputRef = useRef<HTMLInputElement>(null);
   const supabase = useRef(createClient());
+
+  // Settings state
+  const [expandedSetting, setExpandedSetting] = useState<string | null>(null);
+  const [notifyApplications, setNotifyApplications] = useState(true);
+  const [notifyMessages, setNotifyMessages] = useState(true);
+  const [notifyOpportunities, setNotifyOpportunities] = useState(false);
+  const [profileVisible, setProfileVisible] = useState(true);
+  const [showInSearch, setShowInSearch] = useState(true);
+
+  // Password change
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [changingPassword, setChangingPassword] = useState(false);
 
   useEffect(() => { loadProfile(); }, []);
 
@@ -198,6 +213,30 @@ if (applications) {
     await supabase.current.auth.signOut();
     router.push("/");
     router.refresh();
+  };
+
+  const handleChangePassword = async () => {
+    if (newPassword !== confirmPassword) {
+      toast.error("Las contraseñas no coinciden.");
+      return;
+    }
+    if (newPassword.length < 6) {
+      toast.error("La contraseña debe tener al menos 6 caracteres.");
+      return;
+    }
+    setChangingPassword(true);
+    try {
+      const { error } = await supabase.current.auth.updateUser({ password: newPassword });
+      if (error) throw error;
+      toast.success("Contraseña actualizada!");
+      setNewPassword("");
+      setConfirmPassword("");
+      setExpandedSetting(null);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Error al cambiar la contraseña.");
+    } finally {
+      setChangingPassword(false);
+    }
   };
 
   if (loading) return (
@@ -440,10 +479,10 @@ if (applications) {
             >
               {/* Tabs */}
               <div className="flex p-1.5 bg-[#F0F7FF] m-4 rounded-xl">
-                {(["profile", "applications"] as const).map(tab => (
+                {(["profile", "applications", "settings"] as const).map(tab => (
                   <button 
                     key={tab} 
-                    onClick={() => setActiveTab(tab)}
+                    onClick={() => { setActiveTab(tab); setExpandedSetting(null); }}
                     className={`flex-1 py-3 text-sm font-medium rounded-lg capitalize transition-all duration-200 ${
                       activeTab === tab 
                         ? "bg-white text-[#0D3A6E] shadow-md" 
@@ -715,44 +754,140 @@ if (applications) {
   </motion.div>
 )}
 
-                 {/* {activeTab === "settings" && (
-                    <motion.div 
-                      key="settings" 
-                      initial={{ opacity: 0, x: -10 }} 
-                      animate={{ opacity: 1, x: 0 }} 
+                  {/* Settings Tab */}
+                  {activeTab === "settings" && (
+                    <motion.div
+                      key="settings"
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
                       exit={{ opacity: 0, x: 10 }}
                       transition={{ duration: 0.2 }}
                       className="space-y-3"
                     >
                       <h3 className="text-base font-semibold text-[#0D3A6E] mb-4">Configuración de cuenta</h3>
-                      
-                      {[
-                        { icon: Bell, label: "Notificaciones", desc: "Administra cómo recibes alertas y actualizaciones" },
-                        { icon: Lock, label: "Seguridad", desc: "Actualiza contraseña y preferencias de seguridad" },
-                        { icon: Shield, label: "Privacidad", desc: "Controla la visibilidad de tu perfil" },
-                      ].map((item, index) => (
-                        <motion.div 
-                          key={item.label}
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: index * 0.05 }}
-                          className="flex items-center justify-between p-4 bg-[#F8FBFE] rounded-xl hover:bg-[#F0F7FF] border border-[#E8F3FD] hover:border-[#38A3F1] transition-all group cursor-pointer"
-                        >
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm group-hover:shadow transition-all">
-                              <item.icon className="w-5 h-5 text-[#38A3F1]" />
+
+                      {/* Notificaciones */}
+                      <SettingsItem
+                        icon={Bell}
+                        label="Notificaciones"
+                        desc="Administra cómo recibes alertas y actualizaciones"
+                        isExpanded={expandedSetting === "notificaciones"}
+                        onToggle={() => setExpandedSetting(expandedSetting === "notificaciones" ? null : "notificaciones")}
+                      >
+                        <div className="space-y-4">
+                          {[
+                            { key: "notifyApplications", label: "Estado de postulaciones", desc: "Notificar cuando cambie el estado de una postulación", value: notifyApplications, set: setNotifyApplications },
+                            { key: "notifyMessages", label: "Mensajes de empresas", desc: "Notificar cuando una empresa te envíe un mensaje", value: notifyMessages, set: setNotifyMessages },
+                            { key: "notifyOpportunities", label: "Nuevas oportunidades", desc: "Recibir alertas de proyectos que coincidan con tu perfil", value: notifyOpportunities, set: setNotifyOpportunities },
+                          ].map((item) => (
+                            <div key={item.key} className="flex items-center justify-between py-2">
+                              <div>
+                                <p className="text-sm font-medium text-[#0D3A6E]">{item.label}</p>
+                                <p className="text-xs text-[#93B8D4]">{item.desc}</p>
+                              </div>
+                              <button
+                                onClick={() => item.set(!item.value)}
+                                className={`relative w-11 h-6 rounded-full transition-colors ${
+                                  item.value ? "bg-[#38A3F1]" : "bg-gray-200"
+                                }`}
+                              >
+                                <div className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${
+                                  item.value ? "translate-x-5" : "translate-x-0"
+                                }`} />
+                              </button>
                             </div>
-                            <div>
-                              <p className="text-sm font-semibold text-[#0D3A6E]">{item.label}</p>
-                              <p className="text-xs text-[#93B8D4]">{item.desc}</p>
+                          ))}
+                          <p className="text-xs text-[#93B8D4] italic">
+                            Las preferencias se guardan automáticamente en tu dispositivo.
+                          </p>
+                        </div>
+                      </SettingsItem>
+
+                      {/* Seguridad */}
+                      <SettingsItem
+                        icon={Lock}
+                        label="Seguridad"
+                        desc="Actualiza tu contraseña y preferencias de seguridad"
+                        isExpanded={expandedSetting === "seguridad"}
+                        onToggle={() => setExpandedSetting(expandedSetting === "seguridad" ? null : "seguridad")}
+                      >
+                        <div className="space-y-4">
+                          <div>
+                            <label className="text-xs font-semibold text-[#0D3A6E] mb-1.5 block">Nueva contraseña</label>
+                            <div className="relative">
+                              <input
+                                type={showNewPassword ? "text" : "password"}
+                                value={newPassword}
+                                onChange={e => setNewPassword(e.target.value)}
+                                className="w-full px-4 py-3 pr-10 rounded-xl border border-[#BAD8F7] bg-white/50 text-sm focus:outline-none focus:border-[#38A3F1] focus:ring-2 focus:ring-[#38A3F1]/20 transition-all"
+                                placeholder="Mínimo 6 caracteres"
+                              />
+                              <button
+                                onClick={() => setShowNewPassword(!showNewPassword)}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#93B8D4] hover:text-[#0D3A6E]"
+                              >
+                                {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                              </button>
                             </div>
                           </div>
-                          <ChevronRight className="w-4 h-4 text-[#93B8D4] group-hover:translate-x-1 group-hover:text-[#38A3F1] transition-all" />
-                        </motion.div>
-                      ))}
-                      
+                          <div>
+                            <label className="text-xs font-semibold text-[#0D3A6E] mb-1.5 block">Confirmar contraseña</label>
+                            <input
+                              type="password"
+                              value={confirmPassword}
+                              onChange={e => setConfirmPassword(e.target.value)}
+                              className="w-full px-4 py-3 rounded-xl border border-[#BAD8F7] bg-white/50 text-sm focus:outline-none focus:border-[#38A3F1] focus:ring-2 focus:ring-[#38A3F1]/20 transition-all"
+                              placeholder="Repite la nueva contraseña"
+                            />
+                          </div>
+                          <button
+                            onClick={handleChangePassword}
+                            disabled={changingPassword || !newPassword || !confirmPassword}
+                            className="w-full py-2.5 bg-[#38A3F1] text-white text-sm font-semibold rounded-xl hover:bg-[#0D5FA6] transition disabled:opacity-50"
+                          >
+                            {changingPassword ? "Actualizando..." : "Cambiar contraseña"}
+                          </button>
+                        </div>
+                      </SettingsItem>
+
+                      {/* Privacidad */}
+                      <SettingsItem
+                        icon={Shield}
+                        label="Privacidad"
+                        desc="Controla la visibilidad de tu perfil"
+                        isExpanded={expandedSetting === "privacidad"}
+                        onToggle={() => setExpandedSetting(expandedSetting === "privacidad" ? null : "privacidad")}
+                      >
+                        <div className="space-y-4">
+                          {[
+                            { key: "profileVisible", label: "Perfil visible", desc: "Permitir que empresas vean tu perfil completo", value: profileVisible, set: setProfileVisible },
+                            { key: "showInSearch", label: "Mostrar en búsquedas", desc: "Aparecer en los resultados de búsqueda de empresas", value: showInSearch, set: setShowInSearch },
+                          ].map((item) => (
+                            <div key={item.key} className="flex items-center justify-between py-2">
+                              <div>
+                                <p className="text-sm font-medium text-[#0D3A6E]">{item.label}</p>
+                                <p className="text-xs text-[#93B8D4]">{item.desc}</p>
+                              </div>
+                              <button
+                                onClick={() => item.set(!item.value)}
+                                className={`relative w-11 h-6 rounded-full transition-colors ${
+                                  item.value ? "bg-[#38A3F1]" : "bg-gray-200"
+                                }`}
+                              >
+                                <div className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${
+                                  item.value ? "translate-x-5" : "translate-x-0"
+                                }`} />
+                              </button>
+                            </div>
+                          ))}
+                          <p className="text-xs text-[#93B8D4] italic">
+                            Estas preferencias se aplican a tu visibilidad en la plataforma.
+                          </p>
+                        </div>
+                      </SettingsItem>
+
                       <div className="pt-4 mt-4 border-t border-[#E8F3FD]">
-                        <motion.button 
+                        <motion.button
                           whileHover={{ scale: 1.01 }}
                           whileTap={{ scale: 0.99 }}
                           onClick={handleSignOut}
@@ -771,13 +906,57 @@ if (applications) {
                         </motion.button>
                       </div>
                     </motion.div>
-                  )} */}
+                  )}
                 </AnimatePresence>
               </div>
             </motion.div>
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+// ── Settings Item Component ─────────────────────────────
+function SettingsItem({
+  icon: Icon, label, desc, isExpanded, onToggle, children
+}: {
+  icon: LucideIcon; label: string; desc: string; isExpanded: boolean; onToggle: () => void; children: React.ReactNode;
+}) {
+  return (
+    <div className="bg-[#F8FBFE] rounded-xl border border-[#E8F3FD] overflow-hidden transition-all">
+      <button
+        onClick={onToggle}
+        className="w-full flex items-center justify-between p-4 hover:bg-[#F0F7FF] transition-all group"
+      >
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm group-hover:shadow transition-all">
+            <Icon className="w-5 h-5 text-[#38A3F1]" />
+          </div>
+          <div className="text-left">
+            <p className="text-sm font-semibold text-[#0D3A6E]">{label}</p>
+            <p className="text-xs text-[#93B8D4]">{desc}</p>
+          </div>
+        </div>
+        <ChevronRight className={`w-4 h-4 text-[#93B8D4] transition-all ${
+          isExpanded ? "rotate-90" : "group-hover:translate-x-1"
+        }`} />
+      </button>
+      <AnimatePresence>
+        {isExpanded && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="overflow-hidden"
+          >
+            <div className="px-4 pb-4 pt-2 border-t border-[#E8F3FD]">
+              {children}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

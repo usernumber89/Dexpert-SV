@@ -204,29 +204,31 @@ export function AppSidebar() {
 
       {!isCollapsed && (
         <div className="p-3 border-t border-[#BAD8F7] mt-auto space-y-1">
-          <Link
-            href={profileHref}
-            onClick={handleLinkClick}
-            className="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-[#F0F7FF] transition-colors group"
-          >
-            {avatarUrl ? (
-              <img
-                src={avatarUrl}
-                alt={displayName}
-                className="w-8 h-8 rounded-full object-cover flex-shrink-0 border border-[#BAD8F7]"
-              />
-            ) : (
-              <div className="w-8 h-8 rounded-full bg-[#F0F7FF] border border-[#BAD8F7] flex items-center justify-center text-xs font-medium text-[#0D5FA6] flex-shrink-0">
-                {initials}
+          <div className="flex items-center justify-between px-1">
+            <Link
+              href={profileHref}
+              onClick={handleLinkClick}
+              className="flex items-center gap-2.5 py-2 rounded-lg hover:bg-[#F0F7FF] transition-colors group flex-1 min-w-0"
+            >
+              {avatarUrl ? (
+                <img
+                  src={avatarUrl}
+                  alt={displayName}
+                  className="w-8 h-8 rounded-full object-cover flex-shrink-0 border border-[#BAD8F7]"
+                />
+              ) : (
+                <div className="w-8 h-8 rounded-full bg-[#F0F7FF] border border-[#BAD8F7] flex items-center justify-center text-xs font-medium text-[#0D5FA6] flex-shrink-0">
+                  {initials}
+                </div>
+              )}
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-medium text-[#0D3A6E] truncate">{displayName}</p>
+                <p className="text-[10px] text-[#93B8D4] capitalize">
+                  {role?.toLowerCase() || 'pyme'} {currentPlan && `(${currentPlan.toLowerCase()})`}
+                </p>
               </div>
-            )}
-            <div className="min-w-0 flex-1">
-              <p className="text-xs font-medium text-[#0D3A6E] truncate">{displayName}</p>
-              <p className="text-[10px] text-[#93B8D4] capitalize">
-                {role?.toLowerCase() || 'pyme'} {currentPlan && `(${currentPlan.toLowerCase()})`}
-              </p>
+            </Link>
             </div>
-          </Link>
 
           <button
             onClick={handleSignOut}
