@@ -49,55 +49,52 @@ export async function GET(request: NextRequest, { params }: RouteProps) {
       const ml = 50;
       const mr = 50;
       const cw = 512;
-      const rightX = 330;
-      const rightW = 232;
+      const rightX = 310;
+      const rightW = 252;
 
-      const darkBlue = "#0D3A6E";
-      const lightBlue = "#5B8DB8";
+      const primary = "#1E40AF";
+      const primaryLight = "#DBEAFE";
+      const accent = "#0EA5E9";
       const gray = "#64748B";
-      const dark = "#1e293b";
+      const grayLight = "#F8FAFC";
+      const dark = "#0F172A";
+      const green = "#16A34A";
 
-      function divider(y: number) {
-        doc.moveTo(ml, y).lineTo(ml + cw, y).strokeColor("#cbd5e1").lineWidth(1).stroke();
-      }
+      // ── TOP DECORATIVE BAR ──
+      doc.rect(0, 0, 612, 8).fill(primary);
 
       // ── HEADER ──
       const logoPath = path.join(process.cwd(), "public", "dex.png");
 
       try {
-        // Inserta el logo
-        doc.image(logoPath, ml, 30, { width: 100 });
-        // Imprime el texto desplazado hacia la derecha
-        
-      } catch (err) {
-        // Fallback por si la imagen no se encuentra
-        doc.fontSize(20).font("Helvetica-Bold").fillColor(darkBlue).text("Dexpert", ml, 40);
+        doc.image(logoPath, ml, 28, { width: 95 });
+      } catch {
+        doc.fontSize(22).font("Helvetica-Bold").fillColor(primary).text("Dexpert", ml, 36);
       }
 
-      doc.fontSize(8).font("Helvetica").fillColor(lightBlue).text("Plataforma de talento estudiantil", ml, 65);
+      doc.fontSize(7.5).font("Helvetica").fillColor(gray);
+      doc.text("Plataforma de talento estudiantil", ml, 68);
+      doc.text("NIT: 0614-123456-789-0  |  NRC: 123456-7", ml, 82);
+      doc.text("San Salvador, El Salvador  |  +503 1234-5678", ml, 96);
+      doc.text("facturacion@dexpert.sv", ml, 110);
 
-      doc.fontSize(7.5).fillColor(gray);
-      doc.text("NIT: 0614-123456-789-0", ml, 84);
-      doc.text("NRC: 123456-7", ml, 96);
-      doc.text("San Salvador, El Salvador", ml, 108);
-      doc.text("Tel: +503 1234-5678  |  facturacion@dexpert.sv", ml, 120);
+      // ── INVOICE NUMBER BADGE ──
+      doc.roundedRect(rightX, 28, rightW, 54, 6).fill(primaryLight);
+      doc.fontSize(10).font("Helvetica-Bold").fillColor(primary).text("FACTURA", rightX, 34, { width: rightW, align: "center" });
+      doc.fontSize(11).font("Courier-Bold").fillColor(dark).text(invoice.invoice_number, rightX, 50, { width: rightW, align: "center" });
 
-      doc.fontSize(22).font("Helvetica-Bold").fillColor(darkBlue).text("FACTURA", rightX, 40, { width: rightW, align: "right" });
-
-      doc.fontSize(12).font("Courier-Bold").fillColor(dark).text(invoice.invoice_number, rightX, 70, { width: rightW, align: "right" });
-
-      const hdrEnd = 146;
-      divider(hdrEnd);
+      const hdrEnd = 104;
+      doc.moveTo(ml, hdrEnd).lineTo(ml + cw, hdrEnd).strokeColor("#E2E8F0").lineWidth(1).stroke();
 
       // ── CLIENT + DATES ──
-      const secY = hdrEnd + 14;
+      const secY = hdrEnd + 18;
 
-      doc.fontSize(7).font("Helvetica-Bold").fillColor(lightBlue).text("FACTURADO A", ml, secY);
+      doc.fontSize(8).font("Helvetica-Bold").fillColor(primary).text("FACTURADO A", ml, secY);
 
-      doc.fontSize(10).font("Helvetica-Bold").fillColor(dark).text(pyme?.company_name || "—", ml, secY + 16);
+      doc.fontSize(11).font("Helvetica-Bold").fillColor(dark).text(pyme?.company_name || "—", ml, secY + 16);
 
       if (pyme?.location) {
-        doc.fontSize(9).font("Helvetica").fillColor(gray).text(`${pyme.location}, El Salvador`, ml, secY + 32);
+        doc.fontSize(9).font("Helvetica").fillColor(gray).text(pyme.location, ml, secY + 34);
       }
 
       const issueDate = new Date(invoice.created_at).toLocaleDateString("es-SV", {
@@ -106,119 +103,118 @@ export async function GET(request: NextRequest, { params }: RouteProps) {
         year: "numeric",
       });
 
-      const due = new Date(invoice.created_at);
-      due.setDate(due.getDate() + 30);
-      const dueStr = due.toLocaleDateString("es-SV", {
-        day: "2-digit",
-        month: "long",
-        year: "numeric",
-      });
-
       const statusLabel = invoice.status === "paid" ? "Pagada" : invoice.status;
 
-      const labels = [
-        ["Fecha de emisión", issueDate],
-        ["Fecha de vencimiento", dueStr],
-        ["Condición de pago", "Contado"],
-        ["Estado", statusLabel],
+      // ── INFO CARD ──
+      const cardX = rightX;
+      const cardY = secY - 2;
+      const cardW = rightW;
+      const cardH = 58;
+
+      doc.roundedRect(cardX, cardY, cardW, cardH, 6).fill(grayLight);
+      doc.roundedRect(cardX, cardY, cardW, cardH, 6).stroke("#E2E8F0");
+
+      const infoRows = [
+        { label: "Fecha de emisión", value: issueDate },
+        { label: "Condición de pago", value: "Contado" },
+        { label: "Estado", value: statusLabel, highlight: statusLabel === "Pagada" },
       ];
 
-      labels.forEach(([lbl, val], i) => {
-        const y = secY + i * 16;
-        doc.fontSize(7.5).font("Helvetica").fillColor(gray).text(lbl as string, rightX, y, { width: 110, align: "left" });
-        doc.fontSize(8.5).font("Helvetica-Bold").fillColor(lbl === "Estado" && invoice.status === "paid" ? "#16a34a" : dark).text(val as string, rightX + 112, y, { width: rightW - 112, align: "right" });
+      infoRows.forEach((row, i) => {
+        const y = cardY + 8 + i * 15;
+        doc.fontSize(7.5).font("Helvetica").fillColor(gray).text(row.label, cardX + 10, y, { width: 100, align: "left" });
+        doc.fontSize(8.5).font("Helvetica-Bold").fillColor(row.highlight ? green : dark).text(row.value, cardX + 112, y, { width: cardW - 122, align: "right" });
       });
 
-      const infoEnd = secY + 78;
-      divider(infoEnd);
+      const infoEnd = cardY + cardH + 14;
+      doc.moveTo(ml, infoEnd).lineTo(ml + cw, infoEnd).strokeColor("#E2E8F0").lineWidth(1).stroke();
 
       // ── ITEMS TABLE ──
-      const tTop = infoEnd + 14;
+      const tTop = infoEnd + 18;
       const cols = [ml, ml + 36, ml + 376, ml + 430, ml + 474];
       const colW = [36, 340, 54, 44, 38];
 
-      doc.rect(ml, tTop, cw, 18).fill("#f1f5f9");
+      doc.roundedRect(ml, tTop, cw, 20, 4).fill(primary);
 
       const th = ["#", "Descripción", "Cant.", "P. Unit.", "Total"];
       const ta: ("left" | "center" | "right")[] = ["left", "left", "center", "right", "right"];
       th.forEach((t, i) => {
-        doc.fontSize(6.5).font("Helvetica-Bold").fillColor(gray).text(t, cols[i] + 4, tTop + 5, { width: colW[i], align: ta[i] });
+        doc.fontSize(7).font("Helvetica-Bold").fillColor("#FFFFFF").text(t, cols[i] + 6, tTop + 6, { width: colW[i] - 4, align: ta[i] });
       });
 
-      doc.moveTo(ml, tTop + 18).lineTo(ml + cw, tTop + 18).strokeColor("#cbd5e1").lineWidth(1).stroke();
-
-      const rY = tTop + 22;
+      const rY = tTop + 30;
 
       doc.fontSize(8).font("Helvetica").fillColor(gray);
-      doc.text("1", cols[0] + 4, rY + 4, { width: colW[0], align: "left" });
+      doc.text("1", cols[0] + 6, rY + 2, { width: colW[0], align: "left" });
+      doc.fontSize(9.5).font("Helvetica-Bold").fillColor(dark);
+      doc.text(invoice.plan_name, cols[1] + 6, rY + 2, { width: colW[1], align: "left" });
+      doc.fontSize(7.5).font("Helvetica").fillColor(gray);
+      doc.text(`Plan ${invoice.plan}`, cols[1] + 6, rY + 16, { width: colW[1], align: "left" });
       doc.fontSize(9).font("Helvetica-Bold").fillColor(dark);
-      doc.text(invoice.plan_name, cols[1] + 4, rY + 4, { width: colW[1], align: "left" });
-      doc.fontSize(7).font("Helvetica").fillColor(gray);
-      doc.text(`Plan ${invoice.plan}`, cols[1] + 4, rY + 18, { width: colW[1], align: "left" });
-      doc.fontSize(9).font("Helvetica-Bold").fillColor(dark);
-      doc.text("1", cols[2] + 4, rY + 8, { width: colW[2], align: "center" });
-      doc.text(`$${invoice.amount.toFixed(2)}`, cols[3] + 4, rY + 8, { width: colW[3], align: "right" });
-      doc.text(`$${invoice.amount.toFixed(2)}`, cols[4] + 4, rY + 8, { width: colW[4], align: "right" });
+      doc.text("1", cols[2] + 6, rY + 6, { width: colW[2], align: "center" });
+      doc.text(`$${invoice.amount.toFixed(2)}`, cols[3] + 6, rY + 6, { width: colW[3], align: "right" });
+      doc.text(`$${invoice.amount.toFixed(2)}`, cols[4] + 6, rY + 6, { width: colW[4], align: "right" });
 
-      const itemEnd = rY + 36;
-      doc.moveTo(ml, itemEnd).lineTo(ml + cw, itemEnd).strokeColor("#e2e8f0").lineWidth(0.5).stroke();
+      const itemEnd = rY + 34;
+      doc.moveTo(ml, itemEnd).lineTo(ml + cw, itemEnd).strokeColor("#E2E8F0").lineWidth(0.5).stroke();
 
       // ── TOTALS ──
       const sub = invoice.amount / 1.13;
       const iva = invoice.amount - sub;
       const toX = 350;
       const toW = 162;
-      const toY = itemEnd + 14;
+      const toY = itemEnd + 16;
+
+      doc.roundedRect(toX, toY, toW, 72, 6).fill(grayLight);
+      doc.roundedRect(toX, toY, toW, 72, 6).stroke("#E2E8F0");
 
       const totRows = [
-        ["Subtotal", `$${sub.toFixed(2)}`, false],
-        ["IVA (13 %)", `$${iva.toFixed(2)}`, false],
+        ["Subtotal", `$${sub.toFixed(2)}`],
+        ["IVA (13 %)", `$${iva.toFixed(2)}`],
       ];
 
       totRows.forEach(([l, v], i) => {
-        const y = toY + i * 16;
-        doc.fontSize(9).font("Helvetica").fillColor(gray).text(l as string, toX, y, { width: toW - 60, align: "left" });
-        doc.fontSize(9).font("Helvetica-Bold").fillColor(dark).text(v as string, toX + toW - 60, y, { width: 60, align: "right" });
+        const y = toY + 10 + i * 18;
+        doc.fontSize(9).font("Helvetica").fillColor(gray).text(l, toX + 12, y, { width: toW - 80, align: "left" });
+        doc.fontSize(9).font("Helvetica-Bold").fillColor(dark).text(v, toX + toW - 12, y, { width: 68, align: "right" });
       });
 
-      doc.moveTo(toX, toY + 34).lineTo(toX + toW, toY + 34).strokeColor("#cbd5e1").lineWidth(1).stroke();
+      doc.moveTo(toX + 12, toY + 48).lineTo(toX + toW - 12, toY + 48).strokeColor("#CBD5E1").lineWidth(1).stroke();
 
-      doc.fontSize(13).font("Helvetica-Bold").fillColor(darkBlue);
-      doc.text("Total", toX, toY + 40, { width: toW - 60, align: "left" });
-      doc.text(`$${invoice.amount.toFixed(2)}`, toX + toW - 60, toY + 40, { width: 60, align: "right" });
+      doc.fontSize(14).font("Helvetica-Bold").fillColor(primary);
+      doc.text("Total", toX + 12, toY + 52, { width: toW - 80, align: "left" });
+      doc.text(`$${invoice.amount.toFixed(2)}`, toX + toW - 12, toY + 52, { width: 68, align: "right" });
 
       // ── PAYMENT INFO ──
-      const pY = 580;
-      divider(pY);
+      const pY = 560;
+      doc.moveTo(ml, pY).lineTo(ml + cw, pY).strokeColor("#E2E8F0").lineWidth(1).stroke();
 
-      doc.fontSize(8).font("Helvetica-Bold").fillColor(dark).text("Información de pago", ml, pY + 12);
+      doc.fontSize(8).font("Helvetica-Bold").fillColor(primary).text("Información de pago", ml, pY + 14);
 
       doc.fontSize(8).font("Helvetica").fillColor(gray);
-      doc.text("Método: Tarjeta de crédito / débito", ml, pY + 28);
+      doc.text("Método: Tarjeta de crédito / débito", ml, pY + 30);
       if (invoice.transaction_id) {
-        doc.text(`ID transacción: ${invoice.transaction_id}`, ml, pY + 40);
+        doc.text(`ID transacción: ${invoice.transaction_id}`, ml, pY + 42);
       }
-      doc.text(`Estado: ${statusLabel}`, ml, pY + 52);
+      doc.text(`Estado: ${statusLabel}`, ml, pY + 54);
 
-      doc.fontSize(7).font("Helvetica").fillColor("#94a3b8");
-      doc.text("Dexpert SV", rightX, pY + 12, { width: rightW, align: "right" });
-      doc.text("Plataforma de talento estudiantil", rightX, pY + 24, { width: rightW, align: "right" });
-      doc.text("NIT: 0614-123456-789-0", rightX, pY + 36, { width: rightW, align: "right" });
+      doc.fontSize(7).font("Helvetica").fillColor(gray);
+      doc.text("Dexpert SV", rightX, pY + 14, { width: rightW, align: "right" });
+      doc.text("NIT: 0614-123456-789-0", rightX, pY + 26, { width: rightW, align: "right" });
 
       // ── FOOTER ──
-      doc.moveTo(ml, 700).lineTo(ml + cw, 700).strokeColor("#e2e8f0").lineWidth(0.5).stroke();
+      doc.rect(0, 730, 612, 40).fill(primary);
 
-      doc.fontSize(7).font("Helvetica-Bold").fillColor(gray);
-      doc.text("¡Gracias por tu compra!", ml, 712, { width: cw, align: "center" });
+      doc.fontSize(7.5).font("Helvetica-Bold").fillColor("#FFFFFF");
+      doc.text("¡Gracias por tu compra!", ml, 740, { width: cw, align: "center" });
 
-      doc.fontSize(6).font("Helvetica").fillColor("#94a3b8");
+      doc.fontSize(6.5).font("Helvetica").fillColor("#BFDBFE");
       doc.text(
-        "Esta factura fue generada automáticamente por Dexpert SV — Plataforma de talento estudiantil",
+        "Dexpert SV — Plataforma de talento estudiantil | San Salvador, El Salvador | facturacion@dexpert.sv",
         ml,
-        726,
+        756,
         { width: cw, align: "center" }
       );
-      doc.text("San Salvador, El Salvador | facturacion@dexpert.sv | +503 1234-5678", ml, 738, { width: cw, align: "center" });
 
       doc.end();
     });
