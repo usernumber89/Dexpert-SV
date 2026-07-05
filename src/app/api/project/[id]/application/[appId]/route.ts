@@ -21,8 +21,8 @@ export async function PATCH(
 
   if (data && (status === "ACCEPTED" || status === "REJECTED")) {
     const [studentResult, projectResult] = await Promise.all([
-      supabase.from("students").select("user_id").eq("id", data.student_id).single(),
-      supabase.from("projects").select("title").eq("id", projectId).single(),
+      supabase.from("students").select("user_id").eq("id", data.student_id).maybeSingle(),
+      supabase.from("projects").select("title").eq("id", projectId).maybeSingle(),
     ]);
 
     const studentUserId = studentResult.data?.user_id;

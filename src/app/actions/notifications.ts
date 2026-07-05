@@ -88,6 +88,6 @@ export async function createNotification({
   });
 
   if (error) {
-    console.error("createNotification failed:", error);
+    console.error("createNotification failed:", error.message, error.details, error.hint, { userId, title, message, type, link });
   }
 }

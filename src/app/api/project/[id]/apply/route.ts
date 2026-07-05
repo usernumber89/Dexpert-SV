@@ -3,6 +3,11 @@ import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { createNotification } from "@/app/actions/notifications";
 import { revalidatePath } from "next/cache";
 
+function extractRelation<T>(rel: T | T[] | null | undefined): T | null {
+  if (Array.isArray(rel)) return rel[0] ?? null;
+  return rel ?? null;
+}
+
 export async function POST(_: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id: projectId } = await params;
   const supabase = await createClient();
@@ -11,8 +16,8 @@ export async function POST(_: Request, { params }: { params: Promise<{ id: strin
   if (!user) return Response.json({ error: "Unauthorized" }, { status: 401 });
 
   const [studentResult, existingResult] = await Promise.all([
-    supabase.from("students").select("id, full_name").eq("user_id", user.id).single(),
-    supabase.from("applications").select("id").eq("student_id", user.id).eq("project_id", projectId).single(),
+    supabase.from("students").select("id, full_name").eq("user_id", user.id).maybeSingle(),
+    supabase.from("applications").select("id").eq("student_id", user.id).eq("project_id", projectId).maybeSingle(),
   ]);
 
   if (!studentResult.data) return Response.json({ error: "Complete your profile first" }, { status: 404 });
@@ -35,16 +40,17 @@ export async function POST(_: Request, { params }: { params: Promise<{ id: strin
     .from("projects")
     .select("title, pyme_id, pyme:pymes(user_id)")
     .eq("id", projectId)
-    .single();
+    .maybeSingle();
 
   if (project) {
-    const pymeUserId = (project.pyme as any)?.user_id;
+    const pyme = extractRelation(project.pyme as any);
+    const pymeUserId = pyme?.user_id;
 
     const { data: settings } = await supabaseAdmin
       .from("pyme_settings")
       .select("notify_new_applicants")
       .eq("pyme_id", project.pyme_id)
-      .single();
+      .maybeSingle();
 
     const shouldNotify = settings ? settings.notify_new_applicants : true;
 
