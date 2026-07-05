@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { CheckCircle2, Clock, AlertCircle, ArrowRight, GitCommitVertical, ChartNoAxesCombined } from "lucide-react";
+import { CheckCircle2, Clock, AlertCircle, ArrowRight, GitCommitVertical } from "lucide-react";
 
 const demoMilestones = [
   { title: "Investigación y wireframes", status: "APPROVED" as const },

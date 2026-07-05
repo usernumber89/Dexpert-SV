@@ -729,9 +729,11 @@ if (applications) {
                 </p>
                 <div className="flex items-center gap-1.5">
                   {app.project?.pyme?.logo_url ? (
-                    <img
+                    <Image
                       src={app.project.pyme.logo_url}
                       alt={app.project.pyme.company_name || "Logo"}
+                      width={16}
+                      height={16}
                       className="w-4 h-4 rounded object-cover flex-shrink-0"
                     />
                   ) : null}

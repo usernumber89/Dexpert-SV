@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
-import { Bell, CheckCheck, Loader2, X, ExternalLink } from "lucide-react";
+import { Bell, CheckCheck, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { getNotifications, getUnreadCount, markAsRead, markAllAsRead } from "@/app/actions/notifications";
 

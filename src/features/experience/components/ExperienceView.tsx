@@ -3,8 +3,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import {
-  Trophy, Star, Lock, Unlock, Zap, TrendingUp,
-  CheckCircle2, Award, Briefcase, Target, RefreshCw,
+  Trophy, Lock, Unlock, Zap,
+  CheckCircle2, Briefcase, Target, RefreshCw,
   Loader2,
 } from "lucide-react";
 import { getStudentExperience, getExperienceLevels } from "@/app/actions/simulation";

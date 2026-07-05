@@ -29,5 +29,9 @@ begin
     alter publication supabase_realtime add table pyme_galleries;
   exception when duplicate_object then null;
   end;
+  begin
+    alter publication supabase_realtime add table notifications;
+  exception when duplicate_object then null;
+  end;
 end;
 $$;

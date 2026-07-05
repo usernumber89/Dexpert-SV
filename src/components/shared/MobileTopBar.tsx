@@ -1,5 +1,6 @@
 'use client';
 
+import Image from "next/image";
 import { useSidebar } from '@/components/ui/sidebar';
 import { PanelLeft, X } from 'lucide-react';
 
@@ -20,7 +21,7 @@ export function MobileTopBar() {
         )}
       </button>
       <div className="flex items-center gap-2">
-        <img src="/1.svg" className="h-7" alt="Dexpert" />
+        <Image src="/1.svg" alt="Dexpert" width={200} height={50} className="h-7" />
       </div>
     </div>
   );

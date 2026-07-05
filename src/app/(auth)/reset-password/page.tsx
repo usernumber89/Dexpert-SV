@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import Image from "next/image";
 import { Lock, Eye, EyeOff, ArrowLeft, Check, X, AlertCircle, Loader2 } from "lucide-react";
 import type { AuthChangeEvent, Session } from "@supabase/supabase-js";
 
@@ -197,7 +198,7 @@ export default function ResetPasswordPage() {
               whileHover={{ scale: 1.05 }}
               className="flex items-center justify-center mb-5 mx-auto"
             >
-              <img src="/dex.png" className="w-50" />
+              <Image src="/dex.png" alt="Dexpert" width={200} height={50} className="w-50" />
             </motion.div>
 
             {success ? (

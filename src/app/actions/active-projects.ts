@@ -89,19 +89,23 @@ export async function getActiveProjectsWithMilestones(
 
     if (!projects) return [];
 
-    const result: ActiveProject[] = [];
+    const { data: milestones } = await supabase
+      .from("milestones")
+      .select("*")
+      .in("project_id", projectIds)
+      .eq("student_id", student.id)
+      .order("due_date", { ascending: true });
 
-    for (const project of projects) {
-      const { data: milestones } = await supabase
-        .from("milestones")
-        .select("*")
-        .eq("project_id", project.id)
-        .eq("student_id", student.id)
-        .order("due_date", { ascending: true });
+    const milestonesByProject: Record<string, ActiveProject["milestones"]> = {};
+    for (const m of milestones ?? []) {
+      if (!milestonesByProject[m.project_id]) milestonesByProject[m.project_id] = [];
+      milestonesByProject[m.project_id].push(m);
+    }
 
+    return projects.map((project) => {
+      const projectMilestones = milestonesByProject[project.id] ?? [];
       const pyme = extractRelation(project.pyme as any);
-
-      result.push({
+      return {
         id: project.id,
         title: project.title,
         description: project.description,
@@ -110,12 +114,10 @@ export async function getActiveProjectsWithMilestones(
           ? { company_name: pyme.company_name ?? "", logo_url: pyme.logo_url }
           : null,
         students: [],
-        milestones: milestones ?? [],
-        stats: computeStats(milestones ?? []),
-      });
-    }
-
-    return result;
+        milestones: projectMilestones,
+        stats: computeStats(projectMilestones),
+      };
+    });
   }
 
   // 🏢 FLUJO PYME
@@ -134,34 +136,45 @@ export async function getActiveProjectsWithMilestones(
 
   if (!projects) return [];
 
-  const result: ActiveProject[] = [];
+  const projectIds = projects.map((p) => p.id);
 
-  for (const project of projects) {
-    const { data: milestones } = await supabase
+  const [{ data: milestones }, { data: applications }] = await Promise.all([
+    supabase
       .from("milestones")
       .select("*")
-      .eq("project_id", project.id)
-      .order("due_date", { ascending: true });
-
-    const { data: applications } = await supabase
+      .in("project_id", projectIds)
+      .order("due_date", { ascending: true }),
+    supabase
       .from("applications")
-      .select("student:students(full_name, id, avatar_url)")
-      .eq("project_id", project.id)
+      .select("project_id, student:students(full_name, id, avatar_url)")
+      .in("project_id", projectIds)
       .in("status", ["ACCEPTED", "COMPLETED"])
-      .order("created_at", { ascending: false });
+      .order("created_at", { ascending: false }),
+  ]);
 
+  const milestonesByProject: Record<string, ActiveProject["milestones"]> = {};
+  for (const m of milestones ?? []) {
+    if (!milestonesByProject[m.project_id]) milestonesByProject[m.project_id] = [];
+    milestonesByProject[m.project_id].push(m);
+  }
+
+  const studentsByProject: Record<string, ActiveProject["students"]> = {};
+  for (const a of applications ?? []) {
+    if (!studentsByProject[a.project_id]) studentsByProject[a.project_id] = [];
+    const s = extractRelation(a.student as any);
+    if (s) {
+      studentsByProject[a.project_id].push({
+        full_name: s.full_name ?? "",
+        id: s.id ?? "",
+        avatar_url: s.avatar_url,
+      });
+    }
+  }
+
+  return projects.map((project) => {
+    const projectMilestones = milestonesByProject[project.id] ?? [];
     const projectPyme = extractRelation(project.pyme as any);
-
-    const students = (applications ?? [])
-      .map((a) => {
-        const s = extractRelation(a.student as any);
-        return s
-          ? { full_name: s.full_name ?? "", id: s.id ?? "", avatar_url: s.avatar_url }
-          : null;
-      })
-      .filter(Boolean) as { full_name: string; id: string; avatar_url?: string | null }[];
-
-    result.push({
+    return {
       id: project.id,
       title: project.title,
       description: project.description,
@@ -169,11 +182,9 @@ export async function getActiveProjectsWithMilestones(
       pyme: projectPyme
         ? { company_name: projectPyme.company_name ?? "", logo_url: projectPyme.logo_url }
         : null,
-      students,
-      milestones: milestones ?? [],
-      stats: computeStats(milestones ?? []),
-    });
-  }
-
-  return result;
+      students: studentsByProject[project.id] ?? [],
+      milestones: projectMilestones,
+      stats: computeStats(projectMilestones),
+    };
+  });
 }

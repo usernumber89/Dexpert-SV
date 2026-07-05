@@ -2,19 +2,17 @@
 
 import {
   FolderOpen, Users, TrendingUp, Plus,
-  Edit, X, Trash, Sparkles, MoreHorizontal,
-  Eye, Calendar, Briefcase, CheckCircle,
-  Clock, AlertCircle, ArrowUpRight,
-  Search, Filter, Grid, List, Ticket
+  Edit, Trash, MoreHorizontal,
+  Eye, Calendar, CheckCircle,
+  Clock, ArrowUpRight,
+  Search, Grid, List
 } from "lucide-react";
 import Link from "next/link";
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
-import { createClient } from "@/lib/supabase/client";
 import { CreateProjectModal } from "./CreateProjectModal";
-import Image from "next/image";
 import {CreditsWidget} from "./CreditsWidget"
 import {BriefcaseIcon }  from "@phosphor-icons/react";
 import { completeProject, deleteProject as deleteProjectAction } from "@/app/actions/projects";
@@ -50,13 +48,12 @@ type Pyme = {
 };
 
 type Props = {
-  user: { name: string; avatarUrl?: string | null };
   pyme: Pyme | null;
   projects: Project[];
   credits:{available:number;used:number};
 };
 
-export function PymeDashboard({ user, pyme, projects,credits }: Props) {
+export function PymeDashboard({ pyme, projects,credits }: Props) {
   const router = useRouter();
   const [showCreate, setShowCreate] = useState(false);
   const [menuOpen, setMenuOpen] = useState<string | null>(null);

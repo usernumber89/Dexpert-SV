@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Search, Filter, X, Sparkles, TrendingUp } from "lucide-react";
+import { Search, Filter, X, TrendingUp } from "lucide-react";
 import { ProjectCard } from "./ProjectCard";
 
 type Project = {

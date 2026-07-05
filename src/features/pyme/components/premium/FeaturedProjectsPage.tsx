@@ -3,9 +3,9 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
-  Star, Crown, Search, Loader2,
+  Star, Search, Loader2,
   Eye, Users, Calendar, ArrowRight,
-  Building2, Sparkles, TrendingUp, Zap,
+  Building2, Zap,
 } from "lucide-react";
 import { getAllProjectsAnalytics } from "@/app/actions/pyme/premium";
 import { FeaturedToggle } from "./FeaturedToggle";

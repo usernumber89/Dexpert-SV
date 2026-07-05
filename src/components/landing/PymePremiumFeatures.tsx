@@ -2,8 +2,7 @@
 
 import { motion } from "framer-motion";
 import {
-  Crown, Star, Users, BarChart3, Sparkles, ArrowRight,
-  CheckCircle2, Search, Target, Zap, Building2, TrendingUp,
+  Crown, Star, Users, BarChart3, ArrowRight, Zap,
 } from "lucide-react";
 import Link from "next/link";
 

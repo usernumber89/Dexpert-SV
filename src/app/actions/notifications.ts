@@ -70,6 +70,7 @@ export async function createNotification({
   link?: string;
 }) {
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    console.error("createNotification: Missing env vars");
     return;
   }
 
@@ -78,11 +79,15 @@ export async function createNotification({
     process.env.SUPABASE_SERVICE_ROLE_KEY
   );
 
-  await supabaseAdmin.from("notifications").insert({
+  const { error } = await supabaseAdmin.from("notifications").insert({
     user_id: userId,
     title,
     message,
     type,
     link,
   });
+
+  if (error) {
+    console.error("createNotification failed:", error);
+  }
 }

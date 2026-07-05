@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { trackProjectView } from "@/app/actions/pyme/premium";
@@ -94,9 +95,11 @@ export function ProjectDetail({ project, hasApplied: initialApplied, studentId, 
             <div className="flex items-start justify-between mb-4 gap-3">
               <div className="flex items-center gap-3">
                 {project.pyme?.logo_url ? (
-                  <img
+                  <Image
                     src={project.pyme.logo_url}
                     alt={project.pyme.company_name || "Logo"}
+                    width={40}
+                    height={40}
                     className="w-10 h-10 rounded-xl object-cover border border-[#E8F3FD] flex-shrink-0"
                   />
                 ) : (

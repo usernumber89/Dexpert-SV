@@ -1,20 +1,17 @@
 "use client";
 
 import { 
-  Mail,           // ✅ MailIcon → Mail 
-  Globe,          // ✅ Reemplaza Facebook (o usa FacebookIcon)
+  Mail,
   MapPin, 
   Phone,
   ArrowUp,
   Shield,
   HelpCircle,
-  Sparkles,
-  Heart
 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
-import {DexpertLogo} from "@/components/DexpertLogo";
 import {InstagramLogoIcon, XLogoIcon,FacebookLogoIcon  }  from "@phosphor-icons/react";
 
 export function Footer() {
@@ -67,7 +64,7 @@ export function Footer() {
             whileHover={{ scale: 1.05 }}
             className="  rounded-lg flex items-center justify-center "
           >
-           <img src="/X2.png" className="w-50"></img>
+           <Image src="/X2.png" alt="Dexpert" width={200} height={50} className="w-50" />
           </motion.div>
           
         </Link>

@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import Image from "next/image";
 import { Mail, ArrowLeft, ArrowRight, CheckCircle } from "lucide-react";
 
 export default function ForgotPasswordPage() {
@@ -65,7 +66,7 @@ export default function ForgotPasswordPage() {
               whileHover={{ scale: 1.05 }}
               className="flex items-center justify-center mb-5 mx-auto"
             >
-              <img src="/dex.png" className="w-50" />
+              <Image src="/dex.png" alt="Dexpert" width={200} height={50} className="w-50" />
             </motion.div>
 
             {sent ? (

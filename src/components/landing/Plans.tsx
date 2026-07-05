@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { motion } from "framer-motion";
 import {
-  Check, Sparkles, Zap, Crown, ArrowRight, Shield, Star, Route , Sprout, Briefcase, Building2, X
+  Check, Crown, ArrowRight, Route, Sprout, Building2, X
 } from "lucide-react";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 

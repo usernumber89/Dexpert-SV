@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import React, { useState, useMemo } from "react";
 import {
   Clock,
@@ -216,16 +217,20 @@ export default function MilestoneTracker({
         <div className="mb-5 sm:mb-6 flex flex-wrap items-start justify-between gap-3">
           <div className="flex items-center gap-3">
             {role === "STUDENT" && pymeLogoUrl && (
-              <img
+              <Image
                 src={pymeLogoUrl}
                 alt={pymeName || "Empresa"}
+                width={36}
+                height={36}
                 className="w-9 h-9 rounded-xl object-cover border border-[#E8F3FD] flex-shrink-0"
               />
             )}
             {role === "PYME" && headerStudentAvatar && (
-              <img
+              <Image
                 src={headerStudentAvatar}
                 alt={headerStudentName || "Estudiante"}
+                width={36}
+                height={36}
                 className="w-9 h-9 rounded-full object-cover border-2 border-[#BAD8F7] flex-shrink-0"
               />
             )}
@@ -365,7 +370,7 @@ export default function MilestoneTracker({
                   }
                 >
                   {s.avatar_url && (
-                    <img src={s.avatar_url} alt="" className="w-4 h-4 rounded-full object-cover" />
+                    <Image src={s.avatar_url} alt="" width={16} height={16} className="w-4 h-4 rounded-full object-cover" />
                   )}
                   {s.full_name}
                   {totalCount > 0 && (

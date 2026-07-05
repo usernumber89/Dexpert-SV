@@ -3,7 +3,6 @@
 import { useState, useEffect, Suspense } from "react";
 import { TalentPoolPanel } from "@/features/pyme/components/premium/TalentPoolPanel";
 import { TalentPaywall } from "@/features/pyme/components/TalentPaywall";
-import { hasTalentAccess } from "@/app/actions/pyme/premium";
 import { Loader2 } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useTalentAccess } from "@/hooks/useTalentAccess";

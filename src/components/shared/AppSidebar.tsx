@@ -6,6 +6,7 @@ import {
   SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton,
   useSidebar,
 } from '@/components/ui/sidebar';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useUserRole } from '@/hooks/useUserRole';
 import { usePathname } from 'next/navigation';
@@ -14,13 +15,11 @@ import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 import { useTalentAccess } from '@/hooks/useTalentAccess';
 import {
-  LayoutDashboard, User, FolderOpen, Award, Bot,
+  LayoutDashboard, User, FolderOpen,
   HelpCircle, Users, LogOut, Banknote, PanelLeft, GraduationCap, Rocket, Receipt,
-  BrainCircuit, BookOpen, Trophy, Star, BarChart3, BriefcaseBusiness, Building2, Crown, Lock,
+  BrainCircuit, BookOpen, Star, BarChart3, BriefcaseBusiness, Building2, Crown, Lock,
   Loader2,
 } from 'lucide-react';
-import { DexpertLogo } from "@/components/DexpertLogo";
-import { BriefcaseIcon } from "@phosphor-icons/react";
 
 const studentRoutes = [
   { title: 'Panel de Control', url: '/student/dashboard', icon: LayoutDashboard },
@@ -110,10 +109,10 @@ export function AppSidebar() {
       >
         <Link href="/" className="flex items-center justify-center" onClick={handleLinkClick}>
           {isCollapsed ? (
-            <img src="/1.svg" className="w-50 transition-all" />
+            <Image src="/1.svg" alt="Dexpert" width={50} height={50} className="transition-all" />
           ) : (
             <div className="mx-auto transition-all">
-              <img src="/dex.png" className="w-50" />
+              <Image src="/dex.png" alt="Dexpert" width={200} height={50} />
             </div>
           )}
         </Link>
@@ -211,9 +210,11 @@ export function AppSidebar() {
               className="flex items-center gap-2.5 py-2 rounded-lg hover:bg-[#F0F7FF] transition-colors group flex-1 min-w-0"
             >
               {avatarUrl ? (
-                <img
+                <Image
                   src={avatarUrl}
                   alt={displayName}
+                  width={32}
+                  height={32}
                   className="w-8 h-8 rounded-full object-cover flex-shrink-0 border border-[#BAD8F7]"
                 />
               ) : (
@@ -244,9 +245,11 @@ export function AppSidebar() {
         <div className="p-2 border-t border-[#BAD8F7] mt-auto flex flex-col items-center gap-3">
           <Link href={profileHref} title={`${displayName} (${currentPlan || 'Sin Plan'})`}>
             {avatarUrl ? (
-              <img
+              <Image
                 src={avatarUrl}
                 alt={displayName}
+                width={32}
+                height={32}
                 className="w-8 h-8 rounded-full object-cover border border-[#BAD8F7]"
               />
             ) : (

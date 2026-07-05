@@ -1,4 +1,10 @@
+let cachedToken: { token: string; expiresAt: number } | null = null;
+
 export async function getWompiToken() {
+  if (cachedToken && Date.now() < cachedToken.expiresAt) {
+    return cachedToken.token;
+  }
+
   const response = await fetch(
     "https://id.wompi.sv/connect/token",
     {
@@ -22,6 +28,11 @@ export async function getWompiToken() {
       `Error obteniendo token Wompi: ${JSON.stringify(data)}`
     );
   }
+
+  cachedToken = {
+    token: data.access_token,
+    expiresAt: Date.now() + (data.expires_in - 60) * 1000,
+  };
 
   return data.access_token;
 }

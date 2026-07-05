@@ -38,7 +38,7 @@ export async function GET(request: NextRequest, { params }: RouteProps) {
       const doc = new PDFDocument({
         size: "LETTER",
         layout: "portrait",
-        margins: { top: 40, bottom: 40, left: 50, right: 50 },
+        margins: { top: 0, bottom: 0, left: 0, right: 0 },
       });
 
       const chunks: Buffer[] = [];
@@ -46,56 +46,119 @@ export async function GET(request: NextRequest, { params }: RouteProps) {
       doc.on("end", () => resolve(Buffer.concat(chunks)));
       doc.on("error", (err) => reject(err));
 
-      const ml = 50;
-      const mr = 50;
-      const cw = 512;
-      const rightX = 310;
-      const rightW = 252;
+      const PAGE_W = 612;
+      const PAGE_H = 792;
+      const ml = 40;
+      const cw = PAGE_W - ml * 2; // 532
 
-      const primary = "#1E40AF";
-      const primaryLight = "#DBEAFE";
-      const accent = "#0EA5E9";
-      const gray = "#64748B";
-      const grayLight = "#F8FAFC";
-      const dark = "#0F172A";
-      const green = "#16A34A";
+      // ── PALETA DE MARCA DEXPERT ──
+      const primary = "#0d3a6e"; // navy
+      const accent = "#38a3f1"; // azul
+      const bgLight = "#eaf4fe"; // fondo suave
+      const borderBlue = "#bad8f7"; // borde suave
+      const textMain = "#26313d";
+      const textSec = "#6b7a8d";
+      const amber = "#d97706";
 
-      // ── TOP DECORATIVE BAR ──
-      doc.rect(0, 0, 612, 8).fill(primary);
+      const isPaid = invoice.status === "paid";
+      const statusLabel = isPaid ? "PAGADA" : String(invoice.status).toUpperCase();
 
-      // ── HEADER ──
-      const logoPath = path.join(process.cwd(), "public", "dex.png");
+      // ══════════════════════════════════════════
+      // BANDA SUPERIOR
+      // ══════════════════════════════════════════
+      doc.rect(0, 0, PAGE_W, 132).fill(primary);
+      doc.rect(0, 132, PAGE_W, 4).fill(accent);
 
+      const logoPath = path.join(process.cwd(), "public", "X2.png");
       try {
-        doc.image(logoPath, ml, 28, { width: 95 });
+        doc.image(logoPath, ml, 30, { width: 92 });
       } catch {
-        doc.fontSize(22).font("Helvetica-Bold").fillColor(primary).text("Dexpert", ml, 36);
+        doc.fontSize(20).font("Helvetica-Bold").fillColor("#ffffff").text("Dexpert", ml, 30);
       }
 
-      doc.fontSize(7.5).font("Helvetica").fillColor(gray);
-      doc.text("Plataforma de talento estudiantil", ml, 68);
-      doc.text("NIT: 0614-123456-789-0  |  NRC: 123456-7", ml, 82);
-      doc.text("San Salvador, El Salvador  |  +503 1234-5678", ml, 96);
-      doc.text("facturacion@dexpert.sv", ml, 110);
+      doc
+        .fontSize(8.5)
+        .font("Helvetica-Bold")
+        .fillColor(accent)
+        .text("PLATAFORMA DE TALENTO ESTUDIANTIL", ml, 76, { characterSpacing: 0.6 });
 
-      // ── INVOICE NUMBER BADGE ──
-      doc.roundedRect(rightX, 28, rightW, 54, 6).fill(primaryLight);
-      doc.fontSize(10).font("Helvetica-Bold").fillColor(primary).text("FACTURA", rightX, 34, { width: rightW, align: "center" });
-      doc.fontSize(11).font("Courier-Bold").fillColor(dark).text(invoice.invoice_number, rightX, 50, { width: rightW, align: "center" });
+      doc
+        .fontSize(8)
+        .font("Helvetica")
+        .fillColor(borderBlue)
+        .text("NIT: 0614-123456-789-0   |   facturacion@dexpert.sv", ml, 92);
 
-      const hdrEnd = 104;
-      doc.moveTo(ml, hdrEnd).lineTo(ml + cw, hdrEnd).strokeColor("#E2E8F0").lineWidth(1).stroke();
+      doc
+        .fontSize(9)
+        .font("Helvetica-Bold")
+        .fillColor(accent)
+        .text("FACTURA", ml, 32, { width: cw, align: "right", characterSpacing: 1.2 });
 
-      // ── CLIENT + DATES ──
-      const secY = hdrEnd + 18;
+      doc
+        .fontSize(22)
+        .font("Helvetica-Bold")
+        .fillColor("#ffffff")
+        .text(invoice.invoice_number, ml, 46, { width: cw, align: "right" });
 
-      doc.fontSize(8).font("Helvetica-Bold").fillColor(primary).text("FACTURADO A", ml, secY);
+      // Píldora de estado
+      const pillW = 100;
+      const pillX = ml + cw - pillW;
+      const pillY = 90;
+      doc
+        .roundedRect(pillX, pillY, pillW, 22, 11)
+        .fill(isPaid ? accent : amber);
+      doc
+        .fontSize(9)
+        .font("Helvetica-Bold")
+        .fillColor("#ffffff")
+        .text(statusLabel, pillX, pillY + 6.5, { width: pillW, align: "center" });
 
-      doc.fontSize(11).font("Helvetica-Bold").fillColor(dark).text(pyme?.company_name || "—", ml, secY + 16);
+      // ── MARCA DE AGUA (si está pagada) ──
+      if (isPaid) {
+        doc.save();
+        doc.rotate(-28, { origin: [PAGE_W / 2, 430] });
+        doc.fillOpacity(0.055);
+        doc
+          .fontSize(100)
+          .font("Helvetica-Bold")
+          .fillColor(accent)
+          .text("PAGADA", 40, 385, { width: PAGE_W - 80, align: "center" });
+        doc.fillOpacity(1);
+        doc.restore();
+      }
 
+      // ══════════════════════════════════════════
+      // TARJETAS: FACTURADO A / DETALLES
+      // ══════════════════════════════════════════
+      const cardY = 156;
+      const cardH = 92;
+      const cardW = (cw - 22) / 2;
+
+      doc.lineWidth(1);
+
+      // Tarjeta izquierda — Facturado a
+      doc.roundedRect(ml, cardY, cardW, cardH, 8).fillAndStroke(bgLight, borderBlue);
+      doc
+        .fontSize(8)
+        .font("Helvetica-Bold")
+        .fillColor(primary)
+        .text("FACTURADO A", ml + 16, cardY + 14, { characterSpacing: 0.5 });
+      doc
+        .fontSize(12.5)
+        .font("Helvetica-Bold")
+        .fillColor(textMain)
+        .text(pyme?.company_name || "—", ml + 16, cardY + 30, { width: cardW - 32 });
       if (pyme?.location) {
-        doc.fontSize(9).font("Helvetica").fillColor(gray).text(pyme.location, ml, secY + 34);
+        doc
+          .fontSize(8.5)
+          .font("Helvetica")
+          .fillColor(textSec)
+          .text(pyme.location, ml + 16, cardY + 50, { width: cardW - 32 });
       }
+
+      // Tarjeta derecha — Detalles
+      const card2X = ml + cardW + 22;
+      doc.roundedRect(card2X, cardY, cardW, cardH, 8).fillAndStroke(bgLight, borderBlue);
 
       const issueDate = new Date(invoice.created_at).toLocaleDateString("es-SV", {
         day: "2-digit",
@@ -103,118 +166,179 @@ export async function GET(request: NextRequest, { params }: RouteProps) {
         year: "numeric",
       });
 
-      const statusLabel = invoice.status === "paid" ? "Pagada" : invoice.status;
+      doc
+        .fontSize(8)
+        .font("Helvetica-Bold")
+        .fillColor(primary)
+        .text("DETALLES DE FACTURA", card2X + 16, cardY + 14, { characterSpacing: 0.5 });
 
-      // ── INFO CARD ──
-      const cardX = rightX;
-      const cardY = secY - 2;
-      const cardW = rightW;
-      const cardH = 58;
+      doc.fontSize(7.5).font("Helvetica").fillColor(textSec).text("FECHA DE EMISIÓN", card2X + 16, cardY + 32);
+      doc.fontSize(9.5).font("Helvetica-Bold").fillColor(textMain).text(issueDate, card2X + 16, cardY + 43);
 
-      doc.roundedRect(cardX, cardY, cardW, cardH, 6).fill(grayLight);
-      doc.roundedRect(cardX, cardY, cardW, cardH, 6).stroke("#E2E8F0");
+      doc.fontSize(7.5).font("Helvetica").fillColor(textSec).text("CONDICIÓN DE PAGO", card2X + 16, cardY + 62);
+      doc.fontSize(9.5).font("Helvetica-Bold").fillColor(textMain).text("Contado", card2X + 16, cardY + 73);
 
-      const infoRows = [
-        { label: "Fecha de emisión", value: issueDate },
-        { label: "Condición de pago", value: "Contado" },
-        { label: "Estado", value: statusLabel, highlight: statusLabel === "Pagada" },
-      ];
+      // ══════════════════════════════════════════
+      // TABLA DE ITEMS
+      // ══════════════════════════════════════════
+      const tTop = cardY + cardH + 30; // 278
+      const cols = [ml, ml + 30, ml + 330, ml + 390, ml + 456];
+      const colW = [30, 300, 60, 66, 76];
+      const align: ("left" | "center" | "right")[] = ["left", "left", "center", "right", "right"];
 
-      infoRows.forEach((row, i) => {
-        const y = cardY + 8 + i * 15;
-        doc.fontSize(7.5).font("Helvetica").fillColor(gray).text(row.label, cardX + 10, y, { width: 100, align: "left" });
-        doc.fontSize(8.5).font("Helvetica-Bold").fillColor(row.highlight ? green : dark).text(row.value, cardX + 112, y, { width: cardW - 122, align: "right" });
+      doc.roundedRect(ml, tTop, cw, 26, 6).fill(primary);
+      ["#", "Descripción", "Cant.", "P. Unit.", "Total"].forEach((t, i) => {
+        doc
+          .fontSize(8.5)
+          .font("Helvetica-Bold")
+          .fillColor("#ffffff")
+          .text(t, cols[i] + 6, tTop + 9, { width: colW[i] - 12, align: align[i] });
       });
 
-      const infoEnd = cardY + cardH + 14;
-      doc.moveTo(ml, infoEnd).lineTo(ml + cw, infoEnd).strokeColor("#E2E8F0").lineWidth(1).stroke();
+      const rY = tTop + 26 + 16;
 
-      // ── ITEMS TABLE ──
-      const tTop = infoEnd + 18;
-      const cols = [ml, ml + 36, ml + 376, ml + 430, ml + 474];
-      const colW = [36, 340, 54, 44, 38];
+      doc.fontSize(9).font("Helvetica").fillColor(textSec).text("1", cols[0] + 6, rY, { width: colW[0] - 12, align: "left" });
 
-      doc.roundedRect(ml, tTop, cw, 20, 4).fill(primary);
+      doc
+        .fontSize(10.5)
+        .font("Helvetica-Bold")
+        .fillColor(textMain)
+        .text(invoice.plan_name, cols[1] + 6, rY, { width: colW[1] - 12, align: "left" });
+      doc
+        .fontSize(8.5)
+        .font("Helvetica")
+        .fillColor(textSec)
+        .text(`Plan ${invoice.plan}`, cols[1] + 6, rY + 14, { width: colW[1] - 12, align: "left" });
 
-      const th = ["#", "Descripción", "Cant.", "P. Unit.", "Total"];
-      const ta: ("left" | "center" | "right")[] = ["left", "left", "center", "right", "right"];
-      th.forEach((t, i) => {
-        doc.fontSize(7).font("Helvetica-Bold").fillColor("#FFFFFF").text(t, cols[i] + 6, tTop + 6, { width: colW[i] - 4, align: ta[i] });
-      });
-
-      const rY = tTop + 30;
-
-      doc.fontSize(8).font("Helvetica").fillColor(gray);
-      doc.text("1", cols[0] + 6, rY + 2, { width: colW[0], align: "left" });
-      doc.fontSize(9.5).font("Helvetica-Bold").fillColor(dark);
-      doc.text(invoice.plan_name, cols[1] + 6, rY + 2, { width: colW[1], align: "left" });
-      doc.fontSize(7.5).font("Helvetica").fillColor(gray);
-      doc.text(`Plan ${invoice.plan}`, cols[1] + 6, rY + 16, { width: colW[1], align: "left" });
-      doc.fontSize(9).font("Helvetica-Bold").fillColor(dark);
-      doc.text("1", cols[2] + 6, rY + 6, { width: colW[2], align: "center" });
-      doc.text(`$${invoice.amount.toFixed(2)}`, cols[3] + 6, rY + 6, { width: colW[3], align: "right" });
-      doc.text(`$${invoice.amount.toFixed(2)}`, cols[4] + 6, rY + 6, { width: colW[4], align: "right" });
+      doc.fontSize(9).font("Helvetica").fillColor(textMain).text("1", cols[2] + 6, rY, { width: colW[2] - 12, align: "center" });
+      doc
+        .fontSize(9)
+        .font("Helvetica")
+        .fillColor(textMain)
+        .text(`$${invoice.amount.toFixed(2)}`, cols[3] + 6, rY, { width: colW[3] - 12, align: "right" });
+      doc
+        .fontSize(9)
+        .font("Helvetica-Bold")
+        .fillColor(textMain)
+        .text(`$${invoice.amount.toFixed(2)}`, cols[4] + 6, rY, { width: colW[4] - 12, align: "right" });
 
       const itemEnd = rY + 34;
-      doc.moveTo(ml, itemEnd).lineTo(ml + cw, itemEnd).strokeColor("#E2E8F0").lineWidth(0.5).stroke();
+      doc.moveTo(ml, itemEnd).lineTo(ml + cw, itemEnd).strokeColor(borderBlue).lineWidth(1).stroke();
 
-      // ── TOTALS ──
+      // ══════════════════════════════════════════
+      // TARJETA DE TOTALES
+      // ══════════════════════════════════════════
       const sub = invoice.amount / 1.13;
       const iva = invoice.amount - sub;
-      const toX = 350;
-      const toW = 162;
-      const toY = itemEnd + 16;
 
-      doc.roundedRect(toX, toY, toW, 72, 6).fill(grayLight);
-      doc.roundedRect(toX, toY, toW, 72, 6).stroke("#E2E8F0");
+      const totW = 240;
+      const totX = ml + cw - totW;
+      const totY = itemEnd + 22;
+      const totH = 108;
 
-      const totRows = [
-        ["Subtotal", `$${sub.toFixed(2)}`],
-        ["IVA (13 %)", `$${iva.toFixed(2)}`],
-      ];
+      doc.roundedRect(totX, totY, totW, totH, 8).fillAndStroke(bgLight, borderBlue);
 
-      totRows.forEach(([l, v], i) => {
-        const y = toY + 10 + i * 18;
-        doc.fontSize(9).font("Helvetica").fillColor(gray).text(l, toX + 12, y, { width: toW - 80, align: "left" });
-        doc.fontSize(9).font("Helvetica-Bold").fillColor(dark).text(v, toX + toW - 12, y, { width: 68, align: "right" });
-      });
+      doc
+        .fontSize(8.5)
+        .font("Helvetica")
+        .fillColor(textSec)
+        .text("Subtotal", totX + 18, totY + 16, { width: totW - 36, align: "left" });
+      doc
+        .fontSize(9)
+        .font("Helvetica")
+        .fillColor(textMain)
+        .text(`$${sub.toFixed(2)}`, totX + 18, totY + 16, { width: totW - 36, align: "right" });
 
-      doc.moveTo(toX + 12, toY + 48).lineTo(toX + toW - 12, toY + 48).strokeColor("#CBD5E1").lineWidth(1).stroke();
+      doc
+        .fontSize(8.5)
+        .font("Helvetica")
+        .fillColor(textSec)
+        .text("IVA (13%)", totX + 18, totY + 34, { width: totW - 36, align: "left" });
+      doc
+        .fontSize(9)
+        .font("Helvetica")
+        .fillColor(textMain)
+        .text(`$${iva.toFixed(2)}`, totX + 18, totY + 34, { width: totW - 36, align: "right" });
 
-      doc.fontSize(14).font("Helvetica-Bold").fillColor(primary);
-      doc.text("Total", toX + 12, toY + 52, { width: toW - 80, align: "left" });
-      doc.text(`$${invoice.amount.toFixed(2)}`, toX + toW - 12, toY + 52, { width: 68, align: "right" });
+      doc
+        .moveTo(totX + 18, totY + 56)
+        .lineTo(totX + totW - 18, totY + 56)
+        .strokeColor(borderBlue)
+        .lineWidth(1)
+        .stroke();
 
-      // ── PAYMENT INFO ──
-      const pY = 560;
-      doc.moveTo(ml, pY).lineTo(ml + cw, pY).strokeColor("#E2E8F0").lineWidth(1).stroke();
+      doc
+        .fontSize(11)
+        .font("Helvetica-Bold")
+        .fillColor(primary)
+        .text("TOTAL", totX + 18, totY + 68, { width: totW - 36, align: "left" });
+      doc
+        .fontSize(15)
+        .font("Helvetica-Bold")
+        .fillColor(primary)
+        .text(`$${invoice.amount.toFixed(2)}`, totX + 18, totY + 82, { width: totW - 36, align: "right" });
 
-      doc.fontSize(8).font("Helvetica-Bold").fillColor(primary).text("Información de pago", ml, pY + 14);
+      // ══════════════════════════════════════════
+      // INFORMACIÓN DE PAGO
+      // ══════════════════════════════════════════
+      const payY = totY + totH + 26;
+      doc
+        .fontSize(8)
+        .font("Helvetica-Bold")
+        .fillColor(primary)
+        .text("INFORMACIÓN DE PAGO", ml, payY, { characterSpacing: 0.5 });
 
-      doc.fontSize(8).font("Helvetica").fillColor(gray);
-      doc.text("Método: Tarjeta de crédito / débito", ml, pY + 30);
+      doc
+        .fontSize(8.5)
+        .font("Helvetica")
+        .fillColor(textSec)
+        .text("Método:  Tarjeta de crédito / débito (Wompi)", ml, payY + 16);
+
       if (invoice.transaction_id) {
-        doc.text(`ID transacción: ${invoice.transaction_id}`, ml, pY + 42);
+        doc
+          .fontSize(8.5)
+          .font("Helvetica")
+          .fillColor(textSec)
+          .text(`ID de transacción:  ${invoice.transaction_id}`, ml, payY + 30);
       }
-      doc.text(`Estado: ${statusLabel}`, ml, pY + 54);
 
-      doc.fontSize(7).font("Helvetica").fillColor(gray);
-      doc.text("Dexpert SV", rightX, pY + 14, { width: rightW, align: "right" });
-      doc.text("NIT: 0614-123456-789-0", rightX, pY + 26, { width: rightW, align: "right" });
+      doc
+        .fontSize(9)
+        .font("Helvetica-Oblique")
+        .fillColor(textMain)
+        .text("Gracias por confiar en el talento estudiantil salvadoreño.", ml, payY + 52, {
+          width: cw,
+        });
 
-      // ── FOOTER ──
-      doc.rect(0, 730, 612, 40).fill(primary);
+      // ══════════════════════════════════════════
+      // PIE DE PÁGINA
+      // ══════════════════════════════════════════
+      const footH = 78;
+      const footY = PAGE_H - footH;
 
-      doc.fontSize(7.5).font("Helvetica-Bold").fillColor("#FFFFFF");
-      doc.text("¡Gracias por tu compra!", ml, 740, { width: cw, align: "center" });
+      doc.rect(0, footY - 4, PAGE_W, 4).fill(accent);
+      doc.rect(0, footY, PAGE_W, footH).fill(primary);
 
-      doc.fontSize(6.5).font("Helvetica").fillColor("#BFDBFE");
-      doc.text(
-        "Dexpert SV — Plataforma de talento estudiantil | San Salvador, El Salvador | facturacion@dexpert.sv",
-        ml,
-        756,
-        { width: cw, align: "center" }
-      );
+      doc
+        .fontSize(12)
+        .font("Helvetica-Bold")
+        .fillColor("#ffffff")
+        .text("¡Gracias por tu confianza!", ml, footY + 18, { width: cw, align: "center" });
+
+      doc
+        .fontSize(8.5)
+        .font("Helvetica")
+        .fillColor(borderBlue)
+        .text("Dexpert SV — Plataforma de talento estudiantil | San Salvador, El Salvador", ml, footY + 36, {
+          width: cw,
+          align: "center",
+        });
+
+      doc
+        .fontSize(7.5)
+        .font("Helvetica")
+        .fillColor(borderBlue)
+        .text("dexpert.app", ml, footY + 52, { width: cw, align: "center" });
 
       doc.end();
     });

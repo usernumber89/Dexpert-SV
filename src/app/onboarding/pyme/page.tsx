@@ -12,7 +12,6 @@ import {
   Globe,
   MapPin,
   ArrowRight,
-  Sparkles,
   Briefcase,
   Phone,
   Camera,

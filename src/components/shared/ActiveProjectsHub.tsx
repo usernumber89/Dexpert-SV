@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo, useTransition } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
@@ -178,16 +179,20 @@ function ActiveProjectCard({
             <div className="flex items-start justify-between gap-3 mb-4">
             <div className="flex items-center gap-3 min-w-0">
               {role === "STUDENT" && project.pyme?.logo_url ? (
-                <img
+                <Image
                   src={project.pyme.logo_url}
                   alt={project.pyme.company_name || "Logo"}
+                  width={40}
+                  height={40}
                   className="w-10 h-10 rounded-xl object-cover border border-[#E8F3FD] flex-shrink-0"
                 />
               ) : role === "PYME" && firstStudent?.avatar_url ? (
                 <div className="relative flex-shrink-0">
-                  <img
+                  <Image
                     src={firstStudent.avatar_url}
                     alt={firstStudent.full_name || "Estudiante"}
+                    width={40}
+                    height={40}
                     className="w-10 h-10 rounded-full object-cover border-2 border-[#BAD8F7]"
                   />
                   {students.length > 1 && (
@@ -213,15 +218,19 @@ function ActiveProjectCard({
                 </h3>
                 <p className="text-xs text-[#93B8D4] flex items-center gap-1 mt-0.5 truncate">
                   {role === "STUDENT" && project.pyme?.logo_url ? (
-                    <img
+                    <Image
                       src={project.pyme.logo_url}
                       alt=""
+                      width={14}
+                      height={14}
                       className="w-3.5 h-3.5 rounded object-cover flex-shrink-0"
                     />
                   ) : role === "PYME" && firstStudent?.avatar_url ? (
-                    <img
+                    <Image
                       src={firstStudent.avatar_url}
                       alt=""
+                      width={14}
+                      height={14}
                       className="w-3.5 h-3.5 rounded-full object-cover flex-shrink-0"
                     />
                   ) : (

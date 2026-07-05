@@ -11,7 +11,6 @@ import {
   GraduationCap,
   Code,
   ArrowRight,
-  Sparkles,
   BookOpen,
   MapPin,
   Globe,

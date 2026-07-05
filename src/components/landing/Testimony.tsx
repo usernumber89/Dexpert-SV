@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Quote, Star, Heart, Sparkles, Users, Award } from "lucide-react";
+import { Quote, Heart, Users, Award } from "lucide-react";
 
 const testimonies = [
   { 

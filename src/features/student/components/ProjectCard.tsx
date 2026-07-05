@@ -1,6 +1,7 @@
 "use client";
 
-import { ChevronRight, CheckCircle, XCircle, MapPin, Calendar, Zap, Star, Clock } from "lucide-react";
+import Image from "next/image";
+import { ChevronRight, CheckCircle, XCircle, MapPin, Calendar, Star, Clock } from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 
@@ -111,9 +112,11 @@ export function ProjectCard({ project, applicationStatus, studentSkills }: Props
         <div className="flex items-start justify-between gap-2">
             <div className="flex items-center gap-3 min-w-0">
               {project.pyme?.logo_url ? (
-                <img
+                <Image
                   src={project.pyme.logo_url}
                   alt={project.pyme.company_name || "Logo"}
+                  width={40}
+                  height={40}
                   className="w-10 h-10 rounded-xl object-cover border border-[#E8F3FD] flex-shrink-0"
                 />
               ) : (

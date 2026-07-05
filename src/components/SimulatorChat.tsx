@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { BotMessageSquare, CircleUser, Send, Sparkles } from "lucide-react";
+import { BotMessageSquare, Send, Sparkles } from "lucide-react";
 
 interface Message {
   role: 'user' | 'assistant';

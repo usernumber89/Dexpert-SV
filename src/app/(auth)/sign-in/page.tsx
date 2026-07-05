@@ -12,11 +12,10 @@ import {
   Mail, 
   Lock, 
   ArrowRight,
-  Sparkles,
   Briefcase,
   GraduationCap
 } from "lucide-react";
-import { DexpertLogo } from "@/components/DexpertLogo";
+import Image from "next/image";
 
 export default function SignInPage() {
   const router = useRouter();
@@ -65,20 +64,6 @@ export default function SignInPage() {
     setLoading(false);
   };
 
-  const handleOAuthSignIn = async (provider: 'github' | 'google') => {
-    const supabase = createClient();
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider,
-      options: {
-        redirectTo: `${window.location.origin}/callback`,
-      },
-    });
-    
-    if (error) {
-      toast.error(error.message);
-    }
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#F0F7FF] via-white to-[#E8F3FD] flex items-center justify-center p-6 relative overflow-hidden">
       
@@ -104,7 +89,7 @@ export default function SignInPage() {
               whileHover={{ scale: 1.05 }}
               className="flex items-center justify-center mb-5 mx-auto  "
             >
-              <img src="/dex.png" className="w-50"/>
+              <Image src="/dex.png" alt="Dexpert" width={200} height={50} className="w-50" />
             </motion.div>
             
             <h1 className="text-xl font-bold text-[#0D3A6E] mb-2">

@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useUserRole } from "@/hooks/useUserRole";
 import { TypeAnimation } from "react-type-animation";
@@ -113,9 +114,11 @@ export function Hero() {
             {/* Contenedor flotante sutil */}
             <div className="w-full max-w-[540px] relative z-10 animate-[floatY_6s_ease-in-out_infinite]">
               <div className="rounded-3xl overflow-hidden shadow-[0_20px_50px_-12px_rgba(13,58,110,0.1)] border border-slate-100 bg-white">
-                <img
+                <Image
                   src="/animation.jpeg"
                   alt="Previsualización de la plataforma"
+                  width={540}
+                  height={380}
                   className="pointer-events-none select-none w-full h-auto"
                   draggable="false"
                   onContextMenu={(e) => e.preventDefault()}

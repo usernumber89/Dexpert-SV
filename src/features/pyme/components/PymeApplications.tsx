@@ -1,15 +1,16 @@
   "use client";
 
+  import Image from "next/image";
   import { useState, useMemo } from "react";
   import { motion, AnimatePresence } from "framer-motion";
   import { toast } from "sonner";
   import {
-    Users, Search, Filter, Check, X, ChevronRight,
-    GraduationCap, MapPin, Mail, Phone, Globe,
-  FileText, Star, Briefcase,
-    Clock, CheckCircle, XCircle, AlertCircle,
-    TrendingUp, BarChart2, SlidersHorizontal,
-    ExternalLink, MessageSquare, ChevronDown
+    Users, Search, Check, X, ChevronRight,
+    GraduationCap, MapPin, Mail, Phone,
+  Star, Briefcase,
+    Clock, CheckCircle, XCircle,
+    BarChart2,
+    ExternalLink, ChevronDown
   } from "lucide-react";
 
   // ── Types ────────────────────────────────────────────────────────
@@ -51,12 +52,6 @@
     created_at: string;
     applications: Application[];
   };
-
-  type Applications = {
-    student_id: string;
-    status: string;
-    id: string;
-  }
 
   type Props = { projects: Project[] };
 
@@ -130,7 +125,7 @@
           </div>
           <div className="relative flex items-center gap-4">
             {s.avatar_url ? (
-              <img src={s.avatar_url} alt={s.full_name} className="w-16 h-16 rounded-2xl object-cover border-2 border-white/20" />
+              <Image src={s.avatar_url} alt={s.full_name} width={64} height={64} className="w-16 h-16 rounded-2xl object-cover border-2 border-white/20" />
             ) : (
               <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#38A3F1] to-[#0D5FA6] flex items-center justify-center text-2xl font-bold text-white border-2 border-white/20">
                 {initial}
@@ -282,13 +277,11 @@
     filterStatus,
     onSelect,
     selectedAppId,
-    onStatusChange,
   }: {
     project: Project;
     filterStatus: string;
     onSelect: (app: Application, projectId: string) => void;
     selectedAppId: string | null;
-    onStatusChange: (appId: string, status: "ACCEPTED" | "REJECTED") => void;
   }) {
     const [collapsed, setCollapsed] = useState(false);
 
@@ -359,7 +352,7 @@
                       {/* Avatar */}
                       <div className="relative flex-shrink-0">
                         {s?.avatar_url ? (
-                          <img src={s.avatar_url} alt={s.full_name} className="w-9 h-9 rounded-full object-cover border border-[#BAD8F7]" />
+                          <Image src={s.avatar_url} alt={s.full_name} width={36} height={36} className="w-9 h-9 rounded-full object-cover border border-[#BAD8F7]" />
                         ) : (
                           <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#38A3F1] to-[#0D5FA6] flex items-center justify-center text-sm font-bold text-white">
                             {initial}
@@ -610,7 +603,6 @@
                     filterStatus={filterStatus}
                     onSelect={(app, projectId) => setSelectedApp({ app, projectId })}
                     selectedAppId={selectedApp?.app.id ?? null}
-                    onStatusChange={handleStatusChange}
                   />
                 ))}
               </div>

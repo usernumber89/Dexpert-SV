@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import { createClient as createAdminClient } from "@supabase/supabase-js";
+import { createNotification } from "@/app/actions/notifications";
 import { revalidatePath } from "next/cache";
 
 export async function PATCH(
@@ -19,30 +19,25 @@ export async function PATCH(
 
   if (error) return Response.json({ error: error.message }, { status: 500 });
 
-  if (data && (status === "ACCEPTED" || status === "REJECTED") && process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) {
-    const supabaseAdmin = createAdminClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL,
-      process.env.SUPABASE_SERVICE_ROLE_KEY
-    );
-
+  if (data && (status === "ACCEPTED" || status === "REJECTED")) {
     const [studentResult, projectResult] = await Promise.all([
-      supabaseAdmin.from("students").select("user_id").eq("id", data.student_id).single(),
-      supabaseAdmin.from("projects").select("title").eq("id", projectId).single(),
+      supabase.from("students").select("user_id").eq("id", data.student_id).single(),
+      supabase.from("projects").select("title").eq("id", projectId).single(),
     ]);
 
     const studentUserId = studentResult.data?.user_id;
     const projectTitle = projectResult.data?.title || "un proyecto";
 
     if (studentUserId) {
-      await supabaseAdmin.from("notifications").insert({
-        user_id: studentUserId,
+      createNotification({
+        userId: studentUserId,
         title: status === "ACCEPTED" ? "Solicitud aceptada" : "Solicitud rechazada",
         message: status === "ACCEPTED"
           ? `Tu solicitud para "${projectTitle}" ha sido aceptada`
           : `Tu solicitud para "${projectTitle}" no fue seleccionada`,
         type: status === "ACCEPTED" ? "success" : "error",
         link: "/student/profile",
-      });
+      }).catch((err) => console.error("Error creating notification:", err));
     }
   }
 

@@ -47,8 +47,6 @@ export async function getPymePlan() {
   return purchase?.plan || null;
 }
 
-import { isPremiumPlan } from "@/lib/premium";
-
 function getSupabaseAdmin() {
   return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,

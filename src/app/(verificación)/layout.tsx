@@ -1,7 +1,7 @@
 "use client";
+import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import {DexpertLogo} from "@/components/DexpertLogo";
 
 export default function LegalLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -10,7 +10,7 @@ export default function LegalLayout({ children }: { children: React.ReactNode })
         <div className="max-w-4xl mx-auto px-6 h-14 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
             
-            <img src="/X.svg" className="w-40"  />
+            <Image src="/X.svg" alt="Dexpert" width={200} height={50} className="w-40" />
           </Link>
           <Link
             href="/verify"

@@ -36,7 +36,6 @@ export async function completeProject(projectId: string) {
       process.env.SUPABASE_SERVICE_ROLE_KEY
     );
 
-    // Obtener datos del proyecto para el portafolio
     const { data: project } = await supabase
       .from("projects")
       .select("title, description")
@@ -52,108 +51,87 @@ export async function completeProject(projectId: string) {
       throw new Error(`Error al completar el proyecto: ${projectUpdateError.message}`);
     }
 
-    const certificates: any[] = [];
+    const studentIds = applications.map((a) => a.student_id);
+    const appIds = applications.map((a) => a.id);
 
-    for (const application of applications) {
-      const { error: appUpdateError } = await supabase
-        .from("applications")
-        .update({ status: "COMPLETED" })
-        .eq("id", application.id);
+    const [{ data: existingExps }, { data: existingPortfolios }] = await Promise.all([
+      supabaseAdmin.from("student_experience").select("*").in("student_id", studentIds),
+      supabaseAdmin
+        .from("portfolio_entries")
+        .select("student_id")
+        .eq("source_id", projectId)
+        .eq("source_type", "real_project")
+        .in("student_id", studentIds),
+    ]);
 
-      if (appUpdateError) {
-        throw new Error(`Error al actualizar la postulación ${application.id}: ${appUpdateError.message}`);
-      }
+    const existingExpByStudent = new Map((existingExps ?? []).map((e) => [e.student_id, e]));
+    const portfolioStudentIds = new Set((existingPortfolios ?? []).map((p) => p.student_id));
 
-      // Insertar entrada en el portafolio del estudiante
-      let portfolioErr = null;
-      try {
-        const result = await supabaseAdmin
-          .from("portfolio_entries")
-          .upsert({
-            student_id: application.student_id,
-            source_type: "real_project",
-            source_id: projectId,
-            title: project?.title || "Proyecto real",
-            description: project?.description || null,
-            hours_invested: 0,
-            score: 100,
-            is_published: true,
-            completed_at: new Date().toISOString(),
-          }, {
-            onConflict: "student_id,source_id,source_type",
-            ignoreDuplicates: true,
-          });
-        portfolioErr = result.error;
-      } catch (e) {
-        // Fallback: si la constraint no existe (migración no aplicada),
-        // intentar con insert directo y sin conflicto
-        const { data: exists } = await supabaseAdmin
-          .from("portfolio_entries")
-          .select("id")
-          .eq("student_id", application.student_id)
-          .eq("source_id", projectId)
-          .eq("source_type", "real_project")
-          .maybeSingle();
-        if (!exists) {
-          const result = await supabaseAdmin.from("portfolio_entries").insert({
-            student_id: application.student_id,
-            source_type: "real_project",
-            source_id: projectId,
-            title: project?.title || "Proyecto real",
-            description: project?.description || null,
-            hours_invested: 0,
-            score: 100,
-            is_published: true,
-            completed_at: new Date().toISOString(),
-          });
-          portfolioErr = result.error;
-        }
-      }
+    const appUpdateResults = await supabase
+      .from("applications")
+      .update({ status: "COMPLETED" })
+      .in("id", appIds)
+      .select("id");
+
+    if (appUpdateResults.error) {
+      throw new Error(`Error al actualizar postulaciones: ${appUpdateResults.error.message}`);
+    }
+
+    const portfolioInserts = applications
+      .filter((a) => !portfolioStudentIds.has(a.student_id))
+      .map((a) => ({
+        student_id: a.student_id,
+        source_type: "real_project",
+        source_id: projectId,
+        title: project?.title || "Proyecto real",
+        description: project?.description || null,
+        hours_invested: 0,
+        score: 100,
+        is_published: true,
+        completed_at: new Date().toISOString(),
+      }));
+
+    if (portfolioInserts.length > 0) {
+      const { error: portfolioErr } = await supabaseAdmin
+        .from("portfolio_entries")
+        .insert(portfolioInserts);
 
       if (portfolioErr) {
-        console.error("Error al insertar entrada en portafolio:", portfolioErr);
+        console.error("Error al insertar entradas de portafolio:", portfolioErr);
       }
+    }
 
-      const certificateUrl = `/student/certificates/${application.id}`;
+    const certificateInserts = applications.map((a) => ({
+      application_id: a.id,
+      url: `/student/certificates/${a.id}`,
+    }));
 
-      const { data: certificate, error: certError } = await supabaseAdmin
-        .from("certificates")
-        .insert({
-          application_id: application.id,
-          url: certificateUrl,
-        })
-        .select()
-        .single();
+    const { data: certificates, error: certError } = await supabaseAdmin
+      .from("certificates")
+      .insert(certificateInserts)
+      .select();
 
-      if (certError) {
-        throw new Error(`Error al guardar el certificado para la postulación ${application.id}: ${certError.message}`);
-      }
+    if (certError) {
+      throw new Error(`Error al guardar certificados: ${certError.message}`);
+    }
 
-      certificates.push(certificate);
-
-      // Actualizar experiencia del estudiante
-      const { data: existingExp } = await supabaseAdmin
-        .from("student_experience")
-        .select("*")
-        .eq("student_id", application.student_id)
-        .maybeSingle();
-
-      const realProjectXP = 150;
-
-      if (existingExp) {
-        await supabaseAdmin
+    const realProjectXP = 150;
+    const experienceOps = applications.map(async (a) => {
+      const existing = existingExpByStudent.get(a.student_id);
+      if (existing) {
+        return supabaseAdmin
           .from("student_experience")
           .update({
-            real_projects_completed: (existingExp.real_projects_completed || 0) + 1,
-            total_xp: existingExp.total_xp + realProjectXP,
+            real_projects_completed: (existing.real_projects_completed || 0) + 1,
+            total_xp: existing.total_xp + realProjectXP,
             updated_at: new Date().toISOString(),
           })
-          .eq("id", existingExp.id);
+          .eq("id", existing.id);
       } else {
-        await supabaseAdmin
+        return supabaseAdmin
           .from("student_experience")
           .insert({
-            student_id: application.student_id,
+            student_id: a.student_id,
             real_projects_completed: 1,
             total_xp: realProjectXP,
             simulations_completed: 0,
@@ -161,7 +139,9 @@ export async function completeProject(projectId: string) {
             level: 1,
           });
       }
-    }
+    });
+
+    await Promise.all(experienceOps);
 
     revalidatePath('/student/portfolio');
     revalidatePath('/student/dashboard');

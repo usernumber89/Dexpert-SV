@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
 import {
-  BarChart3, Users, Eye, Clock, TrendingUp, Crown,
-  Star, BookOpen, Target, Loader2, AlertCircle,
+  Users, Eye, Clock, Crown,
+  Star, Loader2,
 } from "lucide-react";
 import { getProjectAnalytics, getPymePlan } from "@/app/actions/pyme/premium";
 import { isPremiumPlan } from "@/lib/premium";

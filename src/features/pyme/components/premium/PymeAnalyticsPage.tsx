@@ -3,12 +3,12 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import {
-  BarChart3, Users, Eye, TrendingUp, Crown,
-  Search, Filter, Clock, Star, Target,
+  BarChart3, Users, Eye, TrendingUp,
+  Search, Star, Target,
   Loader2, ChevronDown, ChevronUp, Download,
   ArrowUpRight, CheckCircle2, XCircle, HelpCircle,
-  FileText, Building2, Calendar, GraduationCap,
-  Lightbulb, Shield, Zap, Award, Activity, RefreshCw,
+  FileText, GraduationCap,
+  Shield, Zap, Award, Activity, RefreshCw,
 } from "lucide-react";
 import { getAllProjectsAnalytics } from "@/app/actions/pyme/premium";
 import Link from "next/link";

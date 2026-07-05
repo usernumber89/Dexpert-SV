@@ -4,15 +4,9 @@ import { motion } from "framer-motion";
 import { 
   UserPlus, 
   Search, 
-  Sparkles, 
-  Users, 
-  Bot, 
   Award,
-  ArrowRight,
-  CheckCircle2,
-  Zap, FileInput, SendToBack, Network
+  FileInput, SendToBack, Network
 } from "lucide-react";
-import { outfit } from "@/lib/fonts";
 
 const steps = [
   { 

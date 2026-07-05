@@ -9,8 +9,6 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import {DexpertLogo} from "@/components/DexpertLogo";
-
 export function Navbar() {
   const { supabase, user } = useAuthContext();
   const { role } = useUserRole();
@@ -68,8 +66,7 @@ export function Navbar() {
             whileHover={{ scale: 1.05 }}
             className="  rounded-lg flex items-center justify-center "
           >
-           <img src="/X.svg
-           " className="w-50"></img>
+           <Image src="/X.svg" alt="Dexpert" width={200} height={50} className="w-50" />
           </motion.div>
           
         </Link>

@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import {
   ArrowLeft, Mail, MapPin, GraduationCap, CheckCircle2, Star,
-  Briefcase, ExternalLink, Loader2, ShieldCheck,
+  Briefcase, ExternalLink, Loader2,
 } from "lucide-react";
 import { LinkedinLogoIcon, GithubLogoIcon } from "@phosphor-icons/react";
 import {
@@ -15,6 +15,7 @@ import {
 import { TalentPaywall } from "@/features/pyme/components/TalentPaywall";
 import { ProfileGallery } from "@/components/ProfileGallery";
 import { toast } from "sonner";
+import Image from "next/image";
 import Link from "next/link";
 
 type Student = {
@@ -120,7 +121,7 @@ export default function StudentDetailPage() {
             <div className="flex flex-col sm:flex-row items-start gap-6">
               <div className="relative w-24 h-24 rounded-3xl bg-gradient-to-br from-[#F0F7FF] to-[#E8F3FD] border-2 border-[#BAD8F7] flex-shrink-0 overflow-hidden shadow-md">
                 {student.avatar_url ? (
-                  <img src={student.avatar_url} alt={student.full_name || ""} className="w-full h-full object-cover" />
+                  <Image src={student.avatar_url} alt={student.full_name || ""} width={540} height={380} className="w-full h-full object-cover" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-3xl font-bold text-[#38A3F1]">
                     {student.full_name?.charAt(0).toUpperCase() || "?"}

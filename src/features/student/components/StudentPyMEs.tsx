@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import {
@@ -174,9 +175,11 @@ export function StudentPyMEs({ pymes, activeProjectCounts }: Props) {
                   {/* Logo + Company */}
                   <div className="flex items-start gap-3">
                     {pyme.logo_url ? (
-                      <img
+                      <Image
                         src={pyme.logo_url}
                         alt={pyme.company_name}
+                        width={56}
+                        height={56}
                         className="w-14 h-14 rounded-xl object-cover border border-[#E8F3FD] flex-shrink-0"
                       />
                     ) : (

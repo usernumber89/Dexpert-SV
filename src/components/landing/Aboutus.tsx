@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { ArrowRight, CheckCircle2, Goal, Telescope, HandHelping } from "lucide-react";
-import { outfit } from "@/lib/fonts";
 const HIGHLIGHTS = [
   {
     icon: Goal,

@@ -1,14 +1,14 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import {
-  Send, BotMessageSquare, User, Sparkles, Clock, Target,
-  AlertTriangle, FileText, Loader2, CheckCircle2, X,
-  ArrowLeft, BookOpen, ListChecks, GitPullRequest, Trophy,
-  MessageSquare, ExternalLink,
+  Send, BotMessageSquare, User, Clock, Target,
+  AlertTriangle, Loader2, CheckCircle2,
+  ArrowLeft, BookOpen, GitPullRequest, Trophy,
+  MessageSquare,
 } from "lucide-react";
 import {
   SimulationSession, SimulationMessage, ChangeRequest,
@@ -55,8 +55,7 @@ export function SimulationWorkspace({
   const [evaluating, setEvaluating] = useState(false);
   const [evaluation, setEvaluation] = useState<Evaluation | null>(null);
   const [changeRequests, setChangeRequests] = useState<ChangeRequest[]>([]);
-  const [showBrief, setShowBrief] = useState(true);
-  const [showChanges, setShowChanges] = useState(false);
+  const [, setShowChanges] = useState(false);
   const [generatingChange, setGeneratingChange] = useState(false);
   const [messageCount, setMessageCount] = useState(0);
   const [activeTab, setActiveTab] = useState<"chat" | "brief" | "changes" | "evaluation">("chat");

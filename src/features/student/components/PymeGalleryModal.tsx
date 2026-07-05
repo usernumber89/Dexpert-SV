@@ -1,7 +1,8 @@
 "use client";
 
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Building2, Briefcase, MapPin, Users, Phone, Globe, Mail } from "lucide-react";
+import { X, Briefcase, MapPin, Users, Phone, Globe, Mail } from "lucide-react";
 import { ProfileGallery } from "@/components/ProfileGallery";
 
 type Pyme = {
@@ -41,9 +42,11 @@ export function PymeGalleryModal({ pyme, activeProjectCount, onClose }: Props) {
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-4">
                 {pyme.logo_url ? (
-                  <img
+                  <Image
                     src={pyme.logo_url}
                     alt={pyme.company_name}
+                    width={64}
+                    height={64}
                     className="w-16 h-16 rounded-xl object-cover border border-[#E8F3FD]"
                   />
                 ) : (

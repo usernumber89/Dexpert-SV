@@ -3,7 +3,6 @@ import { Inter } from "next/font/google";
 import { Toaster } from "sonner";
 import "./globals.css";
 import {AuthProvider} from "@/providers/AuthProvider";
-import {Briefcase, User} from "lucide-react";
 import { outfit } from "@/lib/fonts";
 import { OfflineDetector } from "@/components/shared/OfflineDetector";
 

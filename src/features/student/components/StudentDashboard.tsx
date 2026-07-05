@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { FolderOpen, Award, Clock, ChevronRight, MapPin, Briefcase } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { createClient } from "@/lib/supabase/client";
@@ -54,9 +55,11 @@ function DashboardProjectCard({ project }: { project: Project }) {
       <div className="flex items-start justify-between gap-2">
           <div className="flex items-center gap-3 min-w-0">
           {project.pyme?.logo_url ? (
-            <img
+            <Image
               src={project.pyme.logo_url}
               alt={project.pyme.company_name || "Logo"}
+              width={40}
+              height={40}
               className="w-10 h-10 rounded-xl object-cover border border-[#BAD8F7] flex-shrink-0"
             />
           ) : (
@@ -167,7 +170,7 @@ export function StudentDashboard({ user, student, applications, projects, server
     const supabase = supabaseRef.current!;
 
     const channel = supabase
-      .channel(`dashboard-apps-${student.id}-${Date.now()}`)
+      .channel(`dashboard-apps-${student.id}`)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "applications", filter: `student_id=eq.${student.id}` },
@@ -175,18 +178,9 @@ export function StudentDashboard({ user, student, applications, projects, server
       )
       .subscribe();
 
-    const onFocus = () => { if (!cancelled) fetchStats(); };
-    window.addEventListener("focus", onFocus);
-
-    const interval = setInterval(() => {
-      if (!cancelled) fetchStats();
-    }, 30000);
-
     return () => {
       cancelled = true;
       supabase.removeChannel(channel);
-      window.removeEventListener("focus", onFocus);
-      clearInterval(interval);
     };
   }, [student, fetchStats]);
 
@@ -263,9 +257,11 @@ export function StudentDashboard({ user, student, applications, projects, server
                   <div key={app.id} className="flex items-center gap-2 sm:gap-4 px-4 sm:px-6 py-3 sm:py-4 hover:bg-[#F9FBFF] transition-colors">
                     <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
                       {app.project?.pyme?.logo_url ? (
-                        <img
+                        <Image
                           src={app.project.pyme.logo_url}
                           alt={app.project.pyme.company_name || "Logo"}
+                          width={32}
+                          height={32}
                           className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg object-cover border border-[#E8F3FD] flex-shrink-0"
                         />
                       ) : (

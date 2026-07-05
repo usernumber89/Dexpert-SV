@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import {
-  FileText,
   Printer,
   X,
   ExternalLink,
@@ -13,6 +12,7 @@ import {
   CreditCard,
   Building2,
 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 
 type Invoice = {
@@ -82,7 +82,7 @@ function InvoiceDetailModal({
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <div className="w-8 h-8 rounded-lg  flex items-center justify-center">
-                  <img src="/1.svg"/>
+                  <Image src="/1.svg" alt="" width={200} height={50} />
                 </div>
                 <div>
                   <h3 className="text-base font-bold text-[#0D3A6E]">Dexpert </h3>

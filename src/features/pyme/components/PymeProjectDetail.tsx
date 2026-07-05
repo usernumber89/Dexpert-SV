@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState } from "react";
 import { toast } from "sonner";
 import {
@@ -231,9 +232,11 @@ function ApplicationCard({
         {/* Avatar */}
         <div className="relative flex-shrink-0">
           {student?.avatar_url ? (
-            <img
+            <Image
               src={student.avatar_url}
               alt={studentName}
+              width={40}
+              height={40}
               className="w-10 h-10 rounded-full object-cover border-2 border-[#BAD8F7]"
             />
           ) : (
@@ -382,9 +385,11 @@ export function PymeProjectDetail({ project }: Props) {
             <div>
               <div className="flex items-center gap-3 mb-2">
                 {project.pyme?.logo_url ? (
-                  <img
+                  <Image
                     src={project.pyme.logo_url}
                     alt={project.pyme.company_name || "Logo"}
+                    width={40}
+                    height={40}
                     className="w-10 h-10 rounded-xl object-cover border border-[#E8F3FD] flex-shrink-0"
                   />
                 ) : (

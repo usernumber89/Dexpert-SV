@@ -1,16 +1,16 @@
 "use client";
 
+import Image from "next/image";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
-  Star, StarOff, User, MapPin, BookOpen, Trash2,
-  MessageSquare, Mail, Search, Crown, ExternalLink,
+  Star, User, MapPin, BookOpen, Trash2,
+  Mail, Search,
 } from "lucide-react";
 import {
   getSavedStudents, removeSavedStudent,
 } from "@/app/actions/pyme/premium";
 import { toast } from "sonner";
-import Link from "next/link";
 
 type SavedStudent = {
   id: string;
@@ -93,7 +93,7 @@ export function TalentPoolPanel() {
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center gap-2.5 min-w-0">
                     {s.avatar_url ? (
-                      <img src={s.avatar_url} alt="" className="w-9 h-9 rounded-full object-cover border border-[#BAD8F7]" />
+                      <Image src={s.avatar_url} alt="" width={36} height={36} className="w-9 h-9 rounded-full object-cover border border-[#BAD8F7]" />
                     ) : (
                       <div className="w-9 h-9 rounded-full bg-[#F0F7FF] border border-[#BAD8F7] flex items-center justify-center">
                         <User className="w-4 h-4 text-[#38A3F1]" />

@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, Suspense } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Search, Filter, MapPin, GraduationCap, Mail, ArrowUpRight,
-  Sparkles, Users, Briefcase, Star, CheckCircle2, Loader2,
+  Users, Briefcase, Star, CheckCircle2, Loader2,
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -13,7 +13,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { GithubLogoIcon, LinkedinLogoIcon } from "@phosphor-icons/react";
 import {
   saveStudent, removeSavedStudent, getSavedStudents,
-  getStudents, hasTalentAccess,
+  getStudents,
 } from "@/app/actions/pyme/premium";
 import { TalentPaywall } from "@/features/pyme/components/TalentPaywall";
 import { useTalentAccess } from "@/hooks/useTalentAccess";

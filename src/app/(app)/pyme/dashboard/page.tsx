@@ -39,8 +39,6 @@ export default async function PymeDashboardPage() {
       </Suspense>
       
       <PymeDashboard
-        
-        user={{ name: user.email?.split("@")[0] ?? "Business", avatarUrl: null }}
         pyme={pyme}
         projects={projects ?? []}
         credits={{

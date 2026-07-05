@@ -8,7 +8,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   FolderOpen,
   Users,
-  TrendingUp,
   Plus,
   Edit,
   X,
@@ -16,7 +15,6 @@ import {
   Sparkles,
   MoreHorizontal,
   Search,
-  Filter,
   Briefcase,
   Eye,
   Clock,

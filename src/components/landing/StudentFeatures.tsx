@@ -2,9 +2,8 @@
 
 import { motion } from "framer-motion";
 import {
-  BotMessageSquare, Target, BookOpen, ArrowRight,
-  CheckCircle2, Sparkles, Brain, Star, Zap, BarChart3,
-  MessageSquare, FileText, Award, Unlock,
+  BotMessageSquare, BookOpen, ArrowRight,
+  CheckCircle2, BarChart3,
 } from "lucide-react";
 import Link from "next/link";
 
