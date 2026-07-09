@@ -1,27 +1,52 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { createHmac } from "crypto";
 
 const PLAN_CREDITS: Record<string, number> = {
-  starter: 1,
-  growth: 10,
-  pro: 25,
+  growthlight: 4,
+  growth: 8,
+  pro: 20,
+  enterprise: 50,
 };
 
 const PLAN_AMOUNTS: Record<string, number> = {
-  starter: 3.99,
-  growth: 27.49,
-  pro: 54.99,
+  growthlight: 14.99,
+  growth: 24.99,
+  pro: 49.99,
+  enterprise: 99.99,
 };
 
 const PLAN_NAMES: Record<string, string> = {
-  starter: "Dexpert Starter",
+  growthlight: "Dexpert Growth L",
   growth: "Dexpert Growth",
   pro: "Dexpert Pro",
+  enterprise: "Dexpert Enterprise",
 };
+
+function validateSignature(body: string, signature: string | null): boolean {
+  if (!signature || !process.env.WOMPI_API_SECRET) return false;
+  const expected = createHmac("sha256", process.env.WOMPI_API_SECRET)
+    .update(body)
+    .digest("hex");
+  try {
+    const received = Buffer.from(signature, "hex").toString("hex");
+    return expected === received || expected === signature;
+  } catch {
+    return expected === signature;
+  }
+}
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
+    const rawBody = await req.text();
+    const signature = req.headers.get("x-wompi-signature") || req.headers.get("x-signature");
+
+    if (!validateSignature(rawBody, signature)) {
+      console.error("Webhook Wompi: firma inválida");
+      return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
+    }
+
+    const body = JSON.parse(rawBody);
     const { ResultadoTransaccion, IdTransaccion, EnlacePago } = body;
     const identificador = EnlacePago?.IdentificadorEnlaceComercio;
     const esAprobada = ResultadoTransaccion === "ExitosaAprobada";
@@ -67,6 +92,51 @@ export async function POST(req: Request) {
       }
 
       console.log(`Certificado ${certificateId} pagado por estudiante ${studentId}`);
+      return NextResponse.json({ success: true });
+    }
+
+    if (identificador.startsWith("DEXPERT_PORTFOLIO_")) {
+      const parts = identificador.split("_");
+      if (parts.length < 3) {
+        console.error("Formato DEXPERT_PORTFOLIO inválido:", identificador);
+        return NextResponse.json({ error: "Formato inválido" }, { status: 400 });
+      }
+      const studentId = parts[2];
+
+      const { error: portErr } = await supabase
+        .from("students")
+        .update({ portfolio_paid: true, portfolio_transaction_id: IdTransaccion })
+        .eq("id", studentId);
+
+      if (portErr) {
+        console.error("Error marcando portafolio como pagado:", portErr);
+        return NextResponse.json({ error: portErr.message }, { status: 500 });
+      }
+
+      console.log(`Portafolio pagado para estudiante ${studentId}`);
+      return NextResponse.json({ success: true });
+    }
+
+    if (identificador.startsWith("DEXPERT_BOOST_")) {
+      const parts = identificador.split("_");
+      if (parts.length < 3) {
+        console.error("Formato DEXPERT_BOOST inválido:", identificador);
+        return NextResponse.json({ error: "Formato inválido" }, { status: 400 });
+      }
+      const studentId = parts[2];
+      const boostUntil = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+
+      const { error: boostErr } = await supabase
+        .from("students")
+        .update({ profile_boost_until: boostUntil })
+        .eq("id", studentId);
+
+      if (boostErr) {
+        console.error("Error actualizando boost:", boostErr);
+        return NextResponse.json({ error: boostErr.message }, { status: 500 });
+      }
+
+      console.log(`Boost activado para estudiante ${studentId} hasta ${boostUntil}`);
       return NextResponse.json({ success: true });
     }
 
@@ -120,12 +190,15 @@ export async function POST(req: Request) {
       .eq("pyme_id", pymeId)
       .maybeSingle();
 
+    const expiresAt = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString();
+
     if (creditsData) {
       const { error: updateErr } = await supabase
         .from("pyme_credits")
         .update({
           credits_available: creditsData.credits_available + creditsToAdd,
           updated_at: new Date().toISOString(),
+          expires_at: expiresAt,
         })
         .eq("pyme_id", pymeId);
 
@@ -140,6 +213,7 @@ export async function POST(req: Request) {
           pyme_id: pymeId,
           credits_available: creditsToAdd,
           credits_used: 0,
+          expires_at: expiresAt,
         });
 
       if (insertErr) {
@@ -193,6 +267,24 @@ export async function POST(req: Request) {
       console.log(`Factura generada: ${invoiceNumber} para PYME ${pymeId}`);
     } catch (invoiceErr) {
       console.error("Error generando factura (no crítico):", invoiceErr);
+    }
+
+    // Registrar en audit_logs para el dashboard de administración
+    try {
+      await supabase.from("audit_logs").insert({
+        user_id: pyme.user_id,
+        action: "wompi_transaction_success",
+        entity_type: "purchase",
+        entity_id: IdTransaccion,
+        metadata: {
+          plan: plan.toUpperCase(),
+          amount: PLAN_AMOUNTS[plan] || 0,
+          pyme_id: pymeId,
+          company: pyme.company_name,
+        },
+      });
+    } catch (auditErr) {
+      console.error("Error registrando audit log (no crítico):", auditErr);
     }
 
     return NextResponse.json({ success: true });

@@ -17,7 +17,7 @@ export default async function PymeDashboardPage() {
 
   if (!pyme) redirect("/onboarding/pyme");
 
-  const [{ data: projects, error: projectsError }, { data: credits }] = await Promise.all([
+  const [{ data: projects }, { data: credits }] = await Promise.all([
     supabase
       .from("projects")
       .select("*, applications(*, student:students(*))")
@@ -29,8 +29,7 @@ export default async function PymeDashboardPage() {
       .eq("pyme_id", pyme.id)
       .maybeSingle(),
   ]);
-  console.log("Projects:", projects);
-  console.log("ProjectsError:", projectsError);
+
 
   return (
     <>

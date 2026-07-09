@@ -1,12 +1,27 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
-// 🛠️ Agregamos '/verify' para capturar de forma dinámica cualquier ID de certificado
 const PUBLIC_ROUTES = ['/sign-in', '/sign-up', '/forgot-password', '/reset-password', '/terminos', '/privacidad', '/verify']
 const AUTH_ROUTES = ['/sign-in', '/sign-up']
 
+const OLD_ADMIN_ROUTES: Record<string, string> = {
+  '/admin/administracion': '/admin/gestion-usuarios',
+  '/admin/administracion/usuarios': '/admin/gestion-usuarios',
+  '/admin/administracion/roles': '/admin/roles',
+  '/admin/administracion/auditoria': '/admin/auditoria',
+  '/admin/administracion/alertas': '/admin/alertas',
+}
+
 export async function proxy(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request })
+  const pathname = request.nextUrl.pathname
+  const url = request.nextUrl.clone()
+
+  const redirect = OLD_ADMIN_ROUTES[pathname]
+  if (redirect) {
+    url.pathname = redirect
+    return NextResponse.redirect(url, 308)
+  }
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -26,38 +41,32 @@ export async function proxy(request: NextRequest) {
   )
 
   const { data: { user } } = await supabase.auth.getUser()
-  const pathname = request.nextUrl.pathname
-  const url = request.nextUrl.clone()
-
-  // 1. Manejo de la raíz '/' por separado para evitar falsos positivos con startsWith
   const isHomePage = pathname === '/'
-  
-  // Al tener '/verify' en PUBLIC_ROUTES, cualquier subruta como '/verify/123-abc' dará true aquí
-  const isPublicRoute = PUBLIC_ROUTES.some(r => pathname.startsWith(r)) || 
+
+  const isPublicRoute = PUBLIC_ROUTES.some(r => pathname.startsWith(r)) ||
                         pathname.startsWith('/api/wompi/webhook') ||
                         pathname.startsWith('/onboarding')
 
-  // 2. Lógica para rutas públicas y Auth
-  if (isHomePage || isPublicRoute) {
+  const isApiRoute = pathname.startsWith('/api')
+  const isServerAction = request.method === 'POST'
+
+  if (isHomePage || isPublicRoute || isApiRoute || isServerAction) {
     if (user && AUTH_ROUTES.some(r => pathname.startsWith(r))) {
-      // Solo redirige al Dashboard si el usuario logueado intenta entrar a /sign-in o /sign-up
       const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
       if (profile?.role) {
-        url.pathname = profile.role === 'STUDENT' ? '/student/dashboard' : '/pyme/dashboard'
+        if (profile.role === 'ADMIN') url.pathname = '/admin'
+        else url.pathname = profile.role === 'STUDENT' ? '/student/dashboard' : '/pyme/dashboard'
         return NextResponse.redirect(url)
       }
     }
-    // Si es una ruta pública común (como /verify/[id]), permite el acceso libre con o sin sesión
     return supabaseResponse
   }
 
-  // 3. Protección: Sin sesión
   if (!user) {
     url.pathname = '/sign-in'
     return NextResponse.redirect(url)
   }
 
-  // 4. Obtener rol desde la base de datos
   const { data: profile } = await supabase
     .from('profiles')
     .select('role')
@@ -70,14 +79,18 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
-  // 5. Protección cruzada de roles (RBAC)
+  if (pathname.startsWith('/admin') && profile.role !== 'ADMIN') {
+    url.pathname = profile.role === 'STUDENT' ? '/student/dashboard' : '/pyme/dashboard'
+    return NextResponse.redirect(url)
+  }
+
   if (pathname.startsWith('/student') && profile.role !== 'STUDENT') {
-    url.pathname = '/pyme/dashboard'
+    url.pathname = profile.role === 'ADMIN' ? '/admin' : '/pyme/dashboard'
     return NextResponse.redirect(url)
   }
 
   if (pathname.startsWith('/pyme') && profile.role !== 'PYME') {
-    url.pathname = '/student/dashboard'
+    url.pathname = profile.role === 'ADMIN' ? '/admin' : '/student/dashboard'
     return NextResponse.redirect(url)
   }
 

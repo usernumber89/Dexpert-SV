@@ -56,7 +56,8 @@ export default function SignInPage() {
 
       if (profile?.role) {
         toast.success(`¡Bienvenido de nuevo!`);
-        router.push(profile.role === 'ESTUDIANTE' ? '/student/dashboard' : '/pyme/dashboard');
+        const dest = profile.role === 'STUDENT' ? '/student/dashboard' : profile.role === 'ADMIN' ? '/admin' : '/pyme/dashboard';
+        router.push(dest);
       } else {
         router.push('/onboarding/select-role');
       }

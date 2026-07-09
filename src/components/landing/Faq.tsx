@@ -43,7 +43,7 @@ const faqs = [
   },
   { 
     "question": "¿Cuánto cuesta para las empresas?", 
-    "answer": "Hay tres planes: Básico por $4.99, Asistido con IA por $14.99 y Premium con soporte completo por $24.99.",
+    "answer": "Manejamos créditos prepagados que nunca expiran. Los planes van desde $4.99 (1 proyecto) hasta $99.99 (50 proyectos). Sin suscripciones, pagas solo cuando publicas un proyecto.",
     "category": "Empresas"
   },
   { 

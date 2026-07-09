@@ -2,6 +2,7 @@ import { generateText } from "ai";
 import { groq } from "@ai-sdk/groq";
 import { z } from "zod";
 import { NextResponse } from "next/server";
+import { sanitizePrompt } from "@/lib/prompt-sanitizer";
 
 const AnalysisSchema = z.object({
   categoria: z.string(),
@@ -12,16 +13,24 @@ const AnalysisSchema = z.object({
   puntuacion_complejidad: z.number(),
   riesgos_detectados: z.array(z.string()),
   recomendaciones: z.array(z.string()),
-  subproyectos_sugeridos: z.array(z.string()),
+  subproyectos_sugeridos: z.array(
+    z.union([
+      z.string(),
+      z.object({ name: z.string() }).passthrough()
+    ])
+  ).transform(items =>
+    items.map(item => (typeof item === 'string' ? item : item.name))
+  ),
 });
 
 export async function POST(req: Request) {
   try {
     const { prompt } = await req.json();
 
-    if (!prompt || typeof prompt !== "string") {
+    const sanitized = sanitizePrompt(prompt);
+    if (!sanitized) {
       return NextResponse.json(
-        { error: "El campo 'prompt' es requerido y debe ser texto" },
+        { error: "El campo 'prompt' es requerido y debe ser texto válido" },
         { status: 400 }
       );
     }
@@ -55,7 +64,7 @@ Reglas:
 
 Puntuacion de complejidad: 0-100, donde 0 es muy simple y 100 es extremadamente complejo.`;
 
-    const userPrompt = `Analiza el siguiente proyecto: "${prompt}"`;
+    const userPrompt = `Analiza el siguiente proyecto: "${sanitized}"`;
 
     const { text } = await generateText({
       model: groq("llama-3.3-70b-versatile"),

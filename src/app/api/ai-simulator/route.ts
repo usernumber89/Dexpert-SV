@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Groq from 'groq-sdk';
+import { sanitizePrompt } from "@/lib/prompt-sanitizer";
 
-// Inicializamos el cliente de Groq
 const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY,
 });
@@ -36,13 +36,15 @@ export async function POST(req: NextRequest) {
   try {
     const { messages, scenarioId } = await req.json();
 
-    // Construimos el historial de la conversación para la IA
+    const cleanScenarioId = sanitizePrompt(scenarioId) || "";
+    const cleanMessages = (messages || []).map((msg: any) => ({
+      role: msg.role === "user" ? "user" : "assistant",
+      content: sanitizePrompt(msg.content) || "(contenido filtrado)",
+    }));
+
     const conversationHistory = [
-      { role: "system", content: getSystemPrompt(scenarioId) },
-      ...messages.map((msg: any) => ({
-        role: msg.role === "user" ? "user" : "assistant",
-        content: msg.content,
-      })),
+      { role: "system", content: getSystemPrompt(cleanScenarioId) },
+      ...cleanMessages,
     ];
 
     // Solicitamos la respuesta a Groq (usando el modelo recomendado para chat)

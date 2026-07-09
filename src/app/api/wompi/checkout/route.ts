@@ -2,11 +2,13 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { getWompiToken } from "@/lib/wompi";
+import { checkRateLimit, getRateLimitKey, rateLimitResponse } from "@/lib/rate-limit";
 
 const PLANS: Record<string, { amount: number; name: string }> = {
-  starter: { amount: 3.99, name: "Dexpert Starter" },
-  growth: { amount: 27.49, name: "Dexpert Growth" },
-  pro: { amount: 54.99, name: "Dexpert Pro" },
+  growthlight: { amount: 14.99, name: "Dexpert Growth L" },
+  growth: { amount: 24.99, name: "Dexpert Growth" },
+  pro: { amount: 49.99, name: "Dexpert Pro" },
+  enterprise: { amount: 99.99, name: "Dexpert Enterprise" },
   talent: { amount: 7.99, name: "Acceso a Talento" },
 };
 
@@ -16,6 +18,10 @@ export async function POST(req: Request) {
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    if (!checkRateLimit(getRateLimitKey(user.id, "checkout"), 10, 60_000)) {
+      return rateLimitResponse();
+    }
 
     const { plan } = await req.json();
     const selectedPlan = PLANS[plan];
@@ -77,22 +83,21 @@ export async function POST(req: Request) {
 
     // Debug robusto: Si algo falla, lo veremos claramente en los logs de Vercel
     if (!response.ok) {
-      console.error("Error Wompi API:", data);
+      console.error("Error Wompi API:", response.status, response.statusText);
       return NextResponse.json(data, { status: response.status });
     }
 
-    // Extracción segura de la URL (buscamos en varios campos comunes)
     const paymentUrl = data.urlEnlace || data.url || data.link;
 
     if (!paymentUrl) {
-      console.error("CRÍTICO: Wompi no devolvió una URL válida. Respuesta completa:", JSON.stringify(data));
+      console.error("Wompi no devolvió URL de pago", { status: response.status });
       return NextResponse.json({ error: "No se pudo obtener la URL de pago" }, { status: 500 });
     }
 
     return NextResponse.json({ url: paymentUrl });
 
   } catch (error: any) {
-    console.error("Error en checkout:", error);
+    console.error("Error en checkout:", error.message);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

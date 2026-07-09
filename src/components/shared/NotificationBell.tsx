@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 import { Bell, CheckCheck, Loader2 } from "lucide-react";
 import Link from "next/link";
-import { getNotifications, getUnreadCount, markAsRead, markAllAsRead } from "@/app/actions/notifications";
+import { getNotificationData, markAsRead, markAllAsRead } from "@/app/actions/notifications";
 
 type Notification = {
   id: string;
@@ -61,12 +61,9 @@ export function NotificationBell({ userId }: { userId: string }) {
   }, []);
 
   const loadNotifications = async () => {
-    const [notifs, count] = await Promise.all([
-      getNotifications(10),
-      getUnreadCount(),
-    ]);
-    setNotifications(notifs);
-    setUnreadCount(count);
+    const { notifications, unreadCount } = await getNotificationData(10);
+    setNotifications(notifications);
+    setUnreadCount(unreadCount);
     setLoading(false);
   };
 

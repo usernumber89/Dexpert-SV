@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdmin } from "@supabase/supabase-js";
+import { moderateContent } from "@/lib/admin/profanity";
 
 const supabaseAdmin = createAdmin(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -35,6 +36,10 @@ export async function POST(req: Request) {
     );
   }
 
+  // Moderación automática de contenido
+  const moderation = moderateContent(projectName, description);
+  const isFlagged = moderation.flagged;
+
   // Crear el proyecto
   const { data: project, error } = await supabase
     .from("projects")
@@ -45,7 +50,8 @@ export async function POST(req: Request) {
       skills,
       category,
       level,
-      is_published: true, // Se publica directamente al gastar el crédito
+      is_published: !isFlagged,
+      status: isFlagged ? 'flagged' : undefined,
     })
     .select()
     .single();
@@ -62,5 +68,5 @@ export async function POST(req: Request) {
     })
     .eq("pyme_id", pyme.id);
 
-  return Response.json(project);
+  return Response.json({ ...project, moderation });
 }

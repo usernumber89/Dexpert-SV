@@ -4,6 +4,7 @@ import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { generateText } from "ai";
 import { groq } from "@ai-sdk/groq";
 import { z } from "zod";
+import { sanitizePrompt } from "@/lib/prompt-sanitizer";
 
 const EvaluationSchema = z.object({
   overall_score: z.number().min(0).max(100),
@@ -31,7 +32,8 @@ export async function POST(req: Request) {
       process.env.SUPABASE_SERVICE_ROLE_KEY
     );
 
-    const { sessionId } = await req.json();
+    const { sessionId: rawSessionId } = await req.json();
+    const sessionId = sanitizePrompt(rawSessionId);
     if (!sessionId) return NextResponse.json({ error: "sessionId requerido" }, { status: 400 });
 
     const { data: session } = await supabase

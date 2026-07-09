@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { generateText } from "ai";
 import { groq } from "@ai-sdk/groq";
+import { sanitizePrompt } from "@/lib/prompt-sanitizer";
 
 export async function POST(req: Request) {
   try {
@@ -10,7 +11,8 @@ export async function POST(req: Request) {
     if (!user) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
 
     const { sessionId, message } = await req.json();
-    if (!sessionId || !message) {
+    const cleanMessage = sanitizePrompt(message);
+    if (!sessionId || !cleanMessage) {
       return NextResponse.json({ error: "sessionId y message son requeridos" }, { status: 400 });
     }
 
@@ -32,7 +34,7 @@ export async function POST(req: Request) {
     await supabase.from("simulation_messages").insert({
       session_id: sessionId,
       role: "user",
-      content: message,
+      content: cleanMessage,
     });
 
     const { data: student } = await supabase
@@ -56,7 +58,7 @@ NO rompas el personaje. Responde en español salvadoreño coloquial pero profesi
         role: m.role as "user" | "assistant",
         content: m.content,
       })),
-      { role: "user" as const, content: message },
+      { role: "user" as const, content: cleanMessage },
     ];
 
     const { text: response } = await generateText({

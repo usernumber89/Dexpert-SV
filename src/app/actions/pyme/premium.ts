@@ -3,10 +3,15 @@
 import { createClient as createServerClient } from "@/lib/supabase/server";
 import { createClient } from "@supabase/supabase-js";
 
+const talentAccessCache = new Map<string, { result: boolean; expiresAt: number }>();
+
 export async function hasTalentAccess() {
   const supabase = await createServerClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return false;
+
+  const cached = talentAccessCache.get(user.id);
+  if (cached && Date.now() < cached.expiresAt) return cached.result;
 
   const { data: purchases } = await getSupabaseAdmin()
     .from("purchases")
@@ -14,9 +19,13 @@ export async function hasTalentAccess() {
     .eq("user_id", user.id)
     .order("created_at", { ascending: false });
 
-  return purchases?.some(p =>
-    p.plan === "TALENT_ACCESS" || p.plan === "GROWTH" || p.plan === "PRO"
+  const result = purchases?.some(p =>
+    p.plan === "TALENT_ACCESS" || p.plan === "GROWTH" || p.plan === "PRO" || p.plan === "ENTERPRISE"
   ) ?? false;
+
+  talentAccessCache.set(user.id, { result, expiresAt: Date.now() + 10_000 });
+
+  return result;
 }
 
 // Nuevo: espera hasta que el acceso esté disponible (útil post-pago)
@@ -55,21 +64,24 @@ function getSupabaseAdmin() {
 }
 
 const PLAN_CREDITS: Record<string, number> = {
-  starter: 1,
-  growth: 10,
-  pro: 25,
+  growthlight: 4,
+  growth: 8,
+  pro: 20,
+  enterprise: 50,
 };
 
 const PLAN_AMOUNTS: Record<string, number> = {
-  starter: 3.99,
-  growth: 27.49,
-  pro: 54.99,
+  growthlight: 14.99,
+  growth: 24.99,
+  pro: 49.99,
+  enterprise: 99.99,
 };
 
 const PLAN_NAMES: Record<string, string> = {
-  starter: "Dexpert Starter",
+  growthlight: "Dexpert Growth L",
   growth: "Dexpert Growth",
   pro: "Dexpert Pro",
+  enterprise: "Dexpert Enterprise",
 };
 
 export async function recordPurchase(transactionId: string, plan: string) {
@@ -104,6 +116,7 @@ export async function recordPurchase(transactionId: string, plan: string) {
 
   const creditsToAdd = PLAN_CREDITS[plan];
   const planUpper = plan.toUpperCase();
+  const expiresAt = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString();
 
   const { data: creditsData } = await supabaseAdmin
     .from("pyme_credits")
@@ -117,13 +130,14 @@ export async function recordPurchase(transactionId: string, plan: string) {
       .update({
         credits_available: creditsData.credits_available + creditsToAdd,
         updated_at: new Date().toISOString(),
+        expires_at: expiresAt,
       })
       .eq("pyme_id", pyme.id);
     if (error) return { error: error.message };
   } else {
     const { error } = await supabaseAdmin
       .from("pyme_credits")
-      .insert({ pyme_id: pyme.id, credits_available: creditsToAdd, credits_used: 0 });
+      .insert({ pyme_id: pyme.id, credits_available: creditsToAdd, credits_used: 0, expires_at: expiresAt });
     if (error) return { error: error.message };
   }
 
@@ -307,13 +321,18 @@ export async function trackProjectView(projectId: string) {
 export async function getStudents() {
   const { data, error } = await getSupabaseAdmin()
     .from("students")
-    .select("*")
-    .order("full_name", { ascending: true });
+    .select("*");
   if (error) {
     console.error("Error fetching students:", error);
     return [];
   }
-  return data || [];
+  const students = data || [];
+  students.sort((a, b) => {
+    const aDate = a.profile_boost_until ? new Date(a.profile_boost_until).getTime() : 0;
+    const bDate = b.profile_boost_until ? new Date(b.profile_boost_until).getTime() : 0;
+    return bDate - aDate;
+  });
+  return students;
 }
 
 export async function getStudentAcceptanceCounts(studentIds: string[]): Promise<Record<string, { total: number; accepted: number }>> {

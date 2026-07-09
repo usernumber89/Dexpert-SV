@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { FolderOpen, Award, Clock, ChevronRight, MapPin, Briefcase } from "lucide-react";
+import { FolderOpen, Award, Clock, ChevronRight, MapPin, Briefcase, Zap, Sparkles } from "lucide-react";
+import { toast } from "sonner";
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -16,7 +17,7 @@ type Project = {
 type Application = {
   id: string; status: string; project?: Project | null; certificate?: { id: string; file_url?: string | null } | null;
 };
-type Student = { id: string; full_name?: string | null; avatar_url?: string | null };
+type Student = { id: string; full_name?: string | null; avatar_url?: string | null; profile_boost_until?: string | null };
 type ServerStats = {
   totalApps: number;
   totalAccepted: number;
@@ -209,26 +210,46 @@ export function StudentDashboard({ user, student, applications, projects, server
           ))}
         </div>
 
-        {/* AI Banner 
-        <div className="relative overflow-hidden bg-gradient-to-r from-[#0D3A6E] to-[#1A4A7A] rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-xl">
-          <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full blur-2xl" />
-          <div className="relative flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
-            <div className="flex items-center gap-3 sm:gap-4">
-              <div className="w-10 h-10 sm:w-14 sm:h-14 bg-white/15 backdrop-blur-sm rounded-xl sm:rounded-2xl flex items-center justify-center flex-shrink-0">
-                <BotMessageSquare className="w-5 h-5 sm:w-7 sm:h-7 text-[#F59E0B]" />
+        {/* Boost */}
+        {student?.profile_boost_until && new Date(student.profile_boost_until) > new Date() ? (
+          <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl border border-amber-200 p-5 shadow-sm flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center">
+                <Sparkles className="w-5 h-5 text-amber-600" />
               </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-[#F59E0B] mb-0.5 sm:mb-1">Product Manager IA</p>
-                <p className="text-white text-sm sm:text-lg font-semibold mb-0.5 sm:mb-1">Recibe feedback sobre tu proyecto</p>
-                <p className="text-[#BAD8F7] text-xs sm:text-sm leading-tight">Nuestra IA revisa tu trabajo y sugiere los siguientes pasos</p>
+              <div>
+                <p className="text-sm font-bold text-amber-800">Perfil destacado</p>
+                <p className="text-xs text-amber-600">
+                  Visible hasta {new Date(student.profile_boost_until).toLocaleDateString("es-SV", { day: "numeric", month: "long", year: "numeric" })}
+                </p>
               </div>
             </div>
-            <Link href="/student/ai"
-              className="inline-flex items-center justify-center bg-white text-[#0D3A6E] font-semibold text-sm px-5 sm:px-6 py-2.5 sm:py-3 rounded-xl hover:bg-gray-100 transition-colors whitespace-nowrap min-h-[44px]">
-              Abrir IA
-            </Link>
           </div>
-        </div>*/}
+        ) : (
+          <div className="bg-gradient-to-r from-[#F0F7FF] to-[#E8F3FD] rounded-2xl border border-[#BAD8F7] p-5 shadow-sm flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-white border border-[#BAD8F7] flex items-center justify-center">
+                <Zap className="w-5 h-5 text-[#38A3F1]" />
+              </div>
+              <div>
+                <p className="text-sm font-bold text-[#0D3A6E]">Destaca tu perfil</p>
+                <p className="text-xs text-[#5B8DB8]">Sé el primero en ser visto por las empresas por solo $2.99/mes</p>
+              </div>
+            </div>
+            <button
+              onClick={async () => {
+                try {
+                  const res = await fetch("/api/wompi/boost-checkout", { method: "POST" });
+                  const data = await res.json();
+                  if (data.url) window.location.href = data.url;
+                } catch { toast?.error?.("Error al iniciar el pago"); }
+              }}
+              className="bg-[#38A3F1] text-white text-sm font-semibold px-5 py-2.5 rounded-xl hover:bg-[#0D5FA6] transition-colors whitespace-nowrap"
+            >
+              Destacar por $2.99
+            </button>
+          </div>
+        )}
 
         {/* Recent Applications */}
         <div className="bg-white rounded-xl sm:rounded-2xl border border-[#E8F3FD] shadow-sm overflow-hidden">

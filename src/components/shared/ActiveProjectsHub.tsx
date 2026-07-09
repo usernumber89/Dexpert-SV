@@ -6,12 +6,13 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
   Search, ChevronDown, ChevronUp, Clock, CheckCircle2,
-  AlertCircle, FileText, Building2, Briefcase, Plus, X, Circle, Trash,
+  AlertCircle, FileText, Building2, Briefcase, Plus, X, Circle, Trash, LayoutPanelLeft,
 } from "lucide-react";
 import { ActiveProject } from "@/app/actions/active-projects";
 import { createMilestone } from "@/app/actions/milestones";
 import { completeProject, deleteProject as deleteProjectAction } from "@/app/actions/projects";
 import MilestoneTracker from "./MilestoneTracker";
+import { ProjectTaskBoard } from "./TaskBoard";
 
 interface ActiveProjectsHubProps {
   initialProjects: ActiveProject[];
@@ -55,11 +56,13 @@ function ActiveProjectCard({
   role,
   isExpanded,
   onToggle,
+  onOpenBoard,
 }: {
   project: ActiveProject;
   role: "STUDENT" | "PYME";
   isExpanded: boolean;
   onToggle: () => void;
+  onOpenBoard: (projectId: string) => void;
 }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -305,6 +308,18 @@ function ActiveProjectCard({
             {isExpanded ? "Ocultar hitos" : "Ver hitos"}
           </button>
 
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onOpenBoard(project.id);
+            }}
+            className="px-3 inline-flex items-center justify-center gap-1 text-xs font-medium py-2 rounded-lg border transition-colors"
+            style={{ background: "white", borderColor: "#E8F3FD", color: "#5B8DB8" }}
+          >
+            <LayoutPanelLeft className="w-3.5 h-3.5" />
+            Tablero
+          </button>
+
           {role === "PYME" && (
             <>
               <button
@@ -443,6 +458,7 @@ export default function ActiveProjectsHub({
   const [searchTerm, setSearchTerm] = useState("");
   const [activeFilter, setActiveFilter] = useState<FilterKey>("ALL");
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
+  const [boardProjectId, setBoardProjectId] = useState<string | null>(null);
 
   const toggleExpand = (id: string) => {
     setExpandedIds((prev) => {
@@ -506,6 +522,7 @@ export default function ActiveProjectsHub({
   ];
 
   return (
+    <>
     <div className="min-h-screen bg-[#FAFCFF]">
       <div className="max-w-5xl mx-auto px-6 py-10 space-y-8">
 
@@ -592,11 +609,28 @@ export default function ActiveProjectsHub({
                 role={role}
                 isExpanded={expandedIds.has(project.id)}
                 onToggle={() => toggleExpand(project.id)}
+                onOpenBoard={(id) => setBoardProjectId(id)}
               />
             ))}
           </div>
         )}
       </div>
     </div>
+
+    {boardProjectId && (() => {
+      const project = initialProjects.find((p) => p.id === boardProjectId);
+      if (!project) return null;
+      return (
+        <div className="fixed inset-0 z-40 bg-white flex flex-col">
+          <ProjectTaskBoard
+            projectId={boardProjectId}
+            projectTitle={project.title}
+            role={role}
+            onClose={() => setBoardProjectId(null)}
+          />
+        </div>
+      );
+    })()}
+  </>
   );
 }

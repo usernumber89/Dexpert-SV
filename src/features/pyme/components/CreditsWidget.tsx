@@ -41,7 +41,6 @@ export function CreditsWidget({ pymeId, available: initialAvailable, used: initi
           // Extraemos los nuevos datos de forma segura para TypeScript
           const newData = payload.new as { credits_available: number; credits_used: number };
           
-          console.log("¡Créditos actualizados vía Realtime!", newData);
           
           // Actualizamos la pantalla instantáneamente
           setAvailable(newData.credits_available);

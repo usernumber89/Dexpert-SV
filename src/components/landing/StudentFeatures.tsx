@@ -177,6 +177,79 @@ export function StudentFeatures() {
           })}
         </motion.div>
 
+        {/* Free vs Paid */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="mt-16"
+        >
+          <div className="text-center mb-10">
+            <h3 className="text-xl font-bold text-[#0D3A6E] mb-2">
+              Gratis para estudiantes, <span className="text-[#38A3F1]">potencia tu perfil cuando quieras</span>
+            </h3>
+            <p className="text-sm text-[#5B8DB8] max-w-lg mx-auto">
+              Crear tu cuenta, aplicar a proyectos reales, usar el simulador IA y el tablero de tareas es 100% gratis.
+              Solo pagas por lo que te da valor extra.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
+            {/* Free column */}
+            <div className="bg-white rounded-2xl border-2 border-[#E8F3FD] p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="w-8 h-8 rounded-lg bg-[#E1F5EE] flex items-center justify-center">
+                  <CheckCircle2 className="w-4 h-4 text-[#1D9E75]" />
+                </div>
+                <span className="text-sm font-bold text-[#0D3A6E]">Gratis</span>
+              </div>
+              <ul className="space-y-3">
+                {[
+                  "Perfil profesional visible para empresas",
+                  "Aplicar a proyectos reales de PYMES",
+                  "Simulador IA con clientes ficticios",
+                  "Evaluación y retroalimentación automática",
+                  "Acceso al tablero Kanban de tareas",
+                  "Certificado digital del simulador",
+                ].map((f) => (
+                  <li key={f} className="flex items-start gap-2 text-xs text-[#0D3A6E]">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-[#1D9E75] shrink-0 mt-0.5" />
+                    {f}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Paid column */}
+            <div className="bg-white rounded-2xl border-2 border-[#BAD8F7] p-6 relative">
+              <div className="absolute -top-3 right-4 bg-[#38A3F1] text-white text-[10px] font-bold px-3 py-1 rounded-full">
+                Premium
+              </div>
+              <div className="flex items-center gap-2 mb-4">
+                <div className="w-8 h-8 rounded-lg bg-[#F0F7FF] flex items-center justify-center">
+                  <BotMessageSquare className="w-4 h-4 text-[#38A3F1]" />
+                </div>
+                <span className="text-sm font-bold text-[#0D3A6E]">Pago único</span>
+              </div>
+              <ul className="space-y-3">
+                {[
+                  { text: "Certificado verificable de proyecto real", price: "$4.99" },
+                  { text: "Portfolio profesional compartible", price: "$9.99" },
+                  { text: "Perfil destacado (top del buscador por 30 días)", price: "$2.99/mes" },
+                ].map((f) => (
+                  <li key={f.text} className="flex items-start justify-between gap-2 text-xs text-[#0D3A6E]">
+                    <div className="flex items-start gap-2">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-[#38A3F1] shrink-0 mt-0.5" />
+                      <span>{f.text}</span>
+                    </div>
+                    <span className="font-bold text-[#38A3F1] shrink-0">{f.price}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </motion.div>
+
         {/* Bottom CTA */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}

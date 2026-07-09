@@ -20,6 +20,13 @@ export default function PremiumGuard({ children }: { children: React.ReactNode }
   if (loading) {
     return (
       <div className="flex justify-center py-20">
+        <noscript>
+          <div className="max-w-lg mx-auto text-center py-20 px-4">
+            <p className="text-sm text-[#5B8DB8]">
+              JavaScript es necesario para verificar tu plan. Asegurate de tenerlo habilitado o contactá a soporte.
+            </p>
+          </div>
+        </noscript>
         <Loader2 className="w-6 h-6 animate-spin text-[#38A3F1]" />
       </div>
     );

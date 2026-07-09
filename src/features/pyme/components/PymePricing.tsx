@@ -10,7 +10,7 @@ import {
   ArrowLeft,
   ShieldCheck,
   Infinity,
-  Route,
+
   Sprout,
   Crown,
 } from "lucide-react";
@@ -24,20 +24,23 @@ type Props = {
 
 const PLANS = [
   {
-    id: "STARTER",
-    name: "Starter",
-    tagline: "Perfecto para empezar con tu primer proyecto real.",
-    price: 3.99,
-    credits: 1,
-    perCredit: "3.99",
-    icon: Route,
+    id: "GROWTHLIGHT",
+    name: "Growth L",
+    tagline: "Ideal para probar con proyectos pequeños y crecer gradualmente.",
+    price: 14.99,
+    credits: 4,
+    perCredit: "3.75",
+    icon: Sprout,
     iconBg: "bg-white",
     iconColor: "text-[#38A3F1]",
     badge: null,
-    cta: "Comenzar",
+    cta: "Obtener Growth L",
     features: [
-      "1 proyecto activo",
-      "Postulaciones de estudiantes",
+      "4 proyectos activos",
+      "Visibilidad destacada",
+      "Analítica completa",
+      "Escritor de briefs AI",
+      "Candidatos recomendados",
     ],
     highlighted: false,
   },
@@ -45,23 +48,20 @@ const PLANS = [
     id: "GROWTH",
     name: "Growth",
     tagline: "Para PYMES que necesitan talento consistente en múltiples proyectos.",
-    price: 27.49,
-    credits: 10,
-    perCredit: "2.75",
+    price: 24.99,
+    credits: 8,
+    perCredit: "3.12",
     icon: Sprout,
     iconBg: "bg-[#0D3A6E]",
     iconColor: "text-white",
 
     cta: "Obtener Growth",
     features: [
-      "10 proyectos activos",
-      "Todo en Starter",
-      "Visibilidad destacada",
+      "8 proyectos activos",
+      "Todo en Growth L",
       "Proyectos destacados",
-      "Analítica completa",
-      "Escritor de briefs AI",
-      "Candidatos recomendados",
       "Talent Pool (guardar estudiantes)",
+      "Solo candidatos destacados",
       "Soporte prioritario",
     ],
     highlighted: true,
@@ -70,19 +70,39 @@ const PLANS = [
     id: "PRO",
     name: "Pro",
     tagline: "Para PYMES en crecimiento con necesidades constantes de contratación.",
-    price: 54.99,
-    credits: 25,
-    perCredit: "2.20",
+    price: 49.99,
+    credits: 20,
+    perCredit: "2.50",
     icon: Crown,
     iconBg: "bg-white",
     iconColor: "text-[#38A3F1]",
 
     cta: "Obtener Pro",
     features: [
-      "25 proyectos activos",
+      "20 proyectos activos",
       "Todo en Growth",
-      "Solo candidatos destacados",
       "Account Manager dedicado",
+    ],
+    highlighted: false,
+  },
+  {
+    id: "ENTERPRISE",
+    name: "Enterprise",
+    tagline: "Para empresas con alta demanda de talento y proyectos continuos.",
+    price: 99.99,
+    credits: 50,
+    perCredit: "2.00",
+    icon: Crown,
+    iconBg: "bg-[#0D3A6E]",
+    iconColor: "text-white",
+    badge: "Mejor valor",
+    cta: "Obtener Enterprise",
+    features: [
+      "50 proyectos activos",
+      "Todo en Pro",
+      "Soporte prioritario 24/7",
+      "Account Manager dedicado",
+      "Onboarding personalizado",
     ],
     highlighted: false,
   },
@@ -117,7 +137,6 @@ export function PymePricing({ pymeId, creditsAvailable: initialAvailable, credit
         },
         (payload: any) => {
           const newData = payload.new as { credits_available: number; credits_used: number };
-          console.log("¡Créditos actualizados en Pasarela vía Realtime!", newData);
           
           // Actualizamos la interfaz al instante al detectar el pago aprobado
           setAvailable(newData.credits_available);
@@ -153,7 +172,6 @@ export function PymePricing({ pymeId, creditsAvailable: initialAvailable, credit
       );
 
       const data = await res.json();
-      console.log("Respuesta del servidor:", data);
       if (!res.ok) {
         throw new Error(
           data.error ||
@@ -172,7 +190,7 @@ export function PymePricing({ pymeId, creditsAvailable: initialAvailable, credit
       document.cookie = `pending_plan=${planId.toLowerCase()}; path=/; max-age=3600`;
       window.location.href = data.url;
     } catch (error) {
-      console.error(error);
+      console.error("Error en checkout:", error instanceof Error ? error.message : error);
 
       toast.dismiss(loadingToast);
 
@@ -221,7 +239,7 @@ export function PymePricing({ pymeId, creditsAvailable: initialAvailable, credit
               <div className="w-px h-4 bg-[#E8F3FD]" />
               <div className="flex items-center gap-1.5">
                 <Infinity className="w-3.5 h-3.5 text-[#93B8D4]" />
-                <span className="text-xs text-[#93B8D4]">nunca expiran</span>
+                <span className="text-xs text-[#93B8D4]">válidos por 12 meses</span>
               </div>
               {used > 0 && (
                 <>
@@ -236,7 +254,7 @@ export function PymePricing({ pymeId, creditsAvailable: initialAvailable, credit
         </div>
 
         {/* Plans */}
-        <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 items-start">
+        <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 items-start">
           {PLANS.map((plan, i) => {
             const Icon = plan.icon;
             const isLoadingThis = loading === plan.id;
@@ -271,7 +289,7 @@ export function PymePricing({ pymeId, creditsAvailable: initialAvailable, credit
                       <span className="text-4xl font-extrabold text-[#0D3A6E]">${plan.price}</span>
                     </div>
                     <p className="text-sm font-semibold text-[#38A3F1] mt-1">{plan.credits} créditos de proyecto</p>
-                    <p className="text-xs text-[#93B8D4]">${plan.perCredit} por proyecto • Los créditos nunca expiran</p>
+                    <p className="text-xs text-[#93B8D4]">${plan.perCredit} por proyecto • Válidos por 12 meses</p>
                   </div>
 
                   {/* CTA */}
@@ -326,7 +344,7 @@ export function PymePricing({ pymeId, creditsAvailable: initialAvailable, credit
         <div className="flex flex-wrap justify-center gap-3 sm:gap-6 text-[10px] sm:text-xs text-[#93B8D4] pb-4">
           {[
             "Pago único, sin suscripciones",
-            "Los créditos nunca expiran",
+            "Créditos válidos por 12 meses",
             "Pago seguro • SSL encriptado",
             "Acceso instantáneo después del pago",
           ].map(t => (

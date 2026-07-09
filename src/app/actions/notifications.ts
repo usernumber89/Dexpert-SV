@@ -3,6 +3,28 @@
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 
+export async function getNotificationData(limit = 10) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { notifications: [], unreadCount: 0 };
+
+  const [{ data: notifications }, { count }] = await Promise.all([
+    supabase
+      .from("notifications")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false })
+      .limit(limit),
+    supabase
+      .from("notifications")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", user.id)
+      .eq("read", false),
+  ]);
+
+  return { notifications: notifications || [], unreadCount: count || 0 };
+}
+
 export async function getNotifications(limit = 20) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -88,6 +110,6 @@ export async function createNotification({
   });
 
   if (error) {
-    console.error("createNotification failed:", error.message, error.details, error.hint, { userId, title, message, type, link });
+    console.error("createNotification failed:", error.message);
   }
 }

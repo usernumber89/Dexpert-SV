@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { generateText } from "ai";
 import { groq } from "@ai-sdk/groq";
+import { sanitizePrompt } from "@/lib/prompt-sanitizer";
 
 export async function POST(req: Request) {
   try {
@@ -9,7 +10,8 @@ export async function POST(req: Request) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
 
-    const { sessionId } = await req.json();
+    const { sessionId: rawSessionId } = await req.json();
+    const sessionId = sanitizePrompt(rawSessionId);
     if (!sessionId) return NextResponse.json({ error: "sessionId requerido" }, { status: 400 });
 
     const { data: session } = await supabase

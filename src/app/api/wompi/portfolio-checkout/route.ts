@@ -1,12 +1,17 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getWompiToken } from "@/lib/wompi";
+import { checkRateLimit, getRateLimitKey, rateLimitResponse } from "@/lib/rate-limit";
 
 export async function POST() {
   try {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+
+    if (!checkRateLimit(getRateLimitKey(user.id, "portfolio-checkout"), 10, 60_000)) {
+      return rateLimitResponse();
+    }
 
     const { data: student } = await supabase
       .from("students")
@@ -20,7 +25,7 @@ export async function POST() {
 
     const payload = {
       identificadorEnlaceComercio: comercioId,
-      monto: 4.99,
+      monto: 9.99,
       nombreProducto: "Descarga de Portafolio Dexpert",
       configuracion: {
         urlRedirect: `${process.env.NEXT_PUBLIC_APP_URL}/student/portfolio?portfolio_success=true`,
@@ -41,20 +46,20 @@ export async function POST() {
     const data = await response.json();
 
     if (!response.ok) {
-      console.error("Error Wompi API:", data);
-      return NextResponse.json(data, { status: response.status });
+      console.error("Error Wompi API:", response.status, response.statusText);
+      return NextResponse.json({ error: "Error en el procesador de pagos" }, { status: response.status });
     }
 
     const paymentUrl = data.urlEnlace || data.url || data.link;
 
     if (!paymentUrl) {
-      console.error("Wompi no devolvió URL:", JSON.stringify(data));
+      console.error("Wompi no devolvió URL de pago:", response.status);
       return NextResponse.json({ error: "No se pudo obtener la URL de pago" }, { status: 500 });
     }
 
     return NextResponse.json({ url: paymentUrl });
   } catch (error: any) {
-    console.error("Error en portfolio checkout:", error);
+    console.error("Error en portfolio checkout:", error.message);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

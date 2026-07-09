@@ -2,6 +2,7 @@ import { generateText } from "ai";
 import { groq } from "@ai-sdk/groq";
 import { z } from "zod";
 import { NextResponse } from "next/server";
+import { sanitizePrompt } from "@/lib/prompt-sanitizer";
 
 const BriefSchema = z.object({
   title: z.string(),
@@ -13,9 +14,10 @@ export async function POST(req: Request) {
   try {
     const { prompt } = await req.json();
 
-    if (!prompt || typeof prompt !== "string") {
+    const sanitized = sanitizePrompt(prompt);
+    if (!sanitized) {
       return NextResponse.json(
-        { error: "El campo 'prompt' es requerido y debe ser texto" },
+        { error: "El campo 'prompt' es requerido y debe ser texto válido" },
         { status: 400 }
       );
     }
@@ -32,7 +34,7 @@ Responde ÚNICAMENTE con un objeto JSON válido en este formato exacto:
 
 Responde en el mismo idioma que utilizó el usuario.`;
 
-    const userPrompt = `El dueño de la empresa describió su necesidad como: "${prompt}"`;
+    const userPrompt = `El dueño de la empresa describió su necesidad como: "${sanitized}"`;
 
     const { text } = await generateText({
   model: groq("llama-3.3-70b-versatile"),

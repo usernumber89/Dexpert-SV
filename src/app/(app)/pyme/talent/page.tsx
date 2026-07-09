@@ -32,6 +32,7 @@ type Student = {
   github: string | null;
   linkedin: string | null;
   portfolio: string | null;
+  profile_boost_until: string | null;
 };
 
 function TalentSearchContent() {
@@ -300,6 +301,11 @@ function TalentSearchContent() {
                       {student.skills && student.skills.length > 4 && (
                         <span className="text-[11px] font-medium bg-gray-50 text-gray-500 px-2.5 py-1 rounded-lg border border-gray-200">
                           +{student.skills.length - 4}
+                        </span>
+                      )}
+                      {student.profile_boost_until && new Date(student.profile_boost_until) > new Date() && (
+                        <span className="text-[11px] font-medium bg-amber-50 text-amber-700 px-2.5 py-1 rounded-lg border border-amber-200">
+                          Destacado
                         </span>
                       )}
                     </div>

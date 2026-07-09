@@ -4,47 +4,48 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { motion } from "framer-motion";
 import {
-  Check, Crown, ArrowRight, Route, Sprout, Building2, X
+  Check, Crown, ArrowRight, Sprout, Building2, X
 } from "lucide-react";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 
-type PlanKey = "STARTER" | "GROWTH" | "PRO";
+type PlanKey = "GROWTHLIGHT" | "GROWTH" | "PRO" | "ENTERPRISE";
 
 const plans = [
   {
-    key: "STARTER" as PlanKey,
-    name: "Starter",
-    price: "$3.99",
-    Icon: Route,
-    credits: 1,
-    description: "Perfecto para empezar con tu primer proyecto real.",
+    key: "GROWTHLIGHT" as PlanKey,
+    name: "Growth L",
+    price: "$14.99",
+    credits: 4,
+    Icon: Sprout,
+    description: "Ideal para probar con proyectos pequeños y crecer gradualmente.",
     color: "#38A3F1",
     features: [
-      { text: "1 proyecto activo", highlight: true },
-      { text: "Postulaciones de estudiantes", highlight: true },
-      //{ text: "Talent Pool (guardar estudiantes)", highlight: false },
+      { text: "4 proyectos activos", highlight: true },
+
+      { text: "Visibilidad destacada", highlight: true },
+      { text: "Analítica completa", highlight: true },
+      { text: "Escritor de briefs AI", highlight: true },
+      { text: "Candidatos recomendados", highlight: true },
     ],
     badge: null,
-    cta: "Comenzar",
+    cta: "Obtener Growth L",
   },
   {
     key: "GROWTH" as PlanKey,
     name: "Growth",
-    price: "$27.49",
-    credits: 10,
+    price: "$24.99",
+    credits: 8,
     Icon: Sprout,
     description: "Para empresas que necesitan talento consistente en múltiples proyectos.",
     color: "#18508f",
     features: [
-      { text: "10 proyectos activos", highlight: true },
-      { text: "Todo en Starter", highlight: true },
+      { text: "8 proyectos activos", highlight: true },
+      { text: "Todo en Growth L", highlight: true },
       { text: "Visibilidad destacada", highlight: true },
       { text: "Proyectos destacados", highlight: true },
-      { text: "Analítica completa", highlight: true },
-      { text: "Escritor de briefs AI", highlight: true },
-      //{ text: "Candidatos recomendados", highlight: true },
-      { text: "Soporte prioritario", highlight:true },
-      //{ text: "Talent Pool (guardar estudiantes)", highlight: true },
+      { text: "Talent Pool (guardar estudiantes)", highlight: true },
+      { text: "Solo candidatos destacados", highlight: true },
+      { text: "Soporte prioritario", highlight: true },
     ],
     badge: null,
     cta: "Obtener Growth",
@@ -52,19 +53,36 @@ const plans = [
   {
     key: "PRO" as PlanKey,
     name: "Pro",
-    price: "$54.99",
-    credits: 25,
+    price: "$49.99",
+    credits: 20,
     Icon: Crown,
-    description: "Máximo alcance para empresas en crecimiento con necesidades constantes de contratación.",
+    description: "Para empresas en crecimiento con necesidades constantes de contratación.",
     color: "#38A3F1",
     features: [
-      { text: "25 proyectos activos", highlight: true },
+      { text: "20 proyectos activos", highlight: true },
       { text: "Todo en Growth", highlight: true },
-     // { text: "Solo candidatos destacados", highlight: true },
       { text: "Account Manager dedicado", highlight: true },
     ],
     badge: null,
     cta: "Obtener Pro",
+  },
+  {
+    key: "ENTERPRISE" as PlanKey,
+    name: "Enterprise",
+    price: "$99.99",
+    credits: 50,
+    Icon: Crown,
+    description: "Para empresas con alta demanda de talento y proyectos continuos.",
+    color: "#0D3A6E",
+    features: [
+      { text: "50 proyectos activos", highlight: true },
+      { text: "Todo en Pro", highlight: true },
+      { text: "Soporte prioritario 24/7", highlight: true },
+      { text: "Account Manager dedicado", highlight: true },
+      { text: "Onboarding personalizado", highlight: true },
+    ],
+    badge: "Mejor valor",
+    cta: "Obtener Enterprise",
   },
 ];
 
@@ -95,7 +113,7 @@ export default function Plans() {
           </h2>
           <p className="text-[#5B8DB8] max-w-xl text-sm mx-auto mb-5 leading-relaxed">
             <span className="font-bold text-[#38A3F1]">No hay suscripciones.</span> Compra un paquete de créditos y úsalos cuando los necesites.
-            Los créditos nunca expiran.
+Créditos válidos por 12 meses.
           </p>
           <div className="inline-flex  items-center gap-2 px-4 py-1.5 bg-white rounded-md shadow-sm border border-[#BAD8F7] mb-5">
             <Building2 className="w-6 h-6 text-[#38A3F1] " />
@@ -106,7 +124,7 @@ export default function Plans() {
         </motion.div>
 
         {/* Cards */}
-        <div className="grid md:grid-cols-3 gap-7">
+        <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-7">
           {plans.map((plan, index) => (
             <motion.div
               key={plan.key}
@@ -136,7 +154,7 @@ export default function Plans() {
                 </div>
                 
                 <p className="text-[10px] text-[#93B8D4] mt-1.5">
-                  ${(parseFloat(plan.price.replace("$", "")) / plan.credits).toFixed(2)} por proyecto • Los créditos nunca expiran
+                  ${(parseFloat(plan.price.replace("$", "")) / plan.credits).toFixed(2)} por proyecto • Válidos por 12 meses
                 </p>
               </div>
 
@@ -194,7 +212,7 @@ export default function Plans() {
           viewport={{ once: true }}
           className="text-center text-xs text-[#93B8D4] mt-10"
         >
-          Todos los planes incluyen emparejamiento impulsado por IA y acceso para estudiantes. Los créditos nunca expiran.
+          Todos los planes incluyen emparejamiento impulsado por IA y acceso para estudiantes. Créditos válidos por 12 meses.
           <br />
           <span className="text-[#38A3F1]">¿Preguntas? Contáctanos en dexpertwork@gmail.com</span>
         </motion.p>

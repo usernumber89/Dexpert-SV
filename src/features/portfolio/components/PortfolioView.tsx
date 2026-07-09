@@ -7,11 +7,12 @@ import {
   Award, Clock, Star,
   BookOpen, Code2, Palette, Megaphone, Building2, Compass, Wrench,
   FileText, Calendar, Building, ChevronRight,
-  Briefcase,
+  Briefcase, Lock, Zap, Sparkles, Share2,
 } from "lucide-react";
 import { getCertificates, CertificateEntry } from "@/app/actions/simulation";
 import { CertificateActions } from "./CertificateActions";
 import { createClient } from "@/lib/supabase/client";
+import { toast } from "sonner";
 
 const AREA_ICONS: Record<string, typeof Code2> = {
   "Desarrollo de Software": Code2,
@@ -28,6 +29,9 @@ export function PortfolioView() {
   const [certificates, setCertificates] = useState<CertificateEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<"all" | "simulation" | "real_project" | "certificate">("all");
+  const [portfolioPaid, setPortfolioPaid] = useState(false);
+  const [studentId, setStudentId] = useState<string | null>(null);
+  const [payLoading, setPayLoading] = useState(false);
 
   const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null);
   if (!supabaseRef.current) supabaseRef.current = createClient();
@@ -40,10 +44,13 @@ export function PortfolioView() {
 
       const { data: student } = await supabase
         .from("students")
-        .select("id")
+        .select("id, portfolio_paid")
         .eq("user_id", user.id)
         .maybeSingle();
       if (!student) return;
+
+      setPortfolioPaid(student.portfolio_paid ?? false);
+      setStudentId(student.id);
 
       const [entriesResult, activeResult, certsData] = await Promise.all([
         supabase
@@ -83,6 +90,13 @@ export function PortfolioView() {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.location.search.includes("portfolio_success=true")) {
+      toast.success("¡Portafolio activado! Ahora puedes compartirlo con empresas");
+      window.history.replaceState({}, "", "/student/portfolio");
+    }
+  }, []);
 
   useEffect(() => {
     const supabase = supabaseRef.current!;
@@ -210,6 +224,68 @@ export function PortfolioView() {
             </div>
           ))}
         </div>
+
+        {/* Portfolio paywall / share */}
+        {portfolioPaid ? (
+          <div className="bg-gradient-to-r from-[#E1F5EE] to-[#F0F7FF] rounded-2xl border border-[#1D9E75]/30 p-5 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-white border border-[#1D9E75]/20 flex items-center justify-center">
+                <Sparkles className="w-5 h-5 text-[#1D9E75]" />
+              </div>
+              <div>
+                <p className="text-sm font-bold text-[#0D3A6E]">Portafolio profesional activado</p>
+                <p className="text-xs text-[#5B8DB8]">Comparte tu portafolio con empresas directamente</p>
+              </div>
+            </div>
+            <button
+              onClick={() => {
+                const url = `${window.location.origin}/student/portfolio`;
+                navigator.clipboard.writeText(url);
+                toast.success("Enlace copiado al portapapeles");
+              }}
+              className="flex items-center gap-2 bg-white text-[#0D3A6E] text-sm font-semibold px-5 py-2.5 rounded-xl border border-[#BAD8F7] hover:bg-[#F0F7FF] transition-colors"
+            >
+              <Share2 className="w-4 h-4" />
+              Copiar enlace
+            </button>
+          </div>
+        ) : (
+          <div className="bg-gradient-to-r from-[#F0F7FF] to-[#E8F3FD] rounded-2xl border border-[#BAD8F7] p-5 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-white border border-[#BAD8F7] flex items-center justify-center">
+                <Lock className="w-5 h-5 text-[#38A3F1]" />
+              </div>
+              <div>
+                <p className="text-sm font-bold text-[#0D3A6E]">Comparte tu portafolio profesional</p>
+                <p className="text-xs text-[#5B8DB8]">Comparte tu trayectoria con empresas por solo $9.99 · Pago único</p>
+              </div>
+            </div>
+            <button
+              onClick={async () => {
+                setPayLoading(true);
+                try {
+                  const res = await fetch("/api/wompi/portfolio-checkout", { method: "POST" });
+                  const data = await res.json();
+                  if (data.url) window.location.href = data.url;
+                  else toast.error(data.error || "Error al iniciar el pago");
+                } catch {
+                  toast.error("Error de conexión");
+                } finally {
+                  setPayLoading(false);
+                }
+              }}
+              disabled={payLoading}
+              className="flex items-center gap-2 bg-[#38A3F1] text-white text-sm font-semibold px-5 py-2.5 rounded-xl hover:bg-[#0D5FA6] transition-colors disabled:opacity-50"
+            >
+              {payLoading ? (
+                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              ) : (
+                <Zap className="w-4 h-4" />
+              )}
+              {payLoading ? "Redirigiendo..." : "Activar por $9.99"}
+            </button>
+          </div>
+        )}
 
         <div className="flex flex-wrap gap-2">
           {[

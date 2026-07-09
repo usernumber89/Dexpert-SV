@@ -54,15 +54,19 @@ export function PaymentFeedback() {
     const planFromUrl = params.get("plan") || "";
     const planFromCookie = pendingCookie?.split("=")[1];
     const resolvedPlan = planFromUrl || planFromCookie || "";
-    const txnId = params.get("idTransaccion") || `fallback_${Date.now()}`;
+    const txnId = params.get("idTransaccion");
     const monto = params.get("monto");
 
-    const dedupKey = `${resolvedPlan}_${txnId}`;
+    if (!txnId) {
+      console.warn("PaymentFeedback: idTransaccion no presente en la URL");
+    }
+
+    const dedupKey = `${resolvedPlan}_${txnId || "no_txn"}`;
     if (processedKeys.has(dedupKey)) return;
     processedKeys.add(dedupKey);
 
     window.history.replaceState({}, "", pathname);
-    document.cookie = "pending_plan=; path=/; max-age=0";
+    document.cookie = "pending_plan=; path=/; max-age=0; SameSite=Lax";
 
     setPlan(resolvedPlan);
     setAmount(monto);
@@ -148,7 +152,7 @@ export function PaymentFeedback() {
           </div>
         )}
 
-        {transactionId && !transactionId.startsWith("fallback_") && (
+        {transactionId && (
           <div className="mt-6 text-center text-xs text-muted-foreground">
             ID: {transactionId}
           </div>
