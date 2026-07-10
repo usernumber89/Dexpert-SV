@@ -104,7 +104,7 @@ export async function POST(req: Request) {
 
       const { error: portErr } = await supabase
         .from("students")
-        .update({ portfolio_pdf_paid: true, portfolio_transaction_id: IdTransaccion })
+        .update({ portfolio_pdf_paid: true })
         .eq("id", studentId);
 
       if (portErr) {
