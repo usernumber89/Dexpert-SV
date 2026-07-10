@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import Image from "next/image";
 import { ChevronRight, CheckCircle, XCircle, MapPin, Calendar, Star, Clock } from "lucide-react";
 import Link from "next/link";
@@ -73,17 +74,30 @@ function MatchBadge({ score }: { score: number }) {
 }
 
 export function ProjectCard({ project, applicationStatus, studentSkills }: Props) {
-  const skillsList = project.skills?.split(",").filter(Boolean) ?? [];
-  const matchScore = calcMatch(project.skills, studentSkills);
-  const daysAgo = Math.floor(
-    (Date.now() - new Date(project.created_at).getTime()) / (1000 * 60 * 60 * 24)
+  const skillsList = useMemo(
+    () => project.skills?.split(",").filter(Boolean) ?? [],
+    [project.skills]
+  );
+  const matchScore = useMemo(
+    () => calcMatch(project.skills, studentSkills),
+    [project.skills, studentSkills]
+  );
+  const daysAgo = useMemo(
+    () => Math.floor((Date.now() - new Date(project.created_at).getTime()) / (1000 * 60 * 60 * 24)),
+    [project.created_at]
   );
 
-  const studentSkillsLower = studentSkills.map(s => s.toLowerCase());
-  const isMatchedSkill = (skill: string) =>
-    studentSkillsLower.some(
-      s => s.includes(skill.toLowerCase()) || skill.toLowerCase().includes(s)
-    );
+  const studentSkillsLower = useMemo(
+    () => studentSkills.map(s => s.toLowerCase()),
+    [studentSkills]
+  );
+  const isMatchedSkill = useMemo(
+    () => (skill: string) =>
+      studentSkillsLower.some(
+        s => s.includes(skill.toLowerCase()) || skill.toLowerCase().includes(s)
+      ),
+    [studentSkillsLower]
+  );
 
   const appStatusLabel: Record<string, { label: string; icon: typeof CheckCircle; color: string; bg: string; border: string }> = {
     PENDING:   { label: "Pendiente",   icon: Clock,       color: "text-amber-600",  bg: "bg-amber-50",  border: "border-amber-100" },

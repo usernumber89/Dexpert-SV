@@ -12,6 +12,20 @@ const OLD_ADMIN_ROUTES: Record<string, string> = {
   '/admin/administracion/alertas': '/admin/alertas',
 }
 
+function getCachedRole(request: NextRequest): string | null {
+  return request.cookies.get('role')?.value ?? null
+}
+
+function setCachedRole(response: NextResponse, role: string): void {
+  response.cookies.set('role', role, {
+    httpOnly: true,
+    secure: true,
+    sameSite: 'lax',
+    maxAge: 300, // 5 min cache
+    path: '/',
+  })
+}
+
 export async function proxy(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request })
   const pathname = request.nextUrl.pathname
@@ -52,10 +66,15 @@ export async function proxy(request: NextRequest) {
 
   if (isHomePage || isPublicRoute || isApiRoute || isServerAction) {
     if (user && AUTH_ROUTES.some(r => pathname.startsWith(r))) {
-      const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-      if (profile?.role) {
-        if (profile.role === 'ADMIN') url.pathname = '/admin'
-        else url.pathname = profile.role === 'STUDENT' ? '/student/dashboard' : '/pyme/dashboard'
+      let role = getCachedRole(request)
+      if (!role) {
+        const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+        role = profile?.role ?? null
+      }
+      if (role) {
+        setCachedRole(supabaseResponse, role)
+        if (role === 'ADMIN') url.pathname = '/admin'
+        else url.pathname = role === 'STUDENT' ? '/student/dashboard' : '/pyme/dashboard'
         return NextResponse.redirect(url)
       }
     }
@@ -67,30 +86,35 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single()
+  let role = getCachedRole(request)
+  if (!role) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single()
+    role = profile?.role ?? null
+    if (role) setCachedRole(supabaseResponse, role)
+  }
 
-  if (!profile?.role) {
+  if (!role) {
     if (pathname.startsWith('/onboarding')) return supabaseResponse
     url.pathname = '/onboarding/select-role'
     return NextResponse.redirect(url)
   }
 
-  if (pathname.startsWith('/admin') && profile.role !== 'ADMIN') {
-    url.pathname = profile.role === 'STUDENT' ? '/student/dashboard' : '/pyme/dashboard'
+  if (pathname.startsWith('/admin') && role !== 'ADMIN') {
+    url.pathname = role === 'STUDENT' ? '/student/dashboard' : '/pyme/dashboard'
     return NextResponse.redirect(url)
   }
 
-  if (pathname.startsWith('/student') && profile.role !== 'STUDENT') {
-    url.pathname = profile.role === 'ADMIN' ? '/admin' : '/pyme/dashboard'
+  if (pathname.startsWith('/student') && role !== 'STUDENT') {
+    url.pathname = role === 'ADMIN' ? '/admin' : '/pyme/dashboard'
     return NextResponse.redirect(url)
   }
 
-  if (pathname.startsWith('/pyme') && profile.role !== 'PYME') {
-    url.pathname = profile.role === 'ADMIN' ? '/admin' : '/student/dashboard'
+  if (pathname.startsWith('/pyme') && role !== 'PYME') {
+    url.pathname = role === 'ADMIN' ? '/admin' : '/student/dashboard'
     return NextResponse.redirect(url)
   }
 

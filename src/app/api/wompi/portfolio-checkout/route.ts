@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getWompiToken } from "@/lib/wompi";
 import { checkRateLimit, getRateLimitKey, rateLimitResponse } from "@/lib/rate-limit";
+import { PORTFOLIO_AMOUNT } from "@/lib/plans";
 
 export async function POST() {
   try {
@@ -25,7 +26,7 @@ export async function POST() {
 
     const payload = {
       identificadorEnlaceComercio: comercioId,
-      monto: 9.99,
+      monto: PORTFOLIO_AMOUNT,
       nombreProducto: "Descarga de Portafolio Dexpert",
       configuracion: {
         urlRedirect: `${process.env.NEXT_PUBLIC_APP_URL}/student/portfolio?portfolio_success=true`,
@@ -58,8 +59,9 @@ export async function POST() {
     }
 
     return NextResponse.json({ url: paymentUrl });
-  } catch (error: any) {
-    console.error("Error en portfolio checkout:", error.message);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Error interno";
+    console.error("Error en portfolio checkout:", message);
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

@@ -82,9 +82,18 @@ export default function StudentProfilePage() {
 
   // Settings state
   const [expandedSetting, setExpandedSetting] = useState<string | null>(null);
-  const [notifyApplications, setNotifyApplications] = useState(true);
-  const [notifyMessages, setNotifyMessages] = useState(true);
-  const [notifyOpportunities, setNotifyOpportunities] = useState(false);
+  const [notifyApplications, setNotifyApplications] = useState(() => {
+    if (typeof window === "undefined") return true;
+    return localStorage.getItem("notifyApplications") !== "false";
+  });
+  const [notifyMessages, setNotifyMessages] = useState(() => {
+    if (typeof window === "undefined") return true;
+    return localStorage.getItem("notifyMessages") !== "false";
+  });
+  const [notifyOpportunities, setNotifyOpportunities] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return localStorage.getItem("notifyOpportunities") === "true";
+  });
   const [profileVisible, setProfileVisible] = useState(true);
   const [showInSearch, setShowInSearch] = useState(true);
 
@@ -95,6 +104,11 @@ export default function StudentProfilePage() {
   const [changingPassword, setChangingPassword] = useState(false);
 
   useEffect(() => { loadProfile(); }, []);
+
+  // Persistir preferencias de notificación en localStorage
+  useEffect(() => { localStorage.setItem("notifyApplications", String(notifyApplications)); }, [notifyApplications]);
+  useEffect(() => { localStorage.setItem("notifyMessages", String(notifyMessages)); }, [notifyMessages]);
+  useEffect(() => { localStorage.setItem("notifyOpportunities", String(notifyOpportunities)); }, [notifyOpportunities]);
 
   const loadProfile = async () => {
     try {
@@ -800,7 +814,7 @@ if (applications) {
                             </div>
                           ))}
                           <p className="text-xs text-[#93B8D4] italic">
-                            Las preferencias se guardan automáticamente en tu dispositivo.
+                            Las preferencias se guardan automáticamente.
                           </p>
                         </div>
                       </SettingsItem>

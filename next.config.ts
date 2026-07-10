@@ -1,4 +1,6 @@
 import type { NextConfig } from "next";
+import { withSentryConfig } from "@sentry/nextjs";
+import withBundleAnalyzer from "@next/bundle-analyzer";
 
 const csp = [
   `default-src 'self'`,
@@ -54,4 +56,16 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+const sentryWrapped = withSentryConfig(nextConfig, {
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+  silent: process.env.NODE_ENV !== "production",
+  tunnelRoute: "/monitoring",
+  sourcemaps: { disable: true },
+});
+
+const analyzer = withBundleAnalyzer({
+  enabled: process.env.ANALYZE === "true",
+});
+
+export default analyzer(sentryWrapped);

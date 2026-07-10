@@ -1,27 +1,7 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import { supabaseAdmin } from "@/lib/supabase/admin";
 import { createHmac } from "crypto";
-
-const PLAN_CREDITS: Record<string, number> = {
-  growthlight: 4,
-  growth: 8,
-  pro: 20,
-  enterprise: 50,
-};
-
-const PLAN_AMOUNTS: Record<string, number> = {
-  growthlight: 14.99,
-  growth: 24.99,
-  pro: 49.99,
-  enterprise: 99.99,
-};
-
-const PLAN_NAMES: Record<string, string> = {
-  growthlight: "Dexpert Growth L",
-  growth: "Dexpert Growth",
-  pro: "Dexpert Pro",
-  enterprise: "Dexpert Enterprise",
-};
+import { PLAN_CREDITS, PLAN_AMOUNTS, PLAN_NAMES } from "@/lib/plans";
 
 function validateSignature(body: string, signature: string | null): boolean {
   if (!signature || !process.env.WOMPI_API_SECRET) return false;
@@ -58,10 +38,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Identificador requerido" }, { status: 400 });
     }
 
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    );
+    const supabase = supabaseAdmin;
 
     const [creditCheck, purchaseCheck] = await Promise.all([
       supabase.from("credit_purchases").select("id").eq("stripe_id", IdTransaccion).maybeSingle(),
@@ -288,8 +265,9 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json({ success: true });
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error crítico en webhook:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    const message = error instanceof Error ? error.message : "Error interno";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

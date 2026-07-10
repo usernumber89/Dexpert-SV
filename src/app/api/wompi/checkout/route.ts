@@ -1,16 +1,9 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { createClient as createAdminClient } from "@supabase/supabase-js";
+import { supabaseAdmin } from "@/lib/supabase/admin";
 import { getWompiToken } from "@/lib/wompi";
 import { checkRateLimit, getRateLimitKey, rateLimitResponse } from "@/lib/rate-limit";
-
-const PLANS: Record<string, { amount: number; name: string }> = {
-  growthlight: { amount: 14.99, name: "Dexpert Growth L" },
-  growth: { amount: 24.99, name: "Dexpert Growth" },
-  pro: { amount: 49.99, name: "Dexpert Pro" },
-  enterprise: { amount: 99.99, name: "Dexpert Enterprise" },
-  talent: { amount: 7.99, name: "Acceso a Talento" },
-};
+import { PLANS } from "@/lib/plans";
 
 export async function POST(req: Request) {
   try {
@@ -37,11 +30,7 @@ export async function POST(req: Request) {
     if (!pyme) return NextResponse.json({ error: "Pyme not found" }, { status: 404 });
 
     if (plan === "talent") {
-      const admin = createAdminClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.SUPABASE_SERVICE_ROLE_KEY!
-      );
-      const { data: existing } = await admin
+      const { data: existing } = await supabaseAdmin
         .from("purchases")
         .select("plan")
         .eq("user_id", user.id)
@@ -96,8 +85,9 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ url: paymentUrl });
 
-  } catch (error: any) {
-    console.error("Error en checkout:", error.message);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Error interno";
+    console.error("Error en checkout:", message);
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

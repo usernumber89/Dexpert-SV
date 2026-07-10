@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
-import { FolderOpen, Award, Clock, ChevronRight, MapPin, Briefcase, Zap, Sparkles } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { FolderOpen, Award, Clock, ChevronRight, Briefcase, Zap, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
 import { createClient } from "@/lib/supabase/client";
+import { DashboardProjectCard } from "./DashboardProjectCard";
 
 // ── Tipos ────────────────────────────────────────────────────────
 type Pyme = { id: string; company_name?: string; logo_url?: string | null };
@@ -40,91 +40,6 @@ const statusConfig: Record<string, { label: string; bg: string; text: string; do
   COMPLETED: { label: "Completado", bg: "bg-sky-50",     text: "text-sky-600",    dot: "bg-sky-500" },
 };
 
-// ── Tarjeta de proyecto ──────────────────────────────────────────
-function DashboardProjectCard({ project }: { project: Project }) {
-  const skillsList = Array.isArray(project.skills)
-    ? project.skills
-    : project.skills?.split(",").filter(Boolean) ?? [];
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      whileHover={{ y: -4 }}
-      className="group bg-white rounded-2xl border border-[#E8F3FD] p-5 shadow-sm hover:shadow-xl hover:border-[#38A3F1]/40 transition-all duration-300 flex flex-col gap-3"
-    >
-      {/* Empresa + nivel */}
-      <div className="flex items-start justify-between gap-2">
-          <div className="flex items-center gap-3 min-w-0">
-          {project.pyme?.logo_url ? (
-            <Image
-              src={project.pyme.logo_url}
-              alt={project.pyme.company_name || "Logo"}
-              width={40}
-              height={40}
-              className="w-10 h-10 rounded-xl object-cover border border-[#BAD8F7] flex-shrink-0"
-            />
-          ) : (
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#F0F7FF] to-[#E8F3FD] border border-[#BAD8F7] flex items-center justify-center text-sm font-bold text-[#0D3A6E] shadow-sm">
-              {project.pyme?.company_name?.[0]?.toUpperCase() ?? "D"}
-            </div>
-          )}
-          <div className="min-w-0">
-            <p className="text-xs font-semibold text-[#0D3A6E] truncate">
-              {project.pyme?.company_name ?? "Empresa"}
-            </p>
-            <div className="flex items-center gap-1 mt-0.5">
-              <MapPin className="w-3 h-3 text-[#93B8D4]" />
-              <p className="text-[10px] text-[#93B8D4]">Remoto</p>
-            </div>
-          </div>
-        </div>
-        <span className="text-[10px] text-[#5B8DB8] bg-[#F0F7FF] px-2 py-1 rounded-full">
-          {project.level ?? "Cualquier nivel"}
-        </span>
-      </div>
-
-      {/* Título + descripción */}
-      <div className="flex-1">
-        <h3 className="text-sm font-semibold text-[#0D3A6E] mb-1.5 line-clamp-2 group-hover:text-[#38A3F1] transition-colors leading-snug">
-          {project.title}
-        </h3>
-        <p className="text-xs text-[#5B8DB8] line-clamp-2 leading-relaxed">
-          {project.description ?? "Sin descripción"}
-        </p>
-      </div>
-
-      {/* Skills */}
-      {skillsList.length > 0 && (
-        <div className="flex flex-wrap gap-1.5">
-          {skillsList.slice(0, 4).map((skill, i) => (
-            <span
-              key={i}
-              className="text-[10px] bg-[#F0F7FF] text-[#0D5FA6] font-medium px-2.5 py-1 rounded-full border border-[#BAD8F7]"
-            >
-              {skill.trim()}
-            </span>
-          ))}
-          {skillsList.length > 4 && (
-            <span className="text-[10px] text-[#93B8D4] self-center">
-              +{skillsList.length - 4}
-            </span>
-          )}
-        </div>
-      )}
-
-      {/* Enlace */}
-      <Link
-        href={`/student/projects/${project.id}`}
-        className="mt-1 flex items-center justify-between text-xs font-semibold text-[#38A3F1] group/link"
-      >
-        <span>Ver detalles</span>
-        <ChevronRight className="w-3.5 h-3.5 group-hover/link:translate-x-1 transition-transform" />
-      </Link>
-    </motion.div>
-  );
-}
-
 // ── Componente principal ─────────────────────────────────────────
 export function StudentDashboard({ user, student, applications, projects, serverStats }: Props) {
   const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null);
@@ -137,65 +52,25 @@ export function StudentDashboard({ user, student, applications, projects, server
     { label: "Certificados", value: serverStats.totalCerts, icon: Award },
   ]);
 
-  const fetchStats = useCallback(async () => {
-    if (!student) return;
-    const supabase = supabaseRef.current!;
-
-    const [{ count: totalApps }, { count: totalAccepted }, { count: totalCompleted }] = await Promise.all([
-      supabase.from("applications").select("*", { count: "exact", head: true }).eq("student_id", student.id),
-      supabase.from("applications").select("*", { count: "exact", head: true }).eq("student_id", student.id).in("status", ["ACCEPTED", "COMPLETED"]),
-      supabase.from("applications").select("*", { count: "exact", head: true }).eq("student_id", student.id).eq("status", "COMPLETED"),
-    ]);
-
-    const { data: appIds } = await supabase.from("applications").select("id").eq("student_id", student.id);
-    let totalCerts = 0;
-    if (appIds && appIds.length > 0) {
-      const { count } = await supabase.from("certificates").select("*", { count: "exact", head: true }).in("application_id", appIds.map((a: { id: string }) => a.id));
-      totalCerts = count ?? 0;
-    }
-
-    setStats([
-      { label: "Postulaciones", value: totalApps ?? 0, icon: FolderOpen },
-      { label: "Aceptadas", value: totalAccepted ?? 0, icon: Clock },
-      { label: "Completados", value: totalCompleted ?? 0, icon: Briefcase },
-      { label: "Certificados", value: totalCerts, icon: Award },
-    ]);
-  }, [student]);
-
-  useEffect(() => {
-    fetchStats();
-  }, [fetchStats]);
-
-  useEffect(() => {
-    if (!student) return;
-    let cancelled = false;
-    const supabase = supabaseRef.current!;
-
-    const channel = supabase
-      .channel(`dashboard-apps-${student.id}`)
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "applications", filter: `student_id=eq.${student.id}` },
-        () => { if (!cancelled) fetchStats(); }
-      )
-      .subscribe();
-
-    return () => {
-      cancelled = true;
-      supabase.removeChannel(channel);
-    };
-  }, [student, fetchStats]);
+  const [boostUntil, setBoostUntil] = useState<string | null>(student?.profile_boost_until ?? null);
+  const [isRedirecting, setIsRedirecting] = useState(false);
 
   const router = useRouter();
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get("boost_success") === "true") {
       toast.success("¡Pago exitoso! Tu perfil ahora está destacado por 30 días.");
+      if (student) {
+        const supabase = supabaseRef.current!;
+        supabase.from("students").select("profile_boost_until").eq("id", student.id).single().then(({ data }: { data: { profile_boost_until: string | null } | null }) => {
+          if (data?.profile_boost_until) setBoostUntil(data.profile_boost_until);
+        });
+      }
       params.delete("boost_success");
       const newUrl = window.location.pathname + (params.toString() ? `?${params}` : "");
       router.replace(newUrl, { scroll: false });
     }
-  }, [router]);
+  }, [router, student]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#F4F9FF] via-white to-[#EEF6FF]">
@@ -223,7 +98,7 @@ export function StudentDashboard({ user, student, applications, projects, server
         </div>
 
         {/* Boost */}
-        {student?.profile_boost_until && new Date(student.profile_boost_until) > new Date() ? (
+        {boostUntil && new Date(boostUntil) > new Date() ? (
           <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl border border-amber-200 p-5 shadow-sm flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center">
@@ -232,7 +107,7 @@ export function StudentDashboard({ user, student, applications, projects, server
               <div>
                 <p className="text-sm font-bold text-amber-800">Perfil destacado</p>
                 <p className="text-xs text-amber-600">
-                  Visible hasta {new Date(student.profile_boost_until).toLocaleDateString("es-SV", { day: "numeric", month: "long", year: "numeric" })}
+                  Visible hasta {new Date(boostUntil).toLocaleDateString("es-SV", { day: "numeric", month: "long", year: "numeric" })}
                 </p>
               </div>
             </div>
@@ -250,15 +125,21 @@ export function StudentDashboard({ user, student, applications, projects, server
             </div>
             <button
               onClick={async () => {
+                setIsRedirecting(true);
                 try {
                   const res = await fetch("/api/wompi/boost-checkout", { method: "POST" });
                   const data = await res.json();
                   if (data.url) window.location.href = data.url;
-                } catch { toast?.error?.("Error al iniciar el pago"); }
+                  else setIsRedirecting(false);
+                } catch {
+                  setIsRedirecting(false);
+                  toast?.error?.("Error al iniciar el pago");
+                }
               }}
-              className="bg-[#38A3F1] text-white text-sm font-semibold px-5 py-2.5 rounded-xl hover:bg-[#0D5FA6] transition-colors whitespace-nowrap"
+              disabled={isRedirecting}
+              className="bg-[#38A3F1] text-white text-sm font-semibold px-5 py-2.5 rounded-xl hover:bg-[#0D5FA6] transition-colors whitespace-nowrap disabled:opacity-60"
             >
-              Destacar por $2.99
+              {isRedirecting ? "Redirigiendo..." : "Destacar por $2.99"}
             </button>
           </div>
         )}

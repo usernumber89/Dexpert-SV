@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getWompiToken } from "@/lib/wompi";
 import { checkRateLimit, getRateLimitKey, rateLimitResponse } from "@/lib/rate-limit";
+import { BOOST_AMOUNT } from "@/lib/plans";
 
 export async function POST(req: Request) {
   try {
@@ -21,7 +22,6 @@ export async function POST(req: Request) {
 
     if (!student) return NextResponse.json({ error: "Student not found" }, { status: 404 });
 
-    const BOOST_AMOUNT = 2.99;
     const comercioId = `DEXPERT_BOOST_${student.id}_${Date.now()}`;
 
     const accessToken = await getWompiToken();
@@ -59,8 +59,9 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json({ url: paymentUrl });
-  } catch (error: any) {
-    console.error("Error en boost-checkout:", error.message);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Error interno";
+    console.error("Error en boost-checkout:", message);
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

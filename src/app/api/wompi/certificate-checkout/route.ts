@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getWompiToken } from "@/lib/wompi";
 import { checkRateLimit, getRateLimitKey, rateLimitResponse } from "@/lib/rate-limit";
+import { CERTIFICATE_AMOUNT } from "@/lib/plans";
 
 export async function POST(req: Request) {
   try {
@@ -28,7 +29,7 @@ export async function POST(req: Request) {
 
     const payload = {
       identificadorEnlaceComercio: comercioId,
-      monto: 4.99,
+      monto: CERTIFICATE_AMOUNT,
       nombreProducto: "Certificado Dexpert",
       configuracion: {
         urlRedirect: `${process.env.NEXT_PUBLIC_APP_URL}/student/certificates?success=true`,
@@ -61,8 +62,9 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json({ url: paymentUrl });
-  } catch (error: any) {
-    console.error("Error en certificate checkout:", error.message);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Error interno";
+    console.error("Error en certificate checkout:", message);
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

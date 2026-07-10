@@ -119,6 +119,7 @@ export function Hero() {
                   alt="Previsualización de la plataforma"
                   width={540}
                   height={380}
+                  priority
                   className="pointer-events-none select-none w-full h-auto"
                   draggable="false"
                   onContextMenu={(e) => e.preventDefault()}

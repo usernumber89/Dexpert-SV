@@ -102,40 +102,24 @@ export default function ProjectTaskBoard({
       const taskIds = tasks.map((t) => t.id);
       if (taskIds.length === 0) return;
 
-      const counts: Record<string, number> = {};
-      for (const id of taskIds) {
-        const { count } = await supabase
-          .from("task_comments")
-          .select("*", { count: "exact", head: true })
-          .eq("task_id", id);
-        if (cancelled) return;
-        if (count !== null) counts[id] = count;
-      }
-      if (!cancelled) setCommentCounts(counts);
-    };
-    fetchCounts();
-    return () => { cancelled = true; };
-  }, [tasks]);
+      const { data } = await supabase
+        .from("task_comments")
+        .select("task_id")
+        .in("task_id", taskIds);
 
-  // Load comment counts
-  useEffect(() => {
-    const supabase = createClient();
-    const fetchCounts = async () => {
-      const taskIds = tasks.map((t) => t.id);
-      if (taskIds.length === 0) return;
+      if (cancelled) return;
 
       const counts: Record<string, number> = {};
-      for (const id of taskIds) {
-        const { count } = await supabase
-          .from("task_comments")
-          .select("*", { count: "exact", head: true })
-          .eq("task_id", id);
-        if (count !== null) counts[id] = count;
+      if (data) {
+        for (const id of taskIds) {
+          counts[id] = data.filter((c: { task_id: string }) => c.task_id === id).length;
+        }
       }
       setCommentCounts(counts);
     };
     fetchCounts();
-  }, [tasks.length]);
+    return () => { cancelled = true; };
+  }, [tasks]);
 
   // Group tasks by status
   const tasksByStatus = useMemo(() => {
@@ -178,7 +162,6 @@ export default function ProjectTaskBoard({
     const task = tasks.find((t) => t.id === taskId);
     if (!task) return;
 
-    // Determine target status from droppable column data
     const overId = over.id.toString();
     let targetStatusId: string | null = null;
 
@@ -187,13 +170,18 @@ export default function ProjectTaskBoard({
     }
 
     if (!targetStatusId || targetStatusId === task.status_id) {
-      // Same column or no valid target - re-fetch to reset
       loadData();
       return;
     }
 
+    // Optimistic update
+    setTasks((prev) =>
+      prev.map((t) =>
+        t.id === taskId ? { ...t, status_id: targetStatusId! } : t
+      )
+    );
+
     await reorderTask(taskId, targetStatusId, 0);
-    loadData();
   };
 
   const handleCreateTask = async () => {
@@ -208,7 +196,11 @@ export default function ProjectTaskBoard({
     }
     setNewTask(null);
     setShowFilters(false);
-    await loadData();
+    if (res.success && res.data) {
+      setTasks((prev) => [...prev, res.data as Task]);
+    } else {
+      loadData();
+    }
   };
 
   const handleTaskUpdate = async () => {
