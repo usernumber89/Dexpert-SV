@@ -5,6 +5,7 @@ import { FolderOpen, Award, Clock, ChevronRight, MapPin, Briefcase, Zap, Sparkle
 import { toast } from "sonner";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { createClient } from "@/lib/supabase/client";
 
@@ -184,6 +185,17 @@ export function StudentDashboard({ user, student, applications, projects, server
       supabase.removeChannel(channel);
     };
   }, [student, fetchStats]);
+
+  const router = useRouter();
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("boost_success") === "true") {
+      toast.success("¡Pago exitoso! Tu perfil ahora está destacado por 30 días.");
+      params.delete("boost_success");
+      const newUrl = window.location.pathname + (params.toString() ? `?${params}` : "");
+      router.replace(newUrl, { scroll: false });
+    }
+  }, [router]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#F4F9FF] via-white to-[#EEF6FF]">

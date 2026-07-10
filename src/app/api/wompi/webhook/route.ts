@@ -39,7 +39,7 @@ function validateSignature(body: string, signature: string | null): boolean {
 export async function POST(req: Request) {
   try {
     const rawBody = await req.text();
-    const signature = req.headers.get("x-wompi-signature") || req.headers.get("x-signature");
+    const signature = req.headers.get("wompi_hash");
 
     if (!validateSignature(rawBody, signature)) {
       console.error("Webhook Wompi: firma inválida");
