@@ -36,7 +36,7 @@ export default function SignUpPage() {
   const [fullName, setFullName] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [selectedRole, setSelectedRole] = useState<'ESTUDIANTE' | 'PYME' | null>(null);
+  const [selectedRole, setSelectedRole] = useState<'STUDENT' | 'PYME' | null>(null);
   
   // Verificación
   const [verificationCode, setVerificationCode] = useState("");
@@ -166,7 +166,7 @@ export default function SignUpPage() {
       }
 
       // Crear perfil específico según el rol
-      if (selectedRole === "ESTUDIANTE") {
+      if (selectedRole === "STUDENT") {
         await supabase.from("students").upsert({
           user_id: user.id,
           full_name: fullName,
@@ -183,7 +183,7 @@ export default function SignUpPage() {
       }
 
       toast.success("Cuenta verificada exitosamente!");
-      router.push(selectedRole === "ESTUDIANTE" ? "/onboarding/student" : "/onboarding/pyme");
+      router.push(selectedRole === "STUDENT" ? "/onboarding/student" : "/onboarding/pyme");
     } else {
       toast.error("No se pudo obtener el usuario después de la verificación");
     }
@@ -259,9 +259,9 @@ export default function SignUpPage() {
                 <div className="mb-6">
                   <label className="text-xs font-semibold text-[#0D3A6E] mb-2 block">Soy...</label>
                   <div className="flex gap-2 p-1 bg-[#F0F7FF] rounded-xl">
-                    <button type="button" onClick={() => setSelectedRole('ESTUDIANTE')}
+                    <button type="button" onClick={() => setSelectedRole('STUDENT')}
                       className={`flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-xs font-medium transition-all ${
-                        selectedRole === 'ESTUDIANTE' ? 'bg-white text-[#0D3A6E] shadow-sm' : 'text-[#5B8DB8] hover:text-[#0D3A6E]'}`}>
+                        selectedRole === 'STUDENT' ? 'bg-white text-[#0D3A6E] shadow-sm' : 'text-[#5B8DB8] hover:text-[#0D3A6E]'}`}>
                       <GraduationCap className="w-3.5 h-3.5" /> Estudiante
                     </button>
                     <button type="button" onClick={() => setSelectedRole('PYME')}

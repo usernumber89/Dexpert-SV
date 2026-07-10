@@ -44,13 +44,19 @@ export function PortfolioView() {
 
       const { data: student } = await supabase
         .from("students")
-        .select("id, portfolio_paid")
+        .select("id")
         .eq("user_id", user.id)
         .maybeSingle();
       if (!student) return;
 
-      setPortfolioPaid(student.portfolio_paid ?? false);
       setStudentId(student.id);
+
+      const { data: payData } = await supabase
+        .from("students")
+        .select("portfolio_pdf_paid")
+        .eq("id", student.id)
+        .maybeSingle();
+      setPortfolioPaid(payData?.portfolio_pdf_paid ?? false);
 
       const [entriesResult, activeResult, certsData] = await Promise.all([
         supabase

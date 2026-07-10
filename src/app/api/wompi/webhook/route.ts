@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { createHmac } from "crypto";
-import { PLAN_CREDITS, PLAN_AMOUNTS, PLAN_NAMES } from "@/lib/plans";
+import { PLAN_CREDITS, PLAN_AMOUNTS, PLAN_NAMES, CERTIFICATE_AMOUNT, PORTFOLIO_AMOUNT, BOOST_AMOUNT } from "@/lib/plans";
 
 function validateSignature(body: string, signature: string | null): boolean {
   if (!signature || !process.env.WOMPI_API_SECRET) return false;
@@ -69,6 +69,28 @@ export async function POST(req: Request) {
       }
 
       console.log(`Certificado ${certificateId} pagado por estudiante ${studentId}`);
+
+      try {
+        const { data: studentForCert } = await supabase
+          .from("students")
+          .select("user_id")
+          .eq("id", studentId)
+          .single();
+        if (studentForCert) {
+          await supabase.from("invoices").insert({
+            pyme_id: null,
+            user_id: studentForCert.user_id,
+            invoice_number: IdTransaccion,
+            plan: "CERTIFICATE",
+            plan_name: "Certificado Dexpert",
+            amount: CERTIFICATE_AMOUNT,
+            transaction_id: IdTransaccion,
+          });
+        }
+      } catch (invoiceErr) {
+        console.error("Error generando factura de certificado (no crítico):", invoiceErr);
+      }
+
       return NextResponse.json({ success: true });
     }
 
@@ -82,7 +104,7 @@ export async function POST(req: Request) {
 
       const { error: portErr } = await supabase
         .from("students")
-        .update({ portfolio_paid: true, portfolio_transaction_id: IdTransaccion })
+        .update({ portfolio_pdf_paid: true, portfolio_transaction_id: IdTransaccion })
         .eq("id", studentId);
 
       if (portErr) {
@@ -91,6 +113,28 @@ export async function POST(req: Request) {
       }
 
       console.log(`Portafolio pagado para estudiante ${studentId}`);
+
+      try {
+        const { data: studentForPort } = await supabase
+          .from("students")
+          .select("user_id")
+          .eq("id", studentId)
+          .single();
+        if (studentForPort) {
+          await supabase.from("invoices").insert({
+            pyme_id: null,
+            user_id: studentForPort.user_id,
+            invoice_number: IdTransaccion,
+            plan: "PORTFOLIO_ACTIVATION",
+            plan_name: "Descarga de Portafolio Dexpert",
+            amount: PORTFOLIO_AMOUNT,
+            transaction_id: IdTransaccion,
+          });
+        }
+      } catch (invoiceErr) {
+        console.error("Error generando factura de portafolio (no crítico):", invoiceErr);
+      }
+
       return NextResponse.json({ success: true });
     }
 
@@ -114,6 +158,28 @@ export async function POST(req: Request) {
       }
 
       console.log(`Boost activado para estudiante ${studentId} hasta ${boostUntil}`);
+
+      try {
+        const { data: studentForBoost } = await supabase
+          .from("students")
+          .select("user_id")
+          .eq("id", studentId)
+          .single();
+        if (studentForBoost) {
+          await supabase.from("invoices").insert({
+            pyme_id: null,
+            user_id: studentForBoost.user_id,
+            invoice_number: IdTransaccion,
+            plan: "STUDENT_BOOST",
+            plan_name: "Dexpert Student Boost - 30 días",
+            amount: BOOST_AMOUNT,
+            transaction_id: IdTransaccion,
+          });
+        }
+      } catch (invoiceErr) {
+        console.error("Error generando factura de boost (no crítico):", invoiceErr);
+      }
+
       return NextResponse.json({ success: true });
     }
 
@@ -156,6 +222,28 @@ export async function POST(req: Request) {
       }
 
       console.log(`Talento desbloqueado para PYME ${pymeId}`);
+
+      // Create invoice for talent
+      try {
+        const year = new Date().getFullYear();
+        const { data: seqData } = await supabase.rpc("next_invoice_number", { p_year: year });
+        const seq = seqData || 1;
+        const invoiceNumber = `FACT-${year}-${String(seq).padStart(6, "0")}`;
+
+        await supabase.from("invoices").insert({
+          pyme_id: pymeId,
+          user_id: pyme.user_id,
+          invoice_number: invoiceNumber,
+          plan: "TALENT_ACCESS",
+          plan_name: "Acceso a Talento",
+          amount: 7.99,
+          transaction_id: IdTransaccion,
+          company_name: pyme.company_name || null,
+        });
+      } catch (invoiceErr) {
+        console.error("Error generando factura de talent (no crítico):", invoiceErr);
+      }
+
       return NextResponse.json({ success: true });
     }
 

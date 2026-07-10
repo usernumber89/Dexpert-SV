@@ -1,7 +1,7 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
-const PUBLIC_ROUTES = ['/sign-in', '/sign-up', '/forgot-password', '/reset-password', '/terminos', '/privacidad', '/verify']
+const PUBLIC_ROUTES = ['/', '/sign-in', '/sign-up', '/forgot-password', '/reset-password', '/terminos', '/privacidad', '/verify']
 const AUTH_ROUTES = ['/sign-in', '/sign-up']
 
 const OLD_ADMIN_ROUTES: Record<string, string> = {
@@ -21,7 +21,7 @@ function setCachedRole(response: NextResponse, role: string): void {
     httpOnly: true,
     secure: true,
     sameSite: 'lax',
-    maxAge: 300, // 5 min cache
+    maxAge: 300,
     path: '/',
   })
 }

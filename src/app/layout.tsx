@@ -1,12 +1,11 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import { Toaster } from "sonner";
 import "./globals.css";
 import {AuthProvider} from "@/providers/AuthProvider";
 import { outfit } from "@/lib/fonts";
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import { OfflineDetector } from "@/components/shared/OfflineDetector";
-
-const inter = Inter({ subsets: ["latin"] });
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://dexpert.app";
 
@@ -66,7 +65,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="es">
       <body className={outfit.className}>
 
-       <AuthProvider>{children}</AuthProvider> 
+       <AuthProvider>{children}</AuthProvider>
+        <Analytics />
+        <SpeedInsights />
         <OfflineDetector />
         <Toaster position="top-right" richColors />
       </body>

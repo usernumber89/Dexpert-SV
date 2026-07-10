@@ -639,7 +639,7 @@ Asegurar que todos los pagos procesados a través de Wompi sean correctamente re
      - Actualizar `pyme_credits` si aplica.
      - Actualizar `students.profile_boost_until` si aplica.
      - Actualizar `certificates.paid` si aplica.
-     - Actualizar `students.portfolio_paid` si aplica.
+     - Actualizar `students.portfolio_pdf_paid` si aplica.
      - Generar factura en `invoices`.
    - Registrar en el log que fue procesado manualmente.
 

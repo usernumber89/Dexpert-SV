@@ -23,7 +23,7 @@ export default function SignInPage() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [selectedRole, setSelectedRole] = useState<'ESTUDIANTE' | 'PYME' | null>(null);
+  const [selectedRole, setSelectedRole] = useState<'STUDENT' | 'PYME' | null>(null);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -105,9 +105,9 @@ export default function SignInPage() {
           <div className="flex gap-2 p-1 bg-[#F0F7FF] rounded-xl mb-6">
             <button
               type="button"
-              onClick={() => setSelectedRole('ESTUDIANTE')}
+              onClick={() => setSelectedRole('STUDENT')}
               className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-all ${
-                selectedRole === 'ESTUDIANTE'
+                selectedRole === 'STUDENT'
                   ? 'bg-white text-[#0D3A6E] shadow-sm'
                   : 'text-[#5B8DB8] hover:text-[#0D3A6E]'
               }`}

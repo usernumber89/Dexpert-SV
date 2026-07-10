@@ -11,9 +11,17 @@ export default async function StudentDashboardPage() {
     .from("students")
     .select("*")
     .eq("user_id", user.id)
-    .single();
+    .maybeSingle();
 
-  if (!student) redirect("/onboarding/student");
+  if (!student) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .maybeSingle();
+    if (profile?.role === 'PYME') redirect("/onboarding/pyme");
+    redirect("/onboarding/student");
+  }
 
   const [{ data: allApplications }, { data: projects }] = await Promise.all([
     supabase

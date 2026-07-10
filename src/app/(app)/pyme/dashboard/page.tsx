@@ -15,7 +15,15 @@ export default async function PymeDashboardPage() {
     .eq("user_id", user.id)
     .maybeSingle();
 
-  if (!pyme) redirect("/onboarding/pyme");
+  if (!pyme) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .maybeSingle();
+    if (profile?.role === 'STUDENT') redirect("/onboarding/student");
+    redirect("/onboarding/pyme");
+  }
 
   const [{ data: projects }, { data: credits }] = await Promise.all([
     supabase

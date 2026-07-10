@@ -152,7 +152,7 @@ export async function fetchTransactions(dateRange?: DateRange): Promise<{
   const supabase = createClient();
   const { data, error } = await supabase
     .from('invoices')
-    .select('*, pymes!inner(company_name)')
+    .select('*, pymes!left(company_name)')
     .order('created_at', { ascending: false })
     .limit(100);
 

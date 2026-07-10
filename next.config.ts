@@ -4,11 +4,11 @@ import withBundleAnalyzer from "@next/bundle-analyzer";
 
 const csp = [
   `default-src 'self'`,
-  `script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.wompi.sv https://*.supabase.co`,
+  `script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.wompi.sv https://*.supabase.co https://va.vercel-scripts.com`,
   `style-src 'self' 'unsafe-inline'`,
   `img-src 'self' data: blob: https://*.supabase.co https://img.cler.k.com`,
   `font-src 'self' data:`,
-  `connect-src 'self' https://*.supabase.co wss://*.supabase.co https://id.wompi.sv https://api.wompi.sv https://*.groq.com https://*.neon.tech`,
+  `connect-src 'self' https://*.supabase.co wss://*.supabase.co https://id.wompi.sv https://api.wompi.sv https://*.groq.com https://*.neon.tech https://va.vercel-scripts.com`,
   `frame-src 'self' https://*.wompi.sv`,
   `base-uri 'self'`,
   `form-action 'self'`,
