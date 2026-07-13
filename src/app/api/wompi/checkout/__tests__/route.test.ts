@@ -13,7 +13,7 @@ vi.mock("@/lib/supabase/server", () => ({
 }));
 
 vi.mock("@/lib/supabase/admin", () => ({
-  supabaseAdmin: { from: mockFrom },
+  getSupabaseAdmin: () => ({ from: mockFrom }),
 }));
 
 vi.mock("@/lib/wompi", () => ({

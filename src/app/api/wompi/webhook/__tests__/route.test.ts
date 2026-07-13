@@ -10,7 +10,7 @@ const mockSupabaseAdmin = {
 };
 
 vi.mock("@/lib/supabase/admin", () => ({
-  supabaseAdmin: mockSupabaseAdmin,
+  getSupabaseAdmin: () => mockSupabaseAdmin,
 }));
 
 // ── Helper: firma válida ──────────────────────────────────────────
