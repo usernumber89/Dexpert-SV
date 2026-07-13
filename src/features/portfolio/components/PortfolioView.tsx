@@ -7,10 +7,11 @@ import {
   Award, Clock, Star,
   BookOpen, Code2, Palette, Megaphone, Building2, Compass, Wrench,
   FileText, Calendar, Building, ChevronRight,
-  Briefcase, Lock, Zap, Sparkles, Share2,
+  Briefcase, Lock, Zap, Sparkles, Share2, ExternalLink, Edit3, Mail, Settings,
 } from "lucide-react";
 import { getCertificates, CertificateEntry } from "@/app/actions/simulation";
 import { CertificateActions } from "./CertificateActions";
+import { MessagesInbox } from "./MessagesInbox";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 
@@ -32,6 +33,8 @@ export function PortfolioView() {
   const [portfolioPaid, setPortfolioPaid] = useState(false);
   const [studentId, setStudentId] = useState<string | null>(null);
   const [payLoading, setPayLoading] = useState(false);
+  const [showMessages, setShowMessages] = useState(false);
+  const [unreadMessages, setUnreadMessages] = useState(0);
 
   const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null);
   if (!supabaseRef.current) supabaseRef.current = createClient();
@@ -85,6 +88,15 @@ export function PortfolioView() {
         hours_invested: 0,
         _isActive: true,
       })));
+      if (payData?.portfolio_pdf_paid) {
+        const { data: msgData } = await supabase
+          .from("portfolio_messages")
+          .select("id, read")
+          .eq("student_id", student.id)
+          .eq("read", false);
+        if (msgData) setUnreadMessages(msgData.length);
+      }
+
       setCertificates(certsData);
     } catch (err) {
       console.error("Error fetching portfolio data:", err);
@@ -101,8 +113,9 @@ export function PortfolioView() {
     if (typeof window !== "undefined" && window.location.search.includes("portfolio_success=true")) {
       toast.success("¡Portafolio activado! Ahora puedes compartirlo con empresas");
       window.history.replaceState({}, "", "/student/portfolio");
+      fetchData();
     }
-  }, []);
+  }, [fetchData]);
 
   useEffect(() => {
     const supabase = supabaseRef.current!;
@@ -162,9 +175,6 @@ export function PortfolioView() {
   const totalHours = entries.reduce((sum, e) => sum + (e.hours_invested || 0), 0);
   const totalProjects = entries.length + activeProjects.length;
   const totalCertificates = certificates.length;
-  const avgScore = entries.length > 0
-    ? Math.round(entries.reduce((sum, e) => sum + (e.score || 0), 0) / entries.length)
-    : 0;
 
   if (loading) {
     return (
@@ -212,12 +222,11 @@ export function PortfolioView() {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+        <div className="grid grid-cols-3 gap-3 sm:gap-4">
           {[
             { label: "Proyectos", value: totalProjects, icon: BookOpen, color: "#38A3F1", bg: "#F0F7FF" },
             { label: "Horas invertidas", value: totalHours, icon: Clock, color: "#F59E0B", bg: "#FFFBEB" },
             { label: "Certificados", value: totalCertificates, icon: Award, color: "#1D9E75", bg: "#E1F5EE" },
-            { label: "Puntaje promedio", value: `${avgScore}%`, icon: Star, color: "#8B5CF6", bg: "#F5F3FF" },
           ].map((stat) => (
             <div key={stat.label} className="bg-white rounded-xl sm:rounded-2xl border border-[#E8F3FD] p-3 sm:p-5 shadow-sm">
               <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
@@ -243,17 +252,27 @@ export function PortfolioView() {
                 <p className="text-xs text-[#5B8DB8]">Comparte tu portafolio con empresas directamente</p>
               </div>
             </div>
-            <button
-              onClick={() => {
-                const url = `${window.location.origin}/student/portfolio`;
-                navigator.clipboard.writeText(url);
-                toast.success("Enlace copiado al portapapeles");
-              }}
-              className="flex items-center gap-2 bg-white text-[#0D3A6E] text-sm font-semibold px-5 py-2.5 rounded-xl border border-[#BAD8F7] hover:bg-[#F0F7FF] transition-colors"
-            >
-              <Share2 className="w-4 h-4" />
-              Copiar enlace
-            </button>
+            <div className="flex items-center gap-2">
+              <Link
+                href={`/portfolio/${studentId}`}
+                target="_blank"
+                className="flex items-center gap-2 bg-[#38A3F1] text-white text-sm font-semibold px-5 py-2.5 rounded-xl hover:bg-[#0D5FA6] transition-colors"
+              >
+                <ExternalLink className="w-4 h-4" />
+                Ver página pública
+              </Link>
+              <button
+                onClick={() => {
+                  const url = `${window.location.origin}/portfolio/${studentId}`;
+                  navigator.clipboard.writeText(url);
+                  toast.success("Enlace copiado al portapapeles");
+                }}
+                className="flex items-center gap-2 bg-white text-[#0D3A6E] text-sm font-semibold px-5 py-2.5 rounded-xl border border-[#BAD8F7] hover:bg-[#F0F7FF] transition-colors"
+              >
+                <Share2 className="w-4 h-4" />
+                Copiar enlace
+              </button>
+            </div>
           </div>
         ) : (
           <div className="bg-gradient-to-r from-[#F0F7FF] to-[#E8F3FD] rounded-2xl border border-[#BAD8F7] p-5 flex items-center justify-between">
@@ -313,7 +332,35 @@ export function PortfolioView() {
               {f.label}
             </button>
           ))}
+          <Link
+            href="/student/portfolio/edit"
+            className="text-xs font-semibold px-3 py-1.5 rounded-full border transition-all flex items-center gap-1.5 bg-white text-[#5B8DB8] border-[#E8F3FD] hover:border-[#38A3F1]"
+          >
+            <Settings className="w-3.5 h-3.5" />
+            Personalizar
+          </Link>
+          {portfolioPaid && (
+            <button
+              onClick={() => setShowMessages(true)}
+              className="text-xs font-semibold px-3 py-1.5 rounded-full border transition-all flex items-center gap-1.5 bg-white text-[#5B8DB8] border-[#E8F3FD] hover:border-[#38A3F1] relative"
+            >
+              <Mail className="w-3.5 h-3.5" />
+              Mensajes
+              {unreadMessages > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 w-4.5 h-4.5 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center shadow">
+                  {unreadMessages}
+                </span>
+              )}
+            </button>
+          )}
         </div>
+
+        {showMessages && studentId && (
+          <MessagesInbox
+            studentId={studentId}
+            onClose={() => { setShowMessages(false); fetchData(); }}
+          />
+        )}
 
         {showCertificates ? (
           certificates.length === 0 ? (
@@ -386,7 +433,7 @@ function Section({ title, icon: Icon, entries, emptyMessage }: {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {entries.map((entry, i) => {
-            const AreaIcon = AREA_ICONS[entry.skills_demonstrated?.[0]] || Briefcase  ;
+            const AreaIcon = AREA_ICONS[entry.skills_demonstrated?.[0]] || Briefcase;
             const isActive = entry._isActive;
             return (
               <motion.div
@@ -394,7 +441,7 @@ function Section({ title, icon: Icon, entries, emptyMessage }: {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.05 }}
-                className="bg-white rounded-2xl border border-[#E8F3FD] overflow-hidden hover:shadow-xl hover:border-[#38A3F1]/30 transition-all duration-300"
+                className="group bg-white rounded-2xl border border-[#E8F3FD] overflow-hidden hover:shadow-xl hover:border-[#38A3F1]/30 transition-all duration-300"
               >
                 <div className="p-5 space-y-3">
                   <div className="flex items-start justify-between gap-2">
@@ -411,38 +458,52 @@ function Section({ title, icon: Icon, entries, emptyMessage }: {
                         {isActive ? "En curso" : entry.source_type === "simulation" ? "Simulación" : "Proyecto real"}
                       </span>
                     </div>
-                    {entry.score && (
-                      <span className="text-xs font-bold"
-                        style={{
-                          color: entry.score >= 70 ? "#1D9E75" : entry.score >= 40 ? "#D97706" : "#EF4444",
-                        }}
-                      >
-                        {entry.score}/100
-                      </span>
-                    )}
                   </div>
 
                   <h3 className="text-sm font-bold text-[#0D3A6E] line-clamp-2">{entry.title}</h3>
-                  <p className="text-xs text-[#5B8DB8] line-clamp-2 leading-relaxed">{entry.description}</p>
 
-                  {!isActive && entry.skills_demonstrated?.length > 0 && (
+                  {/* Metrics */}
+                  <div className="grid grid-cols-2 gap-2">
+                    {(entry.tools_used as string[])?.length > 0 && (
+                      <div className="bg-[#F8FBFE] rounded-lg p-2 text-center border border-[#E3EEF7]">
+                        <p className="font-mono text-sm font-bold text-[#0D5FA6]">{(entry.tools_used as string[]).length}</p>
+                        <p className="text-[8px] font-mono uppercase tracking-wider text-[#93B8D4]">Tools</p>
+                      </div>
+                    )}
+                    {entry.completed_at && (
+                      <div className="bg-[#F8FBFE] rounded-lg p-2 text-center border border-[#E3EEF7]">
+                        <p className="font-mono text-[10px] font-bold text-[#0D3A6E]">{new Date(entry.completed_at).toLocaleDateString("es-SV", { month: "short", year: "2-digit" })}</p>
+                        <p className="text-[8px] font-mono uppercase tracking-wider text-[#93B8D4]">Fecha</p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Custom description (optional) */}
+                  {entry.custom_description && (
+                    <p className="text-xs text-[#5B8DB8] leading-relaxed italic border-l-2 border-[#BAD8F7] pl-3">{entry.custom_description}</p>
+                  )}
+
+                  {/* Tools */}
+                  {(entry.tools_used as string[])?.length > 0 && (
                     <div className="flex flex-wrap gap-1">
-                      {entry.skills_demonstrated.slice(0, 4).map((skill: string, j: number) => (
+                      {(entry.tools_used as string[]).slice(0, 4).map((tool: string, j: number) => (
+                        <span key={j} className="text-[10px] bg-[#E8F3FD] text-[#0D5FA6] px-2 py-0.5 rounded-full font-medium">
+                          {tool}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Skills fallback (only if no custom description and no tools) */}
+                  {!entry.custom_description && !(entry.tools_used as string[])?.length && (entry.skills_demonstrated as string[])?.length > 0 && (
+                    <div className="flex flex-wrap gap-1">
+                      {(entry.skills_demonstrated as string[]).slice(0, 4).map((skill: string, j: number) => (
                         <span key={j} className="text-[10px] bg-[#F0F7FF] text-[#0D5FA6] px-2 py-0.5 rounded-full font-medium">
                           {skill}
                         </span>
                       ))}
                     </div>
                   )}
-
-                  <div className="flex items-center gap-3 text-[10px] text-[#93B8D4] pt-1">
-                    {entry.completed_at && (
-                      <span className="flex items-center gap-1">
-                        <Calendar className="w-3 h-3" />
-                        {new Date(entry.completed_at).toLocaleDateString("es-SV")}
-                      </span>
-                    )}
-                  </div>
                 </div>
               </motion.div>
             );

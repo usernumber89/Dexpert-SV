@@ -1,7 +1,7 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
-const PUBLIC_ROUTES = ['/', '/sign-in', '/sign-up', '/forgot-password', '/reset-password', '/terminos', '/privacidad', '/verify']
+const PUBLIC_ROUTES = ['/sign-in', '/sign-up', '/forgot-password', '/reset-password', '/terminos', '/privacidad', '/verify']
 const AUTH_ROUTES = ['/sign-in', '/sign-up']
 
 const OLD_ADMIN_ROUTES: Record<string, string> = {
@@ -12,8 +12,13 @@ const OLD_ADMIN_ROUTES: Record<string, string> = {
   '/admin/administracion/alertas': '/admin/alertas',
 }
 
+function normalizeRole(role: string | null): string | null {
+  if (role === 'student') return 'STUDENT'
+  return role
+}
+
 function getCachedRole(request: NextRequest): string | null {
-  return request.cookies.get('role')?.value ?? null
+  return normalizeRole(request.cookies.get('role')?.value ?? null)
 }
 
 function setCachedRole(response: NextResponse, role: string): void {
@@ -21,7 +26,7 @@ function setCachedRole(response: NextResponse, role: string): void {
     httpOnly: true,
     secure: true,
     sameSite: 'lax',
-    maxAge: 300,
+    maxAge: 300, // 5 min cache
     path: '/',
   })
 }
@@ -55,20 +60,16 @@ export async function proxy(request: NextRequest) {
   )
 
   const { data: { user } } = await supabase.auth.getUser()
-  const isHomePage = pathname === '/'
-
   const isPublicRoute = PUBLIC_ROUTES.some(r => pathname.startsWith(r)) ||
-                        pathname.startsWith('/api/wompi/webhook') ||
                         pathname.startsWith('/onboarding')
 
   const isApiRoute = pathname.startsWith('/api')
-  const isServerAction = request.method === 'POST'
 
-  if (isHomePage || isPublicRoute || isApiRoute || isServerAction) {
+  if (isPublicRoute || isApiRoute) {
     if (user && AUTH_ROUTES.some(r => pathname.startsWith(r))) {
       let role = getCachedRole(request)
       if (!role) {
-        const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+        const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).maybeSingle()
         role = profile?.role ?? null
       }
       if (role) {
@@ -92,8 +93,8 @@ export async function proxy(request: NextRequest) {
       .from('profiles')
       .select('role')
       .eq('id', user.id)
-      .single()
-    role = profile?.role ?? null
+      .maybeSingle()
+    role = normalizeRole(profile?.role ?? null)
     if (role) setCachedRole(supabaseResponse, role)
   }
 
@@ -104,17 +105,23 @@ export async function proxy(request: NextRequest) {
   }
 
   if (pathname.startsWith('/admin') && role !== 'ADMIN') {
-    url.pathname = role === 'STUDENT' ? '/student/dashboard' : '/pyme/dashboard'
+    if (role === 'STUDENT') url.pathname = '/student/dashboard'
+    else if (role === 'PYME') url.pathname = '/pyme/dashboard'
+    else url.pathname = '/onboarding/select-role'
     return NextResponse.redirect(url)
   }
 
   if (pathname.startsWith('/student') && role !== 'STUDENT') {
-    url.pathname = role === 'ADMIN' ? '/admin' : '/pyme/dashboard'
+    if (role === 'ADMIN') url.pathname = '/admin'
+    else if (role === 'PYME') url.pathname = '/pyme/dashboard'
+    else url.pathname = '/onboarding/select-role'
     return NextResponse.redirect(url)
   }
 
   if (pathname.startsWith('/pyme') && role !== 'PYME') {
-    url.pathname = role === 'ADMIN' ? '/admin' : '/student/dashboard'
+    if (role === 'ADMIN') url.pathname = '/admin'
+    else if (role === 'STUDENT') url.pathname = '/student/dashboard'
+    else url.pathname = '/onboarding/select-role'
     return NextResponse.redirect(url)
   }
 

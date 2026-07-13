@@ -38,11 +38,81 @@
     color: var(--text-primary);
     font-family: 'Inter', system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
-    
-
   }
-  
-  
 
-  
+}
+
+/* ─── Print styles for portfolio PDF ─── */
+@media print {
+  @page {
+    margin: 15mm 12mm;
+    size: A4;
+  }
+
+  body.printing-portfolio {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    background: #F8FAFC !important;
+  }
+
+  body.printing-portfolio * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Hide interactive elements */
+  body.printing-portfolio button,
+  body.printing-portfolio .no-print,
+  body.printing-portfolio footer a {
+    display: none !important;
+  }
+
+  /* Preserve card backgrounds and shadows */
+  body.printing-portfolio .bg-white\/80 {
+    background: white !important;
+    box-shadow: none !important;
+    border: 1px solid #E8F3FD !important;
+    break-inside: avoid;
+  }
+
+  body.printing-portfolio .backdrop-blur-xl {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  body.printing-portfolio section {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  /* Hero section should span full width */
+  body.printing-portfolio section:first-child {
+    padding-bottom: 2rem !important;
+  }
+
+  body.printing-portfolio .grid {
+    break-inside: avoid;
+  }
+
+  /* Ensure all text is visible */
+  body.printing-portfolio .text-white {
+    color: #0D3A6E !important;
+  }
+  body.printing-portfolio .text-white\/80 {
+    color: #5B8DB8 !important;
+  }
+  body.printing-portfolio .text-white\/60 {
+    color: #93B8D4 !important;
+  }
+
+  /* Make hero bg solid for print */
+  body.printing-portfolio .bg-gradient-to-br {
+    background: #0D3A6E !important;
+    -webkit-print-color-adjust: exact !important;
+  }
+
+  /* Stats section adjustments */
+  body.printing-portfolio .relative.-mt-24 {
+    margin-top: 1rem !important;
+  }
 }
