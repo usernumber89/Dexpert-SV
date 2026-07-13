@@ -2,10 +2,12 @@ import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdmin } from "@supabase/supabase-js";
 import { moderateContent } from "@/lib/admin/profanity";
 
-const supabaseAdmin = createAdmin(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+function getSupabaseAdmin() {
+  return createAdmin(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+}
 
 export async function POST(req: Request) {
   const supabase = await createClient();
@@ -59,7 +61,7 @@ export async function POST(req: Request) {
   if (error) return Response.json({ error: error.message }, { status: 500 });
 
   // Descontar el crédito
-  await supabaseAdmin
+  await getSupabaseAdmin()
     .from("pyme_credits")
     .update({
       credits_available: credits.credits_available - 1,
