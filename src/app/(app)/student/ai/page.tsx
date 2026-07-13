@@ -1,9 +1,10 @@
 import { SimulatorChat } from '@/components/SimulatorChat';
-import { createClient } from '@/lib/supabase/client';
+import { createClient } from '@/lib/supabase/server';
 
+export const dynamic = 'force-dynamic';
 
 export default async function SimulatorPage() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
   // Si quieres guardar la sesión en Supabase (opcional)
