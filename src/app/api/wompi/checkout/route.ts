@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { supabaseAdmin } from "@/lib/supabase/admin";
+import { getSupabaseAdmin } from "@/lib/supabase/admin";
 import { getWompiToken } from "@/lib/wompi";
 import { checkRateLimit, getRateLimitKey, rateLimitResponse } from "@/lib/rate-limit";
 import { PLANS } from "@/lib/plans";
@@ -30,7 +30,7 @@ export async function POST(req: Request) {
     if (!pyme) return NextResponse.json({ error: "Pyme not found" }, { status: 404 });
 
     if (plan === "talent") {
-      const { data: existing } = await supabaseAdmin
+      const { data: existing } = await getSupabaseAdmin()
         .from("purchases")
         .select("plan")
         .eq("user_id", user.id)

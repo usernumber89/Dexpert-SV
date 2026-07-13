@@ -1,4 +1,4 @@
-import { supabaseAdmin } from "@/lib/supabase/admin";
+import { getSupabaseAdmin } from "@/lib/supabase/admin";
 import { ExportError, ERROR } from "./errors";
 import type { PortfolioData } from "./types";
 
@@ -15,15 +15,16 @@ function parseSkills(raw: unknown): string[] {
 }
 
 export async function fetchPortfolioData(studentId: string): Promise<PortfolioData> {
+  const admin = getSupabaseAdmin();
   const [studentRes, entriesRes, appsRes] = await Promise.all([
-    supabaseAdmin.from("students").select("*").eq("id", studentId).single(),
-    supabaseAdmin
+    admin.from("students").select("*").eq("id", studentId).single(),
+    admin
       .from("portfolio_entries")
       .select("*")
       .eq("student_id", studentId)
       .order("sort_order", { ascending: true })
       .order("completed_at", { ascending: false }),
-    supabaseAdmin
+    admin
       .from("applications")
       .select("id, project:projects(title, pyme:pymes(company_name))")
       .eq("student_id", studentId)
@@ -39,7 +40,7 @@ export async function fetchPortfolioData(studentId: string): Promise<PortfolioDa
 
   let certificates: unknown[] = [];
   if (appIds.length > 0) {
-    const { data: certs } = await supabaseAdmin
+    const { data: certs } = await admin
       .from("certificates")
       .select("*, applications!inner(project:projects(title, pyme:pymes(company_name)))")
       .in("application_id", appIds);
@@ -47,8 +48,8 @@ export async function fetchPortfolioData(studentId: string): Promise<PortfolioDa
   }
 
   const [eduRes, expRes] = await Promise.all([
-    supabaseAdmin.from("portfolio_education").select("*").eq("student_id", studentId).order("sort_order"),
-    supabaseAdmin.from("portfolio_experience").select("*").eq("student_id", studentId).order("sort_order"),
+    admin.from("portfolio_education").select("*").eq("student_id", studentId).order("sort_order"),
+    admin.from("portfolio_experience").select("*").eq("student_id", studentId).order("sort_order"),
   ]);
 
   return {

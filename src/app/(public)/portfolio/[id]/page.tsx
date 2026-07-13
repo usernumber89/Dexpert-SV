@@ -1,4 +1,4 @@
-import { supabaseAdmin } from "@/lib/supabase/admin";
+import { getSupabaseAdmin } from "@/lib/supabase/admin";
 import { notFound } from "next/navigation";
 import { EpicPortfolio } from "@/features/portfolio/components/EpicPortfolio";
 import type { Metadata } from "next";
@@ -22,7 +22,7 @@ function parseSkills(skills: unknown): string[] {
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params;
-  const { data: student } = await supabaseAdmin
+  const { data: student } = await getSupabaseAdmin()
     .from("students")
     .select("full_name, portfolio_pdf_paid")
     .eq("id", id)
@@ -45,7 +45,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 export default async function PublicPortfolioPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
 
-  const { data: student } = await supabaseAdmin
+  const { data: student } = await getSupabaseAdmin()
     .from("students")
     .select("*")
     .eq("id", id)
@@ -71,19 +71,19 @@ export default async function PublicPortfolioPage({ params }: { params: Promise<
   const skills = parseSkills(student.skills);
 
   const [entriesResult, activeResult, allAppsResult] = await Promise.all([
-    supabaseAdmin
+    getSupabaseAdmin()
       .from("portfolio_entries")
       .select("*")
       .eq("student_id", id)
       .order("sort_order", { ascending: true })
       .order("completed_at", { ascending: false }),
-    supabaseAdmin
+    getSupabaseAdmin()
       .from("applications")
       .select("id, status, created_at, project:projects(title, description, pyme:pymes(company_name))")
       .eq("student_id", id)
       .eq("status", "ACCEPTED")
       .order("created_at", { ascending: false }),
-    supabaseAdmin
+    getSupabaseAdmin()
       .from("applications")
       .select("id")
       .eq("student_id", id),
@@ -102,7 +102,7 @@ export default async function PublicPortfolioPage({ params }: { params: Promise<
   const appIds = (allAppsResult.data || []).map((a: any) => a.id);
   let certificates: any[] = [];
   if (appIds.length > 0) {
-    const { data: certs } = await supabaseAdmin
+    const { data: certs } = await getSupabaseAdmin()
       .from("certificates")
       .select("*, applications!inner(project:projects(title, pyme:pymes(company_name)))")
       .in("application_id", appIds);
@@ -116,13 +116,13 @@ export default async function PublicPortfolioPage({ params }: { params: Promise<
   const themeGrad = THEMES[student.portfolio_theme] || THEMES.blue;
 
   // Increment view counter (fire and forget)
-  supabaseAdmin.from("students").update({ portfolio_views: student.portfolio_views + 1 }).eq("id", id).match(() => {});
+  getSupabaseAdmin().from("students").update({ portfolio_views: student.portfolio_views + 1 }).eq("id", id).match(() => {});
 
   // Fetch premium sections
   const [eduRes, expRes, linksRes] = await Promise.all([
-    supabaseAdmin.from("portfolio_education").select("*").eq("student_id", id).order("sort_order"),
-    supabaseAdmin.from("portfolio_experience").select("*").eq("student_id", id).order("sort_order"),
-    supabaseAdmin.from("portfolio_links").select("*").eq("student_id", id).order("sort_order"),
+    getSupabaseAdmin().from("portfolio_education").select("*").eq("student_id", id).order("sort_order"),
+    getSupabaseAdmin().from("portfolio_experience").select("*").eq("student_id", id).order("sort_order"),
+    getSupabaseAdmin().from("portfolio_links").select("*").eq("student_id", id).order("sort_order"),
   ]);
 
   return (

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { supabaseAdmin } from "@/lib/supabase/admin";
+import { getSupabaseAdmin } from "@/lib/supabase/admin";
 import { createHmac } from "crypto";
 import { PLAN_CREDITS, PLAN_AMOUNTS, PLAN_NAMES, CERTIFICATE_AMOUNT, PORTFOLIO_AMOUNT, BOOST_AMOUNT } from "@/lib/plans";
 
@@ -38,7 +38,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Identificador requerido" }, { status: 400 });
     }
 
-    const supabase = supabaseAdmin;
+    const supabase = getSupabaseAdmin();
 
     const [creditCheck, purchaseCheck] = await Promise.all([
       supabase.from("credit_purchases").select("id").eq("stripe_id", IdTransaccion).maybeSingle(),
