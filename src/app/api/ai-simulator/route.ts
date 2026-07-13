@@ -2,9 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import Groq from 'groq-sdk';
 import { sanitizePrompt } from "@/lib/prompt-sanitizer";
 
-const groq = new Groq({
-  apiKey: process.env.GROQ_API_KEY,
-});
+function getGroq() {
+  return new Groq({ apiKey: process.env.GROQ_API_KEY });
+}
 
 // Este es el prompt maestro que le da vida al personaje
 const getSystemPrompt = (scenarioId: string) => {
@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
     ];
 
     // Solicitamos la respuesta a Groq (usando el modelo recomendado para chat)
-    const completion = await groq.chat.completions.create({
+    const completion = await getGroq().chat.completions.create({
       messages: conversationHistory,
       model: "llama-3.3-70b-versatile", // Modelo potente y rápido
       temperature: 0.7,                 // Creatividad media

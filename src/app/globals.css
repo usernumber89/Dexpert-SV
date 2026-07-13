@@ -109,6 +109,7 @@
   body.printing-portfolio .bg-gradient-to-br {
     background: #0D3A6E !important;
     -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 
   /* Stats section adjustments */
