@@ -31,6 +31,15 @@ function setCachedRole(response: NextResponse, role: string): void {
   })
 }
 
+async function fetchRole(supabase: ReturnType<typeof createServerClient>, userId: string): Promise<string | null> {
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', userId)
+    .maybeSingle()
+  return normalizeRole(profile?.role ?? null)
+}
+
 export async function proxy(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request })
   const pathname = request.nextUrl.pathname
@@ -67,11 +76,7 @@ export async function proxy(request: NextRequest) {
 
   if (isPublicRoute || isApiRoute) {
     if (user && AUTH_ROUTES.some(r => pathname.startsWith(r))) {
-      let role = getCachedRole(request)
-      if (!role) {
-        const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).maybeSingle()
-        role = profile?.role ?? null
-      }
+      const role = await fetchRole(supabase, user.id)
       if (role) {
         setCachedRole(supabaseResponse, role)
         if (role === 'ADMIN') url.pathname = '/admin'
@@ -87,16 +92,8 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
-  let role = getCachedRole(request)
-  if (!role) {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .maybeSingle()
-    role = normalizeRole(profile?.role ?? null)
-    if (role) setCachedRole(supabaseResponse, role)
-  }
+  const role = await fetchRole(supabase, user.id)
+  if (role) setCachedRole(supabaseResponse, role)
 
   if (!role) {
     if (pathname.startsWith('/onboarding')) return supabaseResponse
