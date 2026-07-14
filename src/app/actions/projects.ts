@@ -85,6 +85,7 @@ export async function completeProject(projectId: string) {
         source_id: projectId,
         title: project?.title || "Proyecto real",
         description: project?.description || null,
+        results: project?.description || "Proyecto completado satisfactoriamente.",
         hours_invested: 0,
         score: 100,
         is_published: true,

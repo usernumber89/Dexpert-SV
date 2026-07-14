@@ -77,7 +77,7 @@ export async function POST(req: Request) {
           .eq("id", studentId)
           .single();
         if (studentForCert) {
-          await supabase.from("invoices").insert({
+          const { error: invErr } = await supabase.from("invoices").insert({
             pyme_id: null,
             user_id: studentForCert.user_id,
             invoice_number: IdTransaccion,
@@ -86,6 +86,7 @@ export async function POST(req: Request) {
             amount: CERTIFICATE_AMOUNT,
             transaction_id: IdTransaccion,
           });
+          if (invErr) console.error("Error insertando factura de certificado:", invErr);
         }
       } catch (invoiceErr) {
         console.error("Error generando factura de certificado (no crítico):", invoiceErr);
@@ -121,7 +122,7 @@ export async function POST(req: Request) {
           .eq("id", studentId)
           .single();
         if (studentForPort) {
-          await supabase.from("invoices").insert({
+          const { error: invErr } = await supabase.from("invoices").insert({
             pyme_id: null,
             user_id: studentForPort.user_id,
             invoice_number: IdTransaccion,
@@ -130,6 +131,7 @@ export async function POST(req: Request) {
             amount: PORTFOLIO_AMOUNT,
             transaction_id: IdTransaccion,
           });
+          if (invErr) console.error("Error insertando factura de portafolio:", invErr);
         }
       } catch (invoiceErr) {
         console.error("Error generando factura de portafolio (no crítico):", invoiceErr);
@@ -166,7 +168,7 @@ export async function POST(req: Request) {
           .eq("id", studentId)
           .single();
         if (studentForBoost) {
-          await supabase.from("invoices").insert({
+          const { error: invErr } = await supabase.from("invoices").insert({
             pyme_id: null,
             user_id: studentForBoost.user_id,
             invoice_number: IdTransaccion,
@@ -175,6 +177,7 @@ export async function POST(req: Request) {
             amount: BOOST_AMOUNT,
             transaction_id: IdTransaccion,
           });
+          if (invErr) console.error("Error insertando factura de boost:", invErr);
         }
       } catch (invoiceErr) {
         console.error("Error generando factura de boost (no crítico):", invoiceErr);
@@ -226,11 +229,16 @@ export async function POST(req: Request) {
       // Create invoice for talent
       try {
         const year = new Date().getFullYear();
-        const { data: seqData } = await supabase.rpc("next_invoice_number", { p_year: year });
-        const seq = seqData || 1;
-        const invoiceNumber = `FACT-${year}-${String(seq).padStart(6, "0")}`;
+        const { data: seqData, error: seqError } = await supabase.rpc("next_invoice_number", { p_year: year });
+        let invoiceNumber: string;
+        if (seqError || !seqData) {
+          console.error("Error en secuencia de factura (usando fallback):", seqError);
+          invoiceNumber = `FACT-${year}-${IdTransaccion}`;
+        } else {
+          invoiceNumber = `FACT-${year}-${String(seqData).padStart(6, "0")}`;
+        }
 
-        await supabase.from("invoices").insert({
+        const { error: invErr } = await supabase.from("invoices").insert({
           pyme_id: pymeId,
           user_id: pyme.user_id,
           invoice_number: invoiceNumber,
@@ -240,6 +248,12 @@ export async function POST(req: Request) {
           transaction_id: IdTransaccion,
           company_name: pyme.company_name || null,
         });
+
+        if (invErr) {
+          console.error("Error insertando factura de talent:", invErr);
+        } else {
+          console.log(`Factura generada: ${invoiceNumber} para PYME ${pymeId}`);
+        }
       } catch (invoiceErr) {
         console.error("Error generando factura de talent (no crítico):", invoiceErr);
       }
@@ -314,11 +328,16 @@ export async function POST(req: Request) {
 
     try {
       const year = new Date().getFullYear();
-      const { data: seqData } = await supabase.rpc("next_invoice_number", { p_year: year });
-      const seq = seqData || 1;
-      const invoiceNumber = `FACT-${year}-${String(seq).padStart(6, "0")}`;
+      const { data: seqData, error: seqError } = await supabase.rpc("next_invoice_number", { p_year: year });
+      let invoiceNumber: string;
+      if (seqError || !seqData) {
+        console.error("Error en secuencia de factura (usando fallback):", seqError);
+        invoiceNumber = `FACT-${year}-${IdTransaccion}`;
+      } else {
+        invoiceNumber = `FACT-${year}-${String(seqData).padStart(6, "0")}`;
+      }
 
-      await supabase.from("invoices").insert({
+      const { error: invErr } = await supabase.from("invoices").insert({
         pyme_id: pymeId,
         user_id: pyme.user_id,
         invoice_number: invoiceNumber,
@@ -329,7 +348,11 @@ export async function POST(req: Request) {
         company_name: pyme.company_name || null,
       });
 
-      console.log(`Factura generada: ${invoiceNumber} para PYME ${pymeId}`);
+      if (invErr) {
+        console.error("Error insertando factura:", invErr);
+      } else {
+        console.log(`Factura generada: ${invoiceNumber} para PYME ${pymeId}`);
+      }
     } catch (invoiceErr) {
       console.error("Error generando factura (no crítico):", invoiceErr);
     }
