@@ -170,7 +170,7 @@ function InvoiceDetailModal({
           </div>
 
           <div className="text-center text-[10px] text-[#93B8D4] pt-4 border-t border-[#BAD8F7]/50">
-            <p>Dexpert SV — Plataforma de talento estudiantil</p>
+            <p>Dexpert — Plataforma de talento estudiantil</p>
             <p>Factura generada automáticamente después de tu compra.</p>
           </div>
         </div>

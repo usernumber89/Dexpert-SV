@@ -329,7 +329,7 @@ export async function GET(request: NextRequest, { params }: RouteProps) {
         .fontSize(8.5)
         .font("Helvetica")
         .fillColor(borderBlue)
-        .text("Dexpert SV — Plataforma de talento estudiantil | San Salvador, El Salvador", ml, footY + 36, {
+        .text("Dexpert — Plataforma de talento estudiantil | San Salvador, El Salvador", ml, footY + 36, {
           width: cw,
           align: "center",
         });
