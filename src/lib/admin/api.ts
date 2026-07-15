@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/client';
+import { getSupabaseAdmin } from '@/lib/supabase/admin';
 import type {
   DashboardOverview,
   KpiMetric,
@@ -406,4 +407,19 @@ export async function writeAuditLog(params: {
     metadata: params.metadata || {},
     ip_address: params.ipAddress,
   });
+}
+
+export async function deleteUser(userId: string): Promise<void> {
+  const admin = getSupabaseAdmin();
+
+  // Try the SECURITY DEFINER DB function first (handles full cascade + auth.users)
+  const { error: rpcError } = await admin.rpc('delete_user_cascade', {
+    target_user_id: userId,
+  });
+  if (!rpcError) return;
+
+  // Fallback: delete auth user so they can't log in
+  // Run the SQL function from the Supabase SQL editor to fully clean up
+  const { error: authError } = await admin.auth.admin.deleteUser(userId);
+  if (authError) throw new Error(`Error deleting user: ${authError.message}`);
 }

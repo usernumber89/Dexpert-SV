@@ -3,7 +3,6 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useUserRole } from "@/hooks/useUserRole";
-import { TypeAnimation } from "react-type-animation";
 import { motion, Variants } from "framer-motion";
 import { ArrowRight, Play } from "lucide-react";
 
@@ -55,19 +54,8 @@ export function Hero() {
             >
               Construí tu futuro <br className="hidden sm:block" />
               profesional <br />
-              <span className="text-[#38A3F1] font-medium">
-                <TypeAnimation
-                  sequence={[
-                    "con proyectos reales.",
-                    2500,
-                    
-                    "sin experiencia previa",
-                    2500,
-                  ]}
-                  wrapper="span"
-                  speed={50}
-                  repeat={Infinity}
-                />
+              <span className="text-[#38A3F1]">
+                con proyectos reales.
               </span>
             </motion.h1>
 
@@ -76,9 +64,8 @@ export function Hero() {
               variants={fadeUpVariant}
               className="text-base md:text-lg text-slate-500 leading-relaxed max-w-lg font-light"
             >
-              Descubrí proyectos de empresas salvadoreñas, creá tu portafolio y
-              adquirí experiencia práctica. Somos el puente directo entre tu talento y
-              las oportunidades del mundo real.
+              Proyectos reales de empresas salvadoreñas, sin experiencia previa.
+              Creá tu portafolio mientras adquirís experiencia práctica.
             </motion.p>
 
             {/* Botones (CTAs) */}
@@ -129,6 +116,36 @@ export function Hero() {
             </div>
           </motion.div>
         </div>
+
+        {/* ── EMPRESAS QUE CONFÍAN ── */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.8, ease: "easeOut" }}
+          className="mt-16 text-center"
+        >
+          <p className="text-xs font-medium uppercase tracking-widest text-[#93B8D4] mb-6">
+            Empresas que confían en nosotros
+          </p>
+          <div className="flex flex-wrap justify-center items-center gap-x-10 gap-y-6">
+            {[
+              { name: "Granja \"Los Campos\"", logo: "/Empresas/Granja Los Campos.png" },
+            ].map(({ name, logo }) => (
+              <div key={name} className="group flex flex-col items-center gap-2">
+                <div className="w-16 h-16 rounded-full overflow-hidden shadow-md transition-transform duration-300 group-hover:scale-110 bg-white border border-[#E8F3FD] flex items-center justify-center p-2">
+                  <Image
+                    src={logo}
+                    alt={name}
+                    width={56}
+                    height={56}
+                    className="object-contain"
+                  />
+                </div>
+                <span className="text-[11px] font-medium text-[#5B8DB8]">{name}</span>
+              </div>
+            ))}
+          </div>
+        </motion.div>
       </div>
 
       <style jsx>{`

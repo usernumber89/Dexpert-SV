@@ -5,6 +5,7 @@ import Image from "next/image";
 import { ChevronRight, CheckCircle, XCircle, MapPin, Calendar, Star, Clock } from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { calcMatch, isMatchedSkill } from "@/lib/matching";
 
 type Project = {
   id: string;
@@ -30,14 +31,6 @@ type Props = {
   applicationStatus: string | null;
   studentSkills: string[];
 };
-
-function calcMatch(projectSkills: string, studentSkills: string[]): number {
-  if (!studentSkills.length) return 0;
-  const required = projectSkills.split(",").map(s => s.trim().toLowerCase());
-  const student = studentSkills.map(s => s.toLowerCase());
-  const matches = required.filter(r => student.some(s => s.includes(r) || r.includes(s)));
-  return Math.round((matches.length / required.length) * 100);
-}
 
 function MatchBadge({ score }: { score: number }) {
   if (score === 0) return null;
@@ -87,16 +80,9 @@ export function ProjectCard({ project, applicationStatus, studentSkills }: Props
     [project.created_at]
   );
 
-  const studentSkillsLower = useMemo(
-    () => studentSkills.map(s => s.toLowerCase()),
+  const matchedSkill = useMemo(
+    () => (skill: string) => isMatchedSkill(skill, studentSkills),
     [studentSkills]
-  );
-  const isMatchedSkill = useMemo(
-    () => (skill: string) =>
-      studentSkillsLower.some(
-        s => s.includes(skill.toLowerCase()) || skill.toLowerCase().includes(s)
-      ),
-    [studentSkillsLower]
   );
 
   const appStatusLabel: Record<string, { label: string; icon: typeof CheckCircle; color: string; bg: string; border: string }> = {
@@ -193,7 +179,7 @@ export function ProjectCard({ project, applicationStatus, studentSkills }: Props
         {skillsList.length > 0 && (
           <div className="flex flex-wrap gap-1.5">
             {skillsList.slice(0, 4).map((skill, i) => {
-              const matched = isMatchedSkill(skill.trim());
+              const matched = matchedSkill(skill.trim());
               return (
                 <span
                   key={i}

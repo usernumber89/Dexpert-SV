@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { Search, Filter, X, TrendingUp } from "lucide-react";
+import { calcMatch } from "@/lib/matching";
 import { ProjectCard } from "./ProjectCard";
 
 type Project = {
@@ -34,15 +35,6 @@ type Props = {
 const CATEGORIES = ["All", "Web development", "Marketing", "Design", "Data", "Other"];
 const LEVELS = ["All", "Beginner", "Intermediate", "Advanced"];
 
-// Calcular compatibilidad basada en habilidades
-function calculateMatch(projectSkills: string, studentSkills: string[]): number {
-  if (!projectSkills.trim() || studentSkills.length === 0) return 0;
-  const required = projectSkills.split(",").map(s => s.trim().toLowerCase());
-  const studentLower = studentSkills.map(s => s.toLowerCase());
-  const matching = required.filter(skill => studentLower.includes(skill));
-  return Math.round((matching.length / required.length) * 100);
-}
-
 export function StudentProjects({ projects, appliedProjectIds, studentSkills, pymeFilter, pymeName }: Props) {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
@@ -53,7 +45,7 @@ export function StudentProjects({ projects, appliedProjectIds, studentSkills, py
       .filter(p => p.status !== "closed")
       .map(p => ({
         ...p,
-        matchPercentage: calculateMatch(p.skills, studentSkills),
+        matchPercentage: calcMatch(p.skills, studentSkills),
       }))
       .filter(p => {
         const matchSearch =

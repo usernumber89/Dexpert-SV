@@ -33,6 +33,15 @@ DROP POLICY IF EXISTS "Admins can read all students" ON students;
 CREATE POLICY "Admins can read all students"
   ON students FOR SELECT
   USING (is_admin());
+DROP POLICY IF EXISTS "Students can insert own record" ON students;
+CREATE POLICY "Students can insert own record"
+  ON students FOR INSERT
+  WITH CHECK (user_id = auth.uid());
+DROP POLICY IF EXISTS "Students can update own record" ON students;
+CREATE POLICY "Students can update own record"
+  ON students FOR UPDATE
+  USING (user_id = auth.uid())
+  WITH CHECK (user_id = auth.uid());
 
 -- PYMES
 ALTER TABLE pymes ENABLE ROW LEVEL SECURITY;
@@ -40,6 +49,15 @@ DROP POLICY IF EXISTS "Admins can read all pymes" ON pymes;
 CREATE POLICY "Admins can read all pymes"
   ON pymes FOR SELECT
   USING (is_admin());
+DROP POLICY IF EXISTS "Pymes can insert own record" ON pymes;
+CREATE POLICY "Pymes can insert own record"
+  ON pymes FOR INSERT
+  WITH CHECK (user_id = auth.uid());
+DROP POLICY IF EXISTS "Pymes can update own record" ON pymes;
+CREATE POLICY "Pymes can update own record"
+  ON pymes FOR UPDATE
+  USING (user_id = auth.uid())
+  WITH CHECK (user_id = auth.uid());
 
 -- APPLICATIONS
 ALTER TABLE applications ENABLE ROW LEVEL SECURITY;

@@ -1,38 +1,17 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import {
   ArrowRight,
+  GraduationCap,
+  Building2,
   Rocket,
   Medal,
   Briefcase,
 } from "lucide-react";
-import { useAuthContext } from "@/providers/AuthProvider";
 
 export function CallToAction() {
-  const { user, isLoading: authLoading } = useAuthContext();
-  const [role, setRole] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    if (!user) {
-      setRole(null);
-      setIsLoading(false);
-      return;
-    }
-    const userRole = user.user_metadata?.role as string;
-    setRole(userRole || null);
-    setIsLoading(false);
-  }, [user]);
-
-  const href = !user
-    ? "/sign-up"
-    : role === "PYME"
-    ? "/pyme/dashboard"
-    : "/student/dashboard";
-
   return (
     <section className="py-24 px-6 bg-white">
       <div className="max-w-4xl mx-auto">
@@ -50,46 +29,50 @@ export function CallToAction() {
 
           {/* Descripción */}
           <p className="text-[#5B8DB8] text-lg mb-8 max-w-xl mx-auto leading-relaxed">
-            No importa si eres un joven talento buscando experiencia o una pequeña
-            empresa que necesita soluciones reales,{" "}
+            No importa si querés experiencia profesional o necesitás talento para tu negocio,{" "}
             <span className="font-semibold text-[#0D3A6E]">
               Dexpert es tu puente al crecimiento.
             </span>
           </p>
 
           {/* Píldoras de características */}
-          <div className="flex flex-wrap items-center justify-center gap-3 mb-8">
+          <div className="flex flex-wrap items-center justify-center gap-3 mb-10">
             <FeaturePill
               icon={<Rocket className="w-4 h-4" />}
-              text="No experiencia previa requerida"
+              text="Sin experiencia previa"
             />
             <FeaturePill
               icon={<Medal className="w-4 h-4" />}
-              text="100% Gratis para estudiantes"
+              text="100% gratis para estudiantes"
             />
             <FeaturePill
               icon={<Briefcase className="w-4 h-4" />}
-              text="Proyectos reales de empresas salvadoreñas"
+              text="Proyectos reales de empresas SV"
             />
           </div>
 
-          {/* Botón CTA */}
-          {!isLoading && (
-            <motion.div
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.98 }}
+          {/* Dual CTA */}
+          <div className="grid sm:grid-cols-2 gap-4 max-w-lg mx-auto">
+            <Link
+              href="/sign-up"
+              className="group flex flex-col items-center gap-2 px-6 py-5 bg-[#38A3F1] text-white rounded-xl hover:shadow-lg hover:shadow-[#38A3F1]/25 transition-all"
             >
-              <Link
-                href={href}
-                className="group inline-flex items-center gap-2 px-8 py-4 bg-[#0D3A6E] text-white font-semibold rounded-xl hover:bg-[#1D5A9E] transition-colors shadow-md"
-              >
-                <span>
-                  {user ? "Ir al panel de control" : "Únete a Dexpert ahora — es gratis"}
-                </span>
-                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </Link>
-            </motion.div>
-          )}
+              <GraduationCap className="w-6 h-6" />
+              <span className="text-sm font-semibold">Soy estudiante</span>
+              <span className="text-[10px] text-white/80">Quiero experiencia real</span>
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform mt-1" />
+            </Link>
+
+            <Link
+              href="/sign-up"
+              className="group flex flex-col items-center gap-2 px-6 py-5 bg-[#0D3A6E] text-white rounded-xl hover:bg-[#1D5A9E] transition-all"
+            >
+              <Building2 className="w-6 h-6" />
+              <span className="text-sm font-semibold">Soy PYME</span>
+              <span className="text-[10px] text-white/80">Busco talento para mi negocio</span>
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform mt-1" />
+            </Link>
+          </div>
         </motion.div>
       </div>
     </section>

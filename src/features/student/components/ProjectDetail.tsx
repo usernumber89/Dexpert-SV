@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { trackProjectView } from "@/app/actions/pyme/premium";
 import { toast } from "sonner";
 import { ArrowLeft, CheckCircle, MapPin, Tag, BarChart, Zap } from "lucide-react";
+import { calcMatch, isMatchedSkill } from "@/lib/matching";
 import Link from "next/link";
 
 type Project = {
@@ -29,14 +30,6 @@ type Props = {
   studentSkills?: string[];
 };
 
-function calcMatch(projectSkills: string, studentSkills: string[]): number {
-  if (!studentSkills.length) return 0;
-  const required = projectSkills.split(",").map(s => s.trim().toLowerCase());
-  const student = studentSkills.map(s => s.toLowerCase());
-  const matches = required.filter(r => student.some(s => s.includes(r) || r.includes(s)));
-  return Math.round((matches.length / required.length) * 100);
-}
-
 export function ProjectDetail({ project, hasApplied: initialApplied, studentId, studentSkills = [] }: Props) {
   const router = useRouter();
   const [hasApplied, setHasApplied] = useState(initialApplied);
@@ -47,9 +40,6 @@ export function ProjectDetail({ project, hasApplied: initialApplied, studentId, 
   }, [project.id]);
 
   const matchScore = calcMatch(project.skills, studentSkills);
-  const studentSkillsLower = studentSkills.map(s => s.toLowerCase());
-  const isMatchedSkill = (skill: string) =>
-    studentSkillsLower.some(s => s.includes(skill.toLowerCase()) || skill.toLowerCase().includes(s));
 
   const matchColor = matchScore >= 70
     ? { bg: "bg-green-50", text: "text-green-600", border: "border-green-100", bar: "bg-green-500" }
@@ -168,7 +158,7 @@ export function ProjectDetail({ project, hasApplied: initialApplied, studentId, 
               </div>
               <div className="flex flex-wrap gap-2">
                 {project.skills.split(",").map((s, i) => {
-                  const matched = isMatchedSkill(s.trim());
+                  const matched = isMatchedSkill(s.trim(), studentSkills);
                   return (
                     <span key={i} className={`text-xs px-3 py-1 rounded-full border font-medium ${
                       matched
@@ -184,7 +174,7 @@ export function ProjectDetail({ project, hasApplied: initialApplied, studentId, 
               {/* Skills summary */}
               {studentSkills.length > 0 && (
               <p className="text-xs text-[#93B8D4] mt-2">
-                    Coincidís con {project.skills.split(",").filter(s => isMatchedSkill(s.trim())).length} de {project.skills.split(",").length} habilidades requeridas
+                    Coincidís con {project.skills.split(",").filter(s => isMatchedSkill(s.trim(), studentSkills)).length} de {project.skills.split(",").length} habilidades requeridas
                 </p>
               )}
             </div>

@@ -73,18 +73,10 @@ export function Navbar() {
 
         {/* Desktop navigation */}
         <div className="hidden md:flex items-center gap-8">
-          <Link href="/about" className="text-sm text-[#5B8DB8] hover:text-[#0D3A6E] transition-colors">
-            Acerca de
+          <Link href="/" className="text-sm text-[#5B8DB8] hover:text-[#0D3A6E] transition-colors">
+            Inicio
           </Link>
-          <Link href="#how" className="text-sm text-[#5B8DB8] hover:text-[#0D3A6E] transition-colors">
-            ¿Cómo funciona?
-          </Link>
-          <Link href="#plans" className="text-sm text-[#5B8DB8] hover:text-[#0D3A6E] transition-colors">
-            Planes
-          </Link>
-          <Link href="#faq" className="text-sm text-[#5B8DB8] hover:text-[#0D3A6E] transition-colors">
-            FAQ
-          </Link>
+         
         </div>
 
         {/* Auth / User Menu */}
@@ -253,17 +245,9 @@ export function Navbar() {
               )}
 
               <Link href="/about" className="text-sm text-[#5B8DB8] hover:text-[#0D3A6E] py-1" onClick={() => setOpen(false)}>
-                Sobre nosotros
+                Inicio
               </Link>
-              <Link href="#how" className="text-sm text-[#5B8DB8] hover:text-[#0D3A6E] py-1" onClick={() => setOpen(false)}>
-                ¿Cómo funciona?
-              </Link>
-              <Link href="#plans" className="text-sm text-[#5B8DB8] hover:text-[#0D3A6E] py-1" onClick={() => setOpen(false)}>
-                Planes
-              </Link>
-              <Link href="#faq" className="text-sm text-[#5B8DB8] hover:text-[#0D3A6E] py-1" onClick={() => setOpen(false)}>
-                FAQ
-              </Link>
+              
 
               {isSignedIn ? (
                 <>

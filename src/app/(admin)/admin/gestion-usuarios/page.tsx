@@ -1,8 +1,9 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { RefreshCw, Shield, ShieldCheck } from 'lucide-react';
+import { RefreshCw, Shield, ShieldCheck, Trash2, Loader2 } from 'lucide-react';
 import { fetchAdminUsers, updateUserRole } from '@/lib/admin/api';
+import { deleteUser } from '@/app/actions/admin/users';
 import { SectionHeader } from '@/components/admin/SectionHeader';
 import { DataTable, type Column } from '@/components/admin/DataTable';
 import { StatusBadge } from '@/components/admin/StatusBadge';
@@ -12,6 +13,7 @@ import type { AdminUser } from '@/lib/admin/types';
 export default function UserManagementPage() {
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(true);
+  const [deletingUserId, setDeletingUserId] = useState<string | null>(null);
 
   const loadData = useCallback(async () => {
     setLoading(true);
@@ -37,6 +39,26 @@ export default function UserManagementPage() {
       loadData();
     } catch (err) {
       toast.error('Error al actualizar rol');
+    }
+  };
+
+  const handleDelete = async (userId: string, userName: string) => {
+    if (!confirm(`¿Eliminar a "${userName}" permanentemente? Esta acción eliminará todos sus datos (perfil, proyectos, postulaciones, facturas, etc.) y no se puede deshacer.`)) return;
+
+    setDeletingUserId(userId);
+    try {
+      const result = await deleteUser(userId);
+      if (!result.success) {
+        toast.error(result.error || 'Error al eliminar usuario');
+        return;
+      }
+      toast.success(`Usuario "${userName}" eliminado permanentemente`);
+      loadData();
+    } catch (err) {
+      toast.error('Error al eliminar usuario');
+      console.error(err);
+    } finally {
+      setDeletingUserId(null);
     }
   };
 
@@ -91,6 +113,21 @@ export default function UserManagementPage() {
       align: 'right',
       render: (u) => (
         <div className="flex items-center gap-1 justify-end">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              handleDelete(u.id, u.fullName);
+            }}
+            disabled={deletingUserId === u.id}
+            className="px-2 py-1 text-[10px] font-medium rounded-md text-red-400 hover:text-red-600 hover:bg-red-50 border border-transparent hover:border-red-200 transition-colors disabled:opacity-50"
+            title="Eliminar usuario"
+          >
+            {deletingUserId === u.id ? (
+              <Loader2 className="w-3 h-3 animate-spin" />
+            ) : (
+              <Trash2 className="w-3 h-3" />
+            )}
+          </button>
           {['STUDENT', 'PYME', 'ADMIN'].map((role) => (
             <button
               key={role}

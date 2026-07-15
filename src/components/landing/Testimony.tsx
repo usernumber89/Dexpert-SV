@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Quote, Heart, Users, Award } from "lucide-react";
+import { Quote, Award } from "lucide-react";
 
 const testimonies = [
   { 
@@ -31,12 +31,6 @@ const testimonies = [
     achievement: "Encontró un equipo inclusivo",
     rating: 5
   },
-];
-
-const STATS = [
-  { value: "95%", label: "Tasa de Satisfacción", icon: Heart },
-  { value: "200+", label: "Historias de Éxito", icon: Award },
-  { value: "50+", label: "Empresas Activas", icon: Users },
 ];
 
 export function Testimony() {
@@ -151,45 +145,6 @@ export function Testimony() {
             </motion.div>
           ))}
         </div>
-
-        {/* Stats Section 
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="grid grid-cols-3 gap-4 max-w-3xl mx-auto"
-        >
-          {STATS.map((stat, index) => {
-            const Icon = stat.icon;
-            return (
-              <motion.div
-                key={stat.label}
-                initial={{ opacity: 0, scale: 0.9 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-                whileHover={{ scale: 1.05 }}
-                className="text-center p-4 bg-white rounded-2xl border border-[#E8F3FD] shadow-sm hover:shadow-md transition-all"
-              >
-                <Icon className="w-6 h-6 text-[#38A3F1] mx-auto mb-2" />
-                <p className="text-2xl font-bold text-[#0D3A6E]">{stat.value}</p>
-                <p className="text-xs text-[#93B8D4]">{stat.label}</p>
-              </motion.div>
-            );
-          })}
-        </motion.div>
-
-        {/* Bottom CTA */}
-        <motion.div 
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          className="mt-12 text-center"
-        >
-          <p className="text-sm text-[#93B8D4]">
-            Únete a cientos de usuarios satisfechos que encontraron su oportunidad con Dexpert
-          </p>
-        </motion.div>
       </div>
     </section>
   );
